@@ -24,7 +24,13 @@ class BCatOutputParser extends RegexParsers {
   def stateVariableString = """.*""".r
   def outputLine = stateVariableName ~ stateVariableString ^^
     { case name ~ string => StateVariableLine(name, string) }
-  def dictionary = """\{.*\}""".r ^^ { s => Map[String,String]() }
+  def dictionary = "{" ~> (keyValuePair *) <~ "}" ^^ {
+    case List() => Map()
+    case pairs => pairs.toMap
+  }
+  def keyValuePair = key ~ ":" ~ value ^^ { case key ~ colon ~ value => (key, value) }
+  def key = """key1""".r
+  def value = """value1""".r
   
   def parseWhole[T](parser: Parser[T], dictstr: String): Option[T] =
     parseAll(parser, dictstr) match {

@@ -24,6 +24,8 @@ class DictionarySuite extends FunSuite {
   test("Read dictionary string") {
     new BCatOutputParser {
       assert(parseWhole(dictionary, "{}") === Some(Map()))
+      assert(parseWhole(dictionary, "{ key1:value1 }") === Some(Map("key1" -> "value1")))
+
       assert(parseWhole(dictionary, "something else") === None)
     }
   }
