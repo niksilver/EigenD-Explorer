@@ -18,18 +18,18 @@ object Mapper {
   
 }
 
-class DictionaryOutputParser extends RegexParsers {
+class BCatOutputParser extends RegexParsers {
   override type Elem = Char
   def stateVariableName = """\d+(\.\d+)*""".r
   def stateVariableString = """.*""".r
   def outputLine = stateVariableName ~ stateVariableString ^^
-    { case name ~ string => DictionaryOutput(name, string) }
+    { case name ~ string => StateVariableLine(name, string) }
   
-  def parseLine(line: String): Option[DictionaryOutput] =
+  def parseLine(line: String): Option[StateVariableLine] =
     parseAll(outputLine, line) match {
     case Success(out, _) => Some(out)
     case _ => None
   }
 }
 
-case class DictionaryOutput(name: String, string: String)
+case class StateVariableLine(name: String, string: String)
