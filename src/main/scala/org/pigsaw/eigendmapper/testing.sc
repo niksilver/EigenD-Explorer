@@ -17,4 +17,5 @@ object testing {
   words flatMap ("a(..)d".r unapplySeq(_)) flatten//> res3: List[String] = List(bc, xx, yy)
   val re = "a(..)d".r                             //> re  : scala.util.matching.Regex = a(..)d
   val re(inner) = "abcd"                          //> inner  : String = bc
+  "[^\\[\\]]+".r findFirstIn "afd[b]c"            //> res4: Option[String] = Some(afd)
 }

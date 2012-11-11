@@ -40,12 +40,15 @@ class BCatOutputParser extends RegexParsers {
   def keyValuePair = key ~ ":" ~ value ^^ { case key ~ colon ~ value => (key, value) }
   
   def key = """\w+""".r
-  def value = """\w+""".r
+  def value = unifiedValue
+  
+  // A value that doesn't include balancing or splitting characters
+  def unifiedValue = """[^\]\[ ()'<>{},:]+""".r
   
   def parseWhole[T](parser: Parser[T], dictstr: String): Option[T] =
     parseAll(parser, dictstr) match {
     case Success(out, _) => Some(out)
-    case _ => None
+    case fail => None
   }
 }
 

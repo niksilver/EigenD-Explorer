@@ -34,4 +34,22 @@ class DictionarySuite extends FunSuite {
     }
   }
 
+  test("Unified value") {
+    new BCatOutputParser {
+      assert(parseWhole(unifiedValue, "hello") === Some("hello"))
+      assert(parseWhole(unifiedValue, "h-ello") === Some("h-ello"))
+      assert(parseWhole(unifiedValue, "he(l)lo") === None)
+      assert(parseWhole(unifiedValue, "he[llo") === None)
+      assert(parseWhole(unifiedValue, "he]llo") === None)
+      assert(parseWhole(unifiedValue, "he}llo") === None)
+      assert(parseWhole(unifiedValue, "he{llo") === None)
+      assert(parseWhole(unifiedValue, "he<llo") === None)
+      assert(parseWhole(unifiedValue, "he>llo") === None)
+      assert(parseWhole(unifiedValue, "he'llo") === None)
+      assert(parseWhole(unifiedValue, "he llo") === None)
+      assert(parseWhole(unifiedValue, "he,llo") === None)
+      assert(parseWhole(unifiedValue, "he:llo") === None)
+    }
+  }
+
 }
