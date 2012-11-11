@@ -26,14 +26,8 @@ class BCatOutputParser extends RegexParsers {
     { case name ~ string => StateVariableLine(name, string) }
   def dictionary = """\{.*\}""".r ^^ { s => Map[String,String]() }
   
-  def parseLine(line: String): Option[StateVariableLine] =
-    parseAll(outputLine, line) match {
-    case Success(out, _) => Some(out)
-    case _ => None
-  }
-  
-  def parseDictionary(dictstr: String): Option[Map[String,String]] =
-    parseAll(dictionary, dictstr) match {
+  def parseWhole[T](parser: Parser[T], dictstr: String): Option[T] =
+    parseAll(parser, dictstr) match {
     case Success(out, _) => Some(out)
     case _ => None
   }
