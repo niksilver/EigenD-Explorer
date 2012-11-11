@@ -39,8 +39,8 @@ class BCatOutputParser extends RegexParsers {
   
   def keyValuePair = key ~ ":" ~ value ^^ { case key ~ colon ~ value => (key, value) }
   
-  def key = """key.""".r
-  def value = """value.""".r
+  def key = """\w+""".r
+  def value = """\w+""".r
   
   def parseWhole[T](parser: Parser[T], dictstr: String): Option[T] =
     parseAll(parser, dictstr) match {

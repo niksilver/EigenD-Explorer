@@ -27,6 +27,8 @@ class DictionarySuite extends FunSuite {
       assert(parseWhole(dictionary, "{ key1:value1 }") === Some(Map("key1" -> "value1")))
       assert(parseWhole(dictionary, "{ key1:value1, key2: value2 }") ===
         Some(Map("key1" -> "value1", "key2" -> "value2")))
+      assert(parseWhole(dictionary, "{ aa: bb, cc: dd, ee: ff }") ===
+        Some(Map("aa" -> "bb", "cc" -> "dd", "ee" -> "ff")))
 
       assert(parseWhole(dictionary, "something else") === None)
     }
