@@ -24,6 +24,12 @@ class DictionaryOutputParser extends RegexParsers {
   def stateVariableString = """.*""".r
   def outputLine = stateVariableName ~ stateVariableString ^^
     { case name ~ string => DictionaryOutput(name, string) }
+  
+  def parseLine(line: String): Option[DictionaryOutput] =
+    parseAll(outputLine, line) match {
+    case Success(out, _) => Some(out)
+    case _ => None
+  }
 }
 
 case class DictionaryOutput(name: String, string: String)

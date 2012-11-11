@@ -12,13 +12,9 @@ import org.pigsaw.eigendmapper.Mapper._
 class DictionarySuite extends FunSuite {
 
   test("Read state variable") {
-    object TestParser extends DictionaryOutputParser {
-      parseAll(outputLine, "1 hello") match {
-        case Success(lup, _) => println("lup... " + lup)
-        case x => println("x... " + x)
-      }
+    new DictionaryOutputParser {
+      assert(parseLine("1 hello") === Some(DictionaryOutput("1", "hello")))
     }
-    TestParser
   }
 
 }
