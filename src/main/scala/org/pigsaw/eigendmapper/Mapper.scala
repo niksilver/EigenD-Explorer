@@ -20,7 +20,7 @@ object Mapper {
 
 class DictionaryOutputParser extends RegexParsers {
   override type Elem = Char
-  def stateVariableName = """\d+""".r
+  def stateVariableName = """\d+(\.\d+)*""".r
   def stateVariableString = """.*""".r
   def outputLine = stateVariableName ~ stateVariableString ^^
     { case name ~ string => DictionaryOutput(name, string) }
