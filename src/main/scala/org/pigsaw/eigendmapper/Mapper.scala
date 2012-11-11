@@ -1,5 +1,7 @@
 package org.pigsaw.eigendmapper
 
+import scala.util.parsing.combinator.RegexParsers
+
 object Mapper {
   
   /** Get the agents from a stream, which is expected to be the output
@@ -13,4 +15,15 @@ object Mapper {
    */
   def filterAgents(in: Stream[String]): List[String] =
     (in flatMap ("<(.*)>".r unapplySeq(_)) flatten).toList
+  
 }
+
+class DictionaryOutputParser extends RegexParsers {
+  override type Elem = Char
+  def stateVariableName = """\d+""".r
+  def stateVariableString = """.*""".r
+  def outputLine = stateVariableName ~ stateVariableString ^^
+    { case name ~ string => DictionaryOutput(name, string) }
+}
+
+case class DictionaryOutput(name: String, string: String)

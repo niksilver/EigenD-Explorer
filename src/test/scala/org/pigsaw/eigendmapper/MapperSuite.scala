@@ -35,5 +35,5 @@ class MapperSuite extends FunSuite {
     val output = filterAgents(stream)
     assert(output.length === 0)
   }
-
+  
 }
