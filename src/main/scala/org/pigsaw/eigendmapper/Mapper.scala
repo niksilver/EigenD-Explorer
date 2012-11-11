@@ -20,17 +20,27 @@ object Mapper {
 
 class BCatOutputParser extends RegexParsers {
   override type Elem = Char
+  
   def stateVariableName = """\d+(\.\d+)*""".r
   def stateVariableString = """.*""".r
+  
   def outputLine = stateVariableName ~ stateVariableString ^^
     { case name ~ string => StateVariableLine(name, string) }
-  def dictionary = "{" ~> (keyValuePair *) <~ "}" ^^ {
-    case List() => Map()
-    case pairs => pairs.toMap
+  
+  def dictionary = "{" ~> (keyValuePairs ?) <~ "}" ^^ {
+    case Some(map) => map
+    case None => Map()
   }
+  
+  def keyValuePairs = keyValuePair ~ (("," ~> keyValuePair)*) ^^ {
+    case (key, value) ~ List() => Map(key -> value)
+    case (key, value) ~ keyValues => Map(key -> value) ++ keyValues.toMap
+  } 
+  
   def keyValuePair = key ~ ":" ~ value ^^ { case key ~ colon ~ value => (key, value) }
-  def key = """key1""".r
-  def value = """value1""".r
+  
+  def key = """key.""".r
+  def value = """value.""".r
   
   def parseWhole[T](parser: Parser[T], dictstr: String): Option[T] =
     parseAll(parser, dictstr) match {
