@@ -21,4 +21,11 @@ class DictionarySuite extends FunSuite {
     }
   }
 
+  test("Read dictionary string") {
+    new BCatOutputParser {
+      assert(parseDictionary("{}") === Some(Map()))
+      assert(parseDictionary("something else") === None)
+    }
+  }
+
 }
