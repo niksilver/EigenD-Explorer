@@ -41,6 +41,12 @@ class DictionarySuite extends FunSuite {
     }
   }
 
+  test("Read dictionary string (no values)") {
+    new BCatOutputParser {
+      assert(parseWhole(dictionary, "{ key1: }") === Some(Map("key1" -> List())))
+    }
+  }
+
   test("Unified value") {
     new BCatOutputParser {
       assert(parseWhole(bareValue, "hello") === Some("hello"))
