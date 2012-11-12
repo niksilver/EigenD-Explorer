@@ -48,20 +48,20 @@ class BCatOutputParser extends RegexParsers {
   def keyValuePair = key ~ ws(":") ~ value ^^ { case key ~ colon ~ value => (key, value) }
   
   def key = """\w+""".r
-  def value: Parser[String] = (( bracketValue | unprotectedValue ) +) ^^ { _.mkString }
+  def value: Parser[String] = (( bracketValue | bareValue ) +) ^^ { _.mkString }
   
   /** A value that doesn't have surrounding protection characters such as (...) or '...' */
-  def unprotectedValue = """[^\]\[()'<>{} ,:]+""".r
+  def bareValue = """[^\]\[()'<>{} ,:]+""".r
   
   /** A value that does have surrounding protection characters such as (...) or '...' */
-  def protectedValue = """[^\]\[()'<>{}]+""".r
+  def bracketedBareValue = """[^\]\[()'<>{}]+""".r
 
   /** A value with brackets of some kind. */
   def bracketValue = parentheticalValue | angleBracketValue | bracesValue | squareBracketValue
   
   /** A value that's inside brackets of some kind. */
   def bracketedValue: Parser[String] = nonEmptyBracketedValue | ""
-  def nonEmptyBracketedValue = (( bracketValue | protectedValue ) +) ^^ { _.mkString }
+  def nonEmptyBracketedValue = (( bracketValue | bracketedBareValue ) +) ^^ { _.mkString }
   
   def parentheticalValue = "(" ~ bracketedValue ~ ")" ^^ { case op ~ value ~ cl => op + value + cl }
   def angleBracketValue = "<" ~ bracketedValue ~ ">" ^^ { case op ~ value ~ cl => op + value + cl }
