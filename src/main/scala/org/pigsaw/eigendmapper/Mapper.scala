@@ -48,11 +48,22 @@ class BCatOutputParser extends RegexParsers {
   def keyValuePair = key ~ ws(":") ~ value ^^ { case key ~ colon ~ value => (key, value) }
   
   def key = """\w+""".r
-  def value: Parser[String] = (( parentheticalValue | unifiedValue ) +) ^^ { _.mkString }
+  def value: Parser[String] = (( bracketValue | unprotectedValue ) +) ^^ { _.mkString }
   
-  // A value that doesn't have surrounding protection characters such as (...) or '...'
-  def unifiedValue = """[^\]\[ ()'<>{},:]+""".r
-  def parentheticalValue = "(" ~ value ~ ")" ^^ { case op ~ value ~ cl => op + value + cl }
+  /** A value that doesn't have surrounding protection characters such as (...) or '...' */
+  def unprotectedValue = """[^\]\[()'<>{} ,:]+""".r
+  
+  /** A value that does have surrounding protection characters such as (...) or '...' */
+  def protectedValue = """[^\]\[()'<>{}]+""".r
+
+  /** A value with brackets of some kind. */
+  def bracketValue = parentheticalValue
+  
+  /* A value that's inside brackets of some kind. */
+  def bracketedValue: Parser[String] = (( bracketValue | protectedValue ) +) ^^ { _.mkString }
+  
+  /** A value that does have surrounding protection characters such as (...) or '...' */
+  def parentheticalValue = "(" ~ bracketedValue ~ ")" ^^ { case op ~ value ~ cl => op + value + cl }
   
   def parseWhole[T](parser: Parser[T], dictstr: String): Option[T] =
     parseAll(parser, dictstr) match {
