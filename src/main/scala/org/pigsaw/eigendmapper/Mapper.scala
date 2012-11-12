@@ -57,7 +57,7 @@ class BCatOutputParser extends RegexParsers {
   def protectedValue = """[^\]\[()'<>{}]+""".r
 
   /** A value with brackets of some kind. */
-  def bracketValue = parentheticalValue | angleBracketValue | bracesValue
+  def bracketValue = parentheticalValue | angleBracketValue | bracesValue | squareBracketValue
   
   /** A value that's inside brackets of some kind. */
   def bracketedValue: Parser[String] = nonEmptyBracketedValue | ""
@@ -66,6 +66,7 @@ class BCatOutputParser extends RegexParsers {
   def parentheticalValue = "(" ~ bracketedValue ~ ")" ^^ { case op ~ value ~ cl => op + value + cl }
   def angleBracketValue = "<" ~ bracketedValue ~ ">" ^^ { case op ~ value ~ cl => op + value + cl }
   def bracesValue = "{" ~ bracketedValue ~ "}" ^^ { case op ~ value ~ cl => op + value + cl }
+  def squareBracketValue = "[" ~ bracketedValue ~ "]" ^^ { case op ~ value ~ cl => op + value + cl }
   
   def parseWhole[T](parser: Parser[T], dictstr: String): Option[T] =
     parseAll(parser, dictstr) match {
