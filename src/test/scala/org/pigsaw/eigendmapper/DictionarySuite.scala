@@ -71,6 +71,20 @@ class DictionarySuite extends FunSuite {
       assert(parseWhole(value, "h((e, ll))o") === Some("h((e, ll))o"))
       assert(parseWhole(value, "h((e:ll))o") === Some("h((e:ll))o"))
 
+      assert(parseWhole(value, "<hello>") === Some("<hello>"))
+      assert(parseWhole(value, "h<ello>") === Some("h<ello>"))
+      assert(parseWhole(value, "h<ell>o") === Some("h<ell>o"))
+      assert(parseWhole(value, "h<e ll>o") === Some("h<e ll>o"))
+      assert(parseWhole(value, "h<e, ll>o") === Some("h<e, ll>o"))
+      assert(parseWhole(value, "h<e:ll>o") === Some("h<e:ll>o"))
+      assert(parseWhole(value, "h<>ello") === Some("h<>ello"))
+
+      assert(parseWhole(value, "<h(el)lo>") === Some("<h(el)lo>"))
+      assert(parseWhole(value, "h(el<>lo)") === Some("h(el<>lo)"))
+      assert(parseWhole(value, "h(<e ll>)o") === Some("h(<e ll>)o"))
+      assert(parseWhole(value, "h((e, ll))o") === Some("h((e, ll))o"))
+      assert(parseWhole(value, "h<<e:ll>>o") === Some("h<<e:ll>>o"))
+
       assert(parseWhole(value, "h (ello)") === None)
       assert(parseWhole(value, "hel)lo") === None)
       assert(parseWhole(value, "hel(lo") === None)
