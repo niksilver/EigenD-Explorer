@@ -52,4 +52,16 @@ class DictionarySuite extends FunSuite {
     }
   }
 
+  test("Value") {
+    new BCatOutputParser {
+      assert(parseWhole(value, "hello") === Some("hello"))
+      assert(parseWhole(value, "(hello)") === Some("(hello)"))
+      assert(parseWhole(value, "h(ello)") === Some("h(ello)"))
+      assert(parseWhole(value, "hel)lo") === None)
+      assert(parseWhole(value, "hel(lo") === None)
+      assert(parseWhole(value, "hello,") === None)
+    }
+
+  }
+
 }
