@@ -21,17 +21,23 @@ class DictionarySuite extends FunSuite {
     }
   }
 
-  test("Read dictionary string") {
+  test("Read dictionary string (single values)") {
     new BCatOutputParser {
       assert(parseWhole(dictionary, "{}") === Some(Map()))
       assert(parseWhole(dictionary, "{ }") === Some(Map()))
-      assert(parseWhole(dictionary, "{ key1:value1 }") === Some(Map("key1" -> "value1")))
+      assert(parseWhole(dictionary, "{ key1:value1 }") === Some(Map("key1" -> List("value1"))))
       assert(parseWhole(dictionary, "{ key1:value1, key2 : value2 }") ===
-        Some(Map("key1" -> "value1", "key2" -> "value2")))
+        Some(Map("key1" -> List("value1"), "key2" -> List("value2"))))
       assert(parseWhole(dictionary, "{ aa: bb, cc: dd, ee: ff }") ===
-        Some(Map("aa" -> "bb", "cc" -> "dd", "ee" -> "ff")))
+        Some(Map("aa" -> List("bb"), "cc" -> List("dd"), "ee" -> List("ff"))))
 
       assert(parseWhole(dictionary, "something else") === None)
+    }
+  }
+
+  test("Read dictionary string (multi-values)") {
+    new BCatOutputParser {
+      assert(parseWhole(dictionary, "{ key1:value1a value2a }") === Some(Map("key1" -> List("value1a", "value2a"))))
     }
   }
 
