@@ -59,8 +59,9 @@ class BCatOutputParser extends RegexParsers {
   /** A value with brackets of some kind. */
   def bracketValue = parentheticalValue
   
-  /* A value that's inside brackets of some kind. */
-  def bracketedValue: Parser[String] = (( bracketValue | protectedValue ) +) ^^ { _.mkString }
+  /** A value that's inside brackets of some kind. */
+  def bracketedValue: Parser[String] = nonEmptyBracketedValue | ""
+  def nonEmptyBracketedValue = (( bracketValue | protectedValue ) +) ^^ { _.mkString }
   
   /** A value that does have surrounding protection characters such as (...) or '...' */
   def parentheticalValue = "(" ~ bracketedValue ~ ")" ^^ { case op ~ value ~ cl => op + value + cl }
