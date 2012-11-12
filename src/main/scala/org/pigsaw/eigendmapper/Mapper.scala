@@ -20,24 +20,32 @@ object Mapper {
 
 class BCatOutputParser extends RegexParsers {
   override type Elem = Char
+  override def skipWhitespace = false
   
+  /** Positive inline whitepace only. */
+  def whitespace = """[ \t]+""".r
+  /** Optional inline whitepace only. */
+  def whitespace0 = """[ \t]*""".r
+  
+  /** Create a parser for a string with whitespace around it. */
+  def ws(s: String) = whitespace0 ~> s <~ whitespace0
   def stateVariableName = """\d+(\.\d+)*""".r
   def stateVariableString = """.*""".r
   
-  def outputLine = stateVariableName ~ stateVariableString ^^
-    { case name ~ string => StateVariableLine(name, string) }
+  def outputLine = stateVariableName ~ whitespace ~ stateVariableString ^^
+    { case name ~ ws ~ string => StateVariableLine(name, string) }
   
-  def dictionary = "{" ~> (keyValuePairs ?) <~ "}" ^^ {
+  def dictionary = ws("{") ~> (keyValuePairs ?) <~ ws("}") ^^ {
     case Some(map) => map
     case None => Map()
   }
   
-  def keyValuePairs = keyValuePair ~ (("," ~> keyValuePair)*) ^^ {
+  def keyValuePairs = keyValuePair ~ (( ws(",") ~> keyValuePair )*) ^^ {
     case (key, value) ~ List() => Map(key -> value)
     case (key, value) ~ keyValues => Map(key -> value) ++ keyValues.toMap
   } 
   
-  def keyValuePair = key ~ ":" ~ value ^^ { case key ~ colon ~ value => (key, value) }
+  def keyValuePair = key ~ ws(":") ~ value ^^ { case key ~ colon ~ value => (key, value) }
   
   def key = """\w+""".r
   def value: Parser[String] = (( parentheticalValue | unifiedValue ) +) ^^ { _.mkString }
