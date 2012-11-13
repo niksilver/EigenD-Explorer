@@ -90,7 +90,7 @@ class DictionarySuite extends FunSuite {
     }
   }
 
-  ignore("Value") {
+  test("Value") {
     new BCatOutputParser {
       assert(parsePhrase(value, "hello") === Some("hello"))
 
@@ -147,7 +147,8 @@ class DictionarySuite extends FunSuite {
       assert(parsePhrase(value, "h('e, ll')o") === Some("h('e, ll')o"))
       assert(parsePhrase(value, "h'[e:ll'o") === Some("h'[e:ll'o"))
 
-      assert(parsePhrase(value, "h (ello)") === None)
+      assert(parsePhrase(value, "h (ello)") === Some("h (ello)"))
+      
       assert(parsePhrase(value, "hel)lo") === None)
       assert(parsePhrase(value, "hel(lo") === None)
       assert(parsePhrase(value, "hello,") === None)
