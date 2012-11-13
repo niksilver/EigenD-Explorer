@@ -39,16 +39,14 @@ class BCatOutputParser extends RegexParsers {
     case Some(map) => map
     case None => Map()
   }
-  
+
+  /** Key/value pairs have to be parsed like this because the comma is used
+   * to separate key/value pairs and items in a value list, and the default
+   * parsers don't do backtracking.
+   */
   def keyValuePairs = ((value | key | ":" | ",")*) ^^ { keyValueStringsToMap(_) }
   
   def key = """\w+""".r
-  def multiValue = someValues | noValues
-  def noValues = "" ^^ { s => List() }
-  def someValues = value ~ (( "," ~> value )*) ^^ {
-    case value ~ List() => List(value)
-    case value ~ values => value :: values
-  } 
   def value: Parser[String] = (( bracketValue | quoteValue | bareValue ) +) ^^ { _.mkString }
   
   /** A value that doesn't have surrounding protection characters such as (...) or '...' */
