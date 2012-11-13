@@ -30,23 +30,23 @@ class DictionarySuite extends FunSuite {
     }
   }
 
-  test("Key-value pair (single value)") {
+  test("Key-value pairs (single value)") {
     new BCatOutputParser {
-      assert(parsePhrase(keyValuePair, "key1:value1") ===
-        Some(("key1" -> List("value1"))))
+      assert(parsePhrase(keyValuePairs, "key1:value1") ===
+        Some(Map("key1" -> List("value1"))))
 
-      assert(parsePhrase(keyValuePair, "key1: value1 ") ===
-        Some(("key1" -> List(" value1 "))))
+      assert(parsePhrase(keyValuePairs, "key1: value1 ") ===
+        Some(Map("key1" -> List(" value1 "))))
 
       assert(parsePhrase(keyValuePairs, "key1:value1,key2:value2") ===
         Some(Map("key1" -> List("value1"), "key2" -> List("value2"))))
     }
   }
 
-  test("Key-value pair (multi-values)") {
+  test("Key-value pairs (multi-values)") {
     new BCatOutputParser {
-      assert(parsePhrase(keyValuePair, "key1:value1a,value1b") ===
-        Some(("key1" -> List("value1a", "value1b"))))
+      assert(parsePhrase(keyValuePairs, "key1:value1a,value1b") ===
+        Some(Map("key1" -> List("value1a", "value1b"))))
     }
   }
   

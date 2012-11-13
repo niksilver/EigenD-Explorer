@@ -40,20 +40,7 @@ class BCatOutputParser extends RegexParsers {
     case None => Map()
   }
   
-  def trace[T](prefix: String, v: =>T): T = { println(prefix + v); v }
-  /*def keyValuePairs = keyValuePair ~ (( "," ~> keyValuePair )*) ^^ {
-    case (key, value) ~ List() => trace("One key/value: ", Map(key -> value))
-    case (key, value) ~ keyValues => trace("Several key/values: ", Map(key -> value) ++ keyValues.toMap)
-  }*/
-  
-  // --------------- An alternative parsing for keys and values
-  
-  //def keysAndValues = repsep(key ~ ":" ~ repsep(value, ","), ",") ^^ { trace("New parser part: ", _) }
-  //def keysAndValues = repsep(key | value , ":" | ",") ^^ { trace("New parser part: ", _) }
   def keyValuePairs = ((value | key | ":" | ",")*) ^^ { keyValueStringsToMap(_) }
-  // ----------------------------------------------------------
-  
-  def keyValuePair = key ~ ":" ~ multiValue ^^ { case key ~ colon ~ multivalue => trace("K/V pair: ", (key, multivalue)) }
   
   def key = """\w+""".r
   def multiValue = someValues | noValues
