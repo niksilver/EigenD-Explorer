@@ -77,8 +77,8 @@ class BCatOutputParser extends RegexParsers {
   def bracesValue = "{" ~ bracketedValue ~ "}" ^^ { case op ~ value ~ cl => op + value + cl }
   def squareBracketValue = "[" ~ bracketedValue ~ "]" ^^ { case op ~ value ~ cl => op + value + cl }
   
-  def parseWhole[T](parser: Parser[T], dictstr: String): Option[T] =
-    parseAll(parser, dictstr) match {
+  def parsePhrase[T](parser: Parser[T], dictstr: String): Option[T] =
+    parseAll(phrase(parser), dictstr) match {
     case Success(out, _) => Some(out)
     case fail => None
   }

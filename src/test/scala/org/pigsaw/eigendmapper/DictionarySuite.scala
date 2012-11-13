@@ -13,116 +13,116 @@ class DictionarySuite extends FunSuite {
 
   test("Read dictionary line") {
     new BCatOutputParser {
-      assert(parseWhole(outputLine, "1 hello") === Some(StateVariableLine("1", "hello")))
-      assert(parseWhole(outputLine, "12 hello") === Some(StateVariableLine("12", "hello")))
-      assert(parseWhole(outputLine, "12.34 hello") === Some(StateVariableLine("12.34", "hello")))
-      assert(parseWhole(outputLine, "12.34.56 hello") === Some(StateVariableLine("12.34.56", "hello")))
-      assert(parseWhole(outputLine, "something else") === None)
+      assert(parsePhrase(outputLine, "1 hello") === Some(StateVariableLine("1", "hello")))
+      assert(parsePhrase(outputLine, "12 hello") === Some(StateVariableLine("12", "hello")))
+      assert(parsePhrase(outputLine, "12.34 hello") === Some(StateVariableLine("12.34", "hello")))
+      assert(parsePhrase(outputLine, "12.34.56 hello") === Some(StateVariableLine("12.34.56", "hello")))
+      assert(parsePhrase(outputLine, "something else") === None)
     }
   }
 
   test("Read dictionary string (single values)") {
     new BCatOutputParser {
-      assert(parseWhole(dictionary, "{}") === Some(Map()))
-      assert(parseWhole(dictionary, "{ }") === Some(Map()))
-      assert(parseWhole(dictionary, "{ key1:value1 }") === Some(Map("key1" -> List("value1"))))
-      assert(parseWhole(dictionary, "{ key1:value1, key2 : value2 }") ===
+      assert(parsePhrase(dictionary, "{}") === Some(Map()))
+      assert(parsePhrase(dictionary, "{ }") === Some(Map()))
+      assert(parsePhrase(dictionary, "{ key1:value1 }") === Some(Map("key1" -> List("value1"))))
+      assert(parsePhrase(dictionary, "{ key1:value1, key2 : value2 }") ===
         Some(Map("key1" -> List("value1"), "key2" -> List("value2"))))
-      assert(parseWhole(dictionary, "{ aa: bb, cc: dd, ee: ff }") ===
+      assert(parsePhrase(dictionary, "{ aa: bb, cc: dd, ee: ff }") ===
         Some(Map("aa" -> List("bb"), "cc" -> List("dd"), "ee" -> List("ff"))))
 
-      assert(parseWhole(dictionary, "something else") === None)
+      assert(parsePhrase(dictionary, "something else") === None)
     }
   }
 
   test("Read dictionary string (multi-values)") {
     new BCatOutputParser {
-      assert(parseWhole(dictionary, "{ key1:value1a value2a }") === Some(Map("key1" -> List("value1a", "value2a"))))
+      assert(parsePhrase(dictionary, "{ key1:value1a value2a }") === Some(Map("key1" -> List("value1a", "value2a"))))
     }
   }
 
   test("Read dictionary string (no values)") {
     new BCatOutputParser {
-      assert(parseWhole(dictionary, "{ key1: }") === Some(Map("key1" -> List())))
+      assert(parsePhrase(dictionary, "{ key1: }") === Some(Map("key1" -> List())))
     }
   }
 
   test("Unified value") {
     new BCatOutputParser {
-      assert(parseWhole(bareValue, "hello") === Some("hello"))
-      assert(parseWhole(bareValue, "h-ello") === Some("h-ello"))
-      assert(parseWhole(bareValue, "he(l)lo") === None)
-      assert(parseWhole(bareValue, "he[llo") === None)
-      assert(parseWhole(bareValue, "he]llo") === None)
-      assert(parseWhole(bareValue, "he}llo") === None)
-      assert(parseWhole(bareValue, "he{llo") === None)
-      assert(parseWhole(bareValue, "he<llo") === None)
-      assert(parseWhole(bareValue, "he>llo") === None)
-      assert(parseWhole(bareValue, "he'llo") === None)
-      assert(parseWhole(bareValue, "he llo") === None)
-      assert(parseWhole(bareValue, "he,llo") === None)
-      assert(parseWhole(bareValue, "he:llo") === None)
+      assert(parsePhrase(bareValue, "hello") === Some("hello"))
+      assert(parsePhrase(bareValue, "h-ello") === Some("h-ello"))
+      assert(parsePhrase(bareValue, "he(l)lo") === None)
+      assert(parsePhrase(bareValue, "he[llo") === None)
+      assert(parsePhrase(bareValue, "he]llo") === None)
+      assert(parsePhrase(bareValue, "he}llo") === None)
+      assert(parsePhrase(bareValue, "he{llo") === None)
+      assert(parsePhrase(bareValue, "he<llo") === None)
+      assert(parsePhrase(bareValue, "he>llo") === None)
+      assert(parsePhrase(bareValue, "he'llo") === None)
+      assert(parsePhrase(bareValue, "he llo") === None)
+      assert(parsePhrase(bareValue, "he,llo") === None)
+      assert(parsePhrase(bareValue, "he:llo") === None)
     }
   }
 
   test("Value") {
     new BCatOutputParser {
-      assert(parseWhole(value, "hello") === Some("hello"))
+      assert(parsePhrase(value, "hello") === Some("hello"))
 
-      assert(parseWhole(value, "(hello)") === Some("(hello)"))
-      assert(parseWhole(value, "h(ello)") === Some("h(ello)"))
-      assert(parseWhole(value, "h(ell)o") === Some("h(ell)o"))
-      assert(parseWhole(value, "h(e ll)o") === Some("h(e ll)o"))
-      assert(parseWhole(value, "h(e, ll)o") === Some("h(e, ll)o"))
-      assert(parseWhole(value, "h(e:ll)o") === Some("h(e:ll)o"))
-      assert(parseWhole(value, "h()ello") === Some("h()ello"))
+      assert(parsePhrase(value, "(hello)") === Some("(hello)"))
+      assert(parsePhrase(value, "h(ello)") === Some("h(ello)"))
+      assert(parsePhrase(value, "h(ell)o") === Some("h(ell)o"))
+      assert(parsePhrase(value, "h(e ll)o") === Some("h(e ll)o"))
+      assert(parsePhrase(value, "h(e, ll)o") === Some("h(e, ll)o"))
+      assert(parsePhrase(value, "h(e:ll)o") === Some("h(e:ll)o"))
+      assert(parsePhrase(value, "h()ello") === Some("h()ello"))
 
-      assert(parseWhole(value, "(h(el)lo)") === Some("(h(el)lo)"))
-      assert(parseWhole(value, "h(el()lo)") === Some("h(el()lo)"))
-      assert(parseWhole(value, "h((e ll))o") === Some("h((e ll))o"))
-      assert(parseWhole(value, "h((e, ll))o") === Some("h((e, ll))o"))
-      assert(parseWhole(value, "h((e:ll))o") === Some("h((e:ll))o"))
+      assert(parsePhrase(value, "(h(el)lo)") === Some("(h(el)lo)"))
+      assert(parsePhrase(value, "h(el()lo)") === Some("h(el()lo)"))
+      assert(parsePhrase(value, "h((e ll))o") === Some("h((e ll))o"))
+      assert(parsePhrase(value, "h((e, ll))o") === Some("h((e, ll))o"))
+      assert(parsePhrase(value, "h((e:ll))o") === Some("h((e:ll))o"))
 
-      assert(parseWhole(value, "<hello>") === Some("<hello>"))
-      assert(parseWhole(value, "h<ello>") === Some("h<ello>"))
-      assert(parseWhole(value, "h<ell>o") === Some("h<ell>o"))
-      assert(parseWhole(value, "h<e ll>o") === Some("h<e ll>o"))
-      assert(parseWhole(value, "h<e, ll>o") === Some("h<e, ll>o"))
-      assert(parseWhole(value, "h<e:ll>o") === Some("h<e:ll>o"))
-      assert(parseWhole(value, "h<>ello") === Some("h<>ello"))
+      assert(parsePhrase(value, "<hello>") === Some("<hello>"))
+      assert(parsePhrase(value, "h<ello>") === Some("h<ello>"))
+      assert(parsePhrase(value, "h<ell>o") === Some("h<ell>o"))
+      assert(parsePhrase(value, "h<e ll>o") === Some("h<e ll>o"))
+      assert(parsePhrase(value, "h<e, ll>o") === Some("h<e, ll>o"))
+      assert(parsePhrase(value, "h<e:ll>o") === Some("h<e:ll>o"))
+      assert(parsePhrase(value, "h<>ello") === Some("h<>ello"))
 
-      assert(parseWhole(value, "<h(el)lo>") === Some("<h(el)lo>"))
-      assert(parseWhole(value, "h(el<>lo)") === Some("h(el<>lo)"))
-      assert(parseWhole(value, "h(<e ll>)o") === Some("h(<e ll>)o"))
-      assert(parseWhole(value, "h((e, ll))o") === Some("h((e, ll))o"))
-      assert(parseWhole(value, "h<<e:ll>>o") === Some("h<<e:ll>>o"))
+      assert(parsePhrase(value, "<h(el)lo>") === Some("<h(el)lo>"))
+      assert(parsePhrase(value, "h(el<>lo)") === Some("h(el<>lo)"))
+      assert(parsePhrase(value, "h(<e ll>)o") === Some("h(<e ll>)o"))
+      assert(parsePhrase(value, "h((e, ll))o") === Some("h((e, ll))o"))
+      assert(parsePhrase(value, "h<<e:ll>>o") === Some("h<<e:ll>>o"))
 
-      assert(parseWhole(value, "{h(el)lo}") === Some("{h(el)lo}"))
-      assert(parseWhole(value, "h(el{}lo)") === Some("h(el{}lo)"))
-      assert(parseWhole(value, "h({e ll})o") === Some("h({e ll})o"))
-      assert(parseWhole(value, "h((e, ll))o") === Some("h((e, ll))o"))
-      assert(parseWhole(value, "h{{e:ll}}o") === Some("h{{e:ll}}o"))
+      assert(parsePhrase(value, "{h(el)lo}") === Some("{h(el)lo}"))
+      assert(parsePhrase(value, "h(el{}lo)") === Some("h(el{}lo)"))
+      assert(parsePhrase(value, "h({e ll})o") === Some("h({e ll})o"))
+      assert(parsePhrase(value, "h((e, ll))o") === Some("h((e, ll))o"))
+      assert(parsePhrase(value, "h{{e:ll}}o") === Some("h{{e:ll}}o"))
 
-      assert(parseWhole(value, "[h(el)lo]") === Some("[h(el)lo]"))
-      assert(parseWhole(value, "h(el[]lo)") === Some("h(el[]lo)"))
-      assert(parseWhole(value, "h([e ll])o") === Some("h([e ll])o"))
-      assert(parseWhole(value, "h((e, ll))o") === Some("h((e, ll))o"))
-      assert(parseWhole(value, "h[[e:ll]]o") === Some("h[[e:ll]]o"))
+      assert(parsePhrase(value, "[h(el)lo]") === Some("[h(el)lo]"))
+      assert(parsePhrase(value, "h(el[]lo)") === Some("h(el[]lo)"))
+      assert(parsePhrase(value, "h([e ll])o") === Some("h([e ll])o"))
+      assert(parsePhrase(value, "h((e, ll))o") === Some("h((e, ll))o"))
+      assert(parsePhrase(value, "h[[e:ll]]o") === Some("h[[e:ll]]o"))
 
-      assert(parseWhole(value, "'hello'") === Some("'hello'"))
-      assert(parseWhole(value, "'hell,o'") === Some("'hell,o'"))
-      assert(parseWhole(value, "'hell)o'") === Some("'hell)o'"))
+      assert(parsePhrase(value, "'hello'") === Some("'hello'"))
+      assert(parsePhrase(value, "'hell,o'") === Some("'hell,o'"))
+      assert(parsePhrase(value, "'hell)o'") === Some("'hell)o'"))
 
-      assert(parseWhole(value, "[h'el'lo]") === Some("[h'el'lo]"))
-      assert(parseWhole(value, "h(el''lo)") === Some("h(el''lo)"))
-      assert(parseWhole(value, "h'e ll'o") === Some("h'e ll'o"))
-      assert(parseWhole(value, "h('e, ll')o") === Some("h('e, ll')o"))
-      assert(parseWhole(value, "h'[e:ll'o") === Some("h'[e:ll'o"))
+      assert(parsePhrase(value, "[h'el'lo]") === Some("[h'el'lo]"))
+      assert(parsePhrase(value, "h(el''lo)") === Some("h(el''lo)"))
+      assert(parsePhrase(value, "h'e ll'o") === Some("h'e ll'o"))
+      assert(parsePhrase(value, "h('e, ll')o") === Some("h('e, ll')o"))
+      assert(parsePhrase(value, "h'[e:ll'o") === Some("h'[e:ll'o"))
 
-      assert(parseWhole(value, "h (ello)") === None)
-      assert(parseWhole(value, "hel)lo") === None)
-      assert(parseWhole(value, "hel(lo") === None)
-      assert(parseWhole(value, "hello,") === None)
+      assert(parsePhrase(value, "h (ello)") === None)
+      assert(parsePhrase(value, "hel)lo") === None)
+      assert(parsePhrase(value, "hel(lo") === None)
+      assert(parsePhrase(value, "hello,") === None)
     }
 
   }
