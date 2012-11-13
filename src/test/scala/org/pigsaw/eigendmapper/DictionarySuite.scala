@@ -34,8 +34,12 @@ class DictionarySuite extends FunSuite {
     new BCatOutputParser {
       assert(parsePhrase(keyValuePair, "key1:value1") ===
         Some(("key1" -> List("value1"))))
+
       assert(parsePhrase(keyValuePair, "key1: value1 ") ===
         Some(("key1" -> List(" value1 "))))
+
+      assert(parsePhrase(keyValuePairs, "key1:value1,key2:value2") ===
+        Some(Map("key1" -> List("value1"), "key2" -> List("value2"))))
     }
   }
 
@@ -43,17 +47,6 @@ class DictionarySuite extends FunSuite {
     new BCatOutputParser {
       assert(parsePhrase(keyValuePair, "key1:value1a,value1b") ===
         Some(("key1" -> List("value1a", "value1b"))))
-    }
-  }
-
-  test("New key-value pairs parser") {
-    new BCatOutputParser {
-      assert(parsePhrase(keyValuePairs, "key1:value1") ===
-        Some(Map("key1" -> List("value1"))))
-
-      println("Onto second test...")
-      assert(parsePhrase(keyValuePairs, "key1:value1,key2:value2") ===
-        Some(Map("key1" -> List("value1"), "key2" -> List("value2"))))
     }
   }
   
