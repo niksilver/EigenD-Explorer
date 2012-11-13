@@ -35,17 +35,25 @@ class BCatOutputParser extends RegexParsers {
   def outputLine = stateVariableName ~ whitespace ~ stateVariableString ^^
     { case name ~ ws ~ string => StateVariableLine(name, string) }
   
-  def dictionary = ws("{") ~> (keyValuePairs ?) <~ ws("}") ^^ {
+  def dictionary = "{" ~> (keyValuePairs ?) <~ "}" ^^ {
     case Some(map) => map
     case None => Map()
   }
   
-  def keyValuePairs = keyValuePair ~ (( ws(",") ~> keyValuePair )*) ^^ {
-    case (key, value) ~ List() => Map(key -> value)
-    case (key, value) ~ keyValues => Map(key -> value) ++ keyValues.toMap
-  } 
+  def trace[T](prefix: String, v: =>T): T = { println(prefix + v); v }
+  def keyValuePairs = keyValuePair ~ (( "," ~> keyValuePair )*) ^^ {
+    case (key, value) ~ List() => trace("One key/value: ", Map(key -> value))
+    case (key, value) ~ keyValues => trace("Several key/values: ", Map(key -> value) ++ keyValues.toMap)
+  }
   
-  def keyValuePair = key ~ ":" ~ multiValue ^^ { case key ~ colon ~ multivalue => (key, multivalue) }
+  // --------------- An alternative parsing for keys and values
+  
+  //def keysAndValues = repsep(key ~ ":" ~ repsep(value, ","), ",") ^^ { trace("New parser part: ", _) }
+  //def keysAndValues = repsep(key | value , ":" | ",") ^^ { trace("New parser part: ", _) }
+  def keysAndValues = ((key | value | ":" | ",")*) ^^ { trace("New parser part: ", _) }
+  // ----------------------------------------------------------
+  
+  def keyValuePair = key ~ ":" ~ multiValue ^^ { case key ~ colon ~ multivalue => trace("K/V pair: ", (key, multivalue)) }
   
   def key = """\w+""".r
   def multiValue = someValues | noValues
@@ -78,10 +86,29 @@ class BCatOutputParser extends RegexParsers {
   def squareBracketValue = "[" ~ bracketedValue ~ "]" ^^ { case op ~ value ~ cl => op + value + cl }
   
   def parsePhrase[T](parser: Parser[T], dictstr: String): Option[T] =
-    parseAll(phrase(parser), dictstr) match {
+    parseAll(parser, dictstr) match {
     case Success(out, _) => Some(out)
     case fail => None
   }
+  
+  type Values = List[String]
+  type Dictionary = Map[String, Values]
+  
+  def keyValueStringsToMap(kvs: List[String]): Dictionary = kvs match {
+    case Nil => Map()
+    case key :: ":" :: remainder => stringsToMapLoadKey(key, List(), Map(), remainder)
+    case x => throw new Exception("Unmatched: " + x)
+  }
+  
+  def stringsToMapLoadKey(key: String, vals: Values, accum: Dictionary, remainder: List[String]): Dictionary =
+    remainder match {
+    case Nil => accum + (key -> vals)
+    case "," :: tail => stringsToMapLoadKey(key, vals, accum, tail)
+    case str :: ":" :: tail => stringsToMapLoadKey(str, List(), accum + (key -> vals), tail)
+    case str :: tail => stringsToMapLoadKey(key, vals :+ str, accum, tail)
+    case x => throw new Exception("Unmatched: " + x)    
+  }
+  
 }
 
 case class StateVariableLine(name: String, string: String)

@@ -21,7 +21,16 @@ class DictionarySuite extends FunSuite {
     }
   }
 
-  test("Key-value pairs (single value)") {
+  test("Some values") {
+    new BCatOutputParser {
+      assert(parsePhrase(someValues, "value1") ===
+        Some(List("value1")))
+      assert(parsePhrase(someValues, "value1a,value1b") ===
+        Some(List("value1a", "value1b")))
+    }
+  }
+
+  test("Key-value pair (single value)") {
     new BCatOutputParser {
       assert(parsePhrase(keyValuePair, "key1:value1") ===
         Some(("key1" -> List("value1"))))
@@ -29,18 +38,80 @@ class DictionarySuite extends FunSuite {
         Some(("key1" -> List(" value1 "))))
     }
   }
+
+  test("Key-value pair (multi-values)") {
+    new BCatOutputParser {
+      assert(parsePhrase(keyValuePair, "key1:value1a,value1b") ===
+        Some(("key1" -> List("value1a", "value1b"))))
+    }
+  }
+
+  test("New key-value pairs parser") {
+    new BCatOutputParser {
+      assert(parsePhrase(keysAndValues, "key1:value1") ===
+        Some(Map("key1" -> List("value1"))))
+
+      println("Onto second test...")
+      assert(parsePhrase(keysAndValues, "key1:value1,key2:value2") ===
+        Some(Map("key1" -> List("value1"), "key2" -> List("value2"))))
+    }
+  }
   
-  ignore("Read dictionary string (single values)") {
+  test("keyValueStringsToMap") {
+    new BCatOutputParser {
+      assert(keyValueStringsToMap(List("key1", ":", "value1")) === Map("key1" -> List("value1")))
+      
+      assert(keyValueStringsToMap(
+          List("key1", ":", "value1", ",", "key2", ":", "value2")
+          ) === Map("key1" -> List("value1"), "key2" -> List("value2")))
+          
+      assert(keyValueStringsToMap(
+          List("key1", ":", "value1a", ",", "value1b", ",", "key2", ":", "value2")
+          ) === Map("key1" -> List("value1a", "value1b"), "key2" -> List("value2")))
+          
+      assert(keyValueStringsToMap(
+          List("key1", ":", "value1", ",", "key2", ":", "value2a", ",", "value2b")
+          ) === Map("key1" -> List("value1"), "key2" -> List("value2a", "value2b")))
+          
+      assert(keyValueStringsToMap(
+          List("key1", ":", ",", "key2", ":", "value2")
+          ) === Map("key1" -> List(), "key2" -> List("value2")))
+          
+      assert(keyValueStringsToMap(
+          List("key1", ":", "value1", ",", "key2", ":")
+          ) === Map("key1" -> List("value1"), "key2" -> List()))
+    }
+  }
+
+  test("Key-value pairs") {
+    new BCatOutputParser {
+      assert(parsePhrase(keyValuePairs, "key1:value1") ===
+        Some(Map("key1" -> List("value1"))))
+
+      assert(parsePhrase(keyValuePairs, "key1:value1,key2:value2") ===
+        Some(Map("key1" -> List("value1"), "key2" -> List("value2"))))
+    }
+  }
+
+  test("Read dictionary string (single values)") {
     new BCatOutputParser {
       assert(parsePhrase(dictionary, "{}") === Some(Map()))
-      assert(parsePhrase(dictionary, "{ }") === Some(Map()))
-      assert(parsePhrase(dictionary, "{ key1:value1 }") === Some(Map("key1" -> List("value1"))))
-      assert(parsePhrase(dictionary, "{ key1:value1, key2 : value2 }") ===
+
+      assert(parsePhrase(dictionary, "{key1:value1}") === Some(Map("key1" -> List("value1"))))
+
+      assert(parsePhrase(dictionary, "{key1: value1 }") === Some(Map("key1" -> List(" value1 "))))
+
+      assert(parsePhrase(dictionary, "{key1:value1,key2:value2}") ===
         Some(Map("key1" -> List("value1"), "key2" -> List("value2"))))
-      assert(parsePhrase(dictionary, "{ aa: bb, cc: dd, ee: ff }") ===
+
+      assert(parsePhrase(dictionary, "{key1:value1,key2: value2 }") ===
+        Some(Map("key1" -> List("value1"), "key2" -> List(" value2 "))))
+
+      assert(parsePhrase(dictionary, "{aa:bb,cc:dd,ee:ff}") ===
         Some(Map("aa" -> List("bb"), "cc" -> List("dd"), "ee" -> List("ff"))))
 
       assert(parsePhrase(dictionary, "something else") === None)
+      assert(parsePhrase(dictionary, "{something else}") === None)
     }
   }
 
@@ -65,17 +136,17 @@ class DictionarySuite extends FunSuite {
 
       assert(parsePhrase(multiValue, "hello,bye(bye)") === Some(List("hello", "bye(bye)")))
       assert(parsePhrase(multiValue, "hello,bye(bye,ee)") === Some(List("hello", "bye(bye,ee)")))
-      
+
       assert(parsePhrase(multiValue, "hello,bye(bye,'e'e)") === Some(List("hello", "bye(bye,'e'e)")))
     }
   }
-  
+
   test("Bare value - general") {
     new BCatOutputParser {
       assert(parsePhrase(bareValue, "hello") === Some("hello"))
       assert(parsePhrase(bareValue, "h-ello") === Some("h-ello"))
       assert(parsePhrase(bareValue, "he llo") === Some("he llo"))
-      
+
       assert(parsePhrase(bareValue, "he(l)lo") === None)
       assert(parsePhrase(bareValue, "he[llo") === None)
       assert(parsePhrase(bareValue, "he]llo") === None)
@@ -88,7 +159,7 @@ class DictionarySuite extends FunSuite {
       assert(parsePhrase(bareValue, "he:llo") === None)
     }
   }
-  
+
   test("Bare value - with spaces") {
     new BCatOutputParser {
       assert(parsePhrase(value, "value1 ") === Some("value1 "))
@@ -156,7 +227,7 @@ class DictionarySuite extends FunSuite {
       assert(parsePhrase(value, "h'[e:ll'o") === Some("h'[e:ll'o"))
 
       assert(parsePhrase(value, "h (ello)") === Some("h (ello)"))
-      
+
       assert(parsePhrase(value, "hel)lo") === None)
       assert(parsePhrase(value, "hel(lo") === None)
       assert(parsePhrase(value, "hello,") === None)
