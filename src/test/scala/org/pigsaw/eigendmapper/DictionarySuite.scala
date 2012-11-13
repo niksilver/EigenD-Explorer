@@ -56,7 +56,7 @@ class DictionarySuite extends FunSuite {
     }
   }
 
-  ignore("Unified value") {
+  ignore("Bare value - general") {
     new BCatOutputParser {
       assert(parsePhrase(bareValue, "hello") === Some("hello"))
       assert(parsePhrase(bareValue, "h-ello") === Some("h-ello"))
@@ -74,12 +74,12 @@ class DictionarySuite extends FunSuite {
     }
   }
   
-  test("Bare value") {
+  test("Bare value - with spaces") {
     new BCatOutputParser {
-      assert(parsePhrase(value, "hello") === Some("hello"))
-
+      assert(parsePhrase(value, "value1 ") === Some("value1 "))
       assert(parsePhrase(value, " value1") === Some(" value1"))
       assert(parsePhrase(value, " value1 ") === Some(" value1 "))
+      assert(parsePhrase(value, " val ue ") === Some(" val ue "))
     }
   }
 
