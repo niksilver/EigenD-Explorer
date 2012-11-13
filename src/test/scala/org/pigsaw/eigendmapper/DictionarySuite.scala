@@ -56,10 +56,18 @@ class DictionarySuite extends FunSuite {
     }
   }
 
-  ignore("Bare value - general") {
+  ignore("Multivalue") {
+    new BCatOutputParser {
+      assert(parsePhrase(multiValue, "hello") === Some(List("hello")))
+    }
+  }
+  
+  test("Bare value - general") {
     new BCatOutputParser {
       assert(parsePhrase(bareValue, "hello") === Some("hello"))
       assert(parsePhrase(bareValue, "h-ello") === Some("h-ello"))
+      assert(parsePhrase(bareValue, "he llo") === Some("he llo"))
+      
       assert(parsePhrase(bareValue, "he(l)lo") === None)
       assert(parsePhrase(bareValue, "he[llo") === None)
       assert(parsePhrase(bareValue, "he]llo") === None)
@@ -68,7 +76,6 @@ class DictionarySuite extends FunSuite {
       assert(parsePhrase(bareValue, "he<llo") === None)
       assert(parsePhrase(bareValue, "he>llo") === None)
       assert(parsePhrase(bareValue, "he'llo") === None)
-      assert(parsePhrase(bareValue, "he llo") === None)
       assert(parsePhrase(bareValue, "he,llo") === None)
       assert(parsePhrase(bareValue, "he:llo") === None)
     }
