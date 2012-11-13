@@ -41,16 +41,16 @@ class BCatOutputParser extends RegexParsers {
   }
   
   def trace[T](prefix: String, v: =>T): T = { println(prefix + v); v }
-  def keyValuePairs = keyValuePair ~ (( "," ~> keyValuePair )*) ^^ {
+  /*def keyValuePairs = keyValuePair ~ (( "," ~> keyValuePair )*) ^^ {
     case (key, value) ~ List() => trace("One key/value: ", Map(key -> value))
     case (key, value) ~ keyValues => trace("Several key/values: ", Map(key -> value) ++ keyValues.toMap)
-  }
+  }*/
   
   // --------------- An alternative parsing for keys and values
   
   //def keysAndValues = repsep(key ~ ":" ~ repsep(value, ","), ",") ^^ { trace("New parser part: ", _) }
   //def keysAndValues = repsep(key | value , ":" | ",") ^^ { trace("New parser part: ", _) }
-  def keysAndValues = ((key | value | ":" | ",")*) ^^ { keyValueStringsToMap(_) }
+  def keyValuePairs = ((value | key | ":" | ",")*) ^^ { keyValueStringsToMap(_) }
   // ----------------------------------------------------------
   
   def keyValuePair = key ~ ":" ~ multiValue ^^ { case key ~ colon ~ multivalue => trace("K/V pair: ", (key, multivalue)) }
@@ -97,7 +97,7 @@ class BCatOutputParser extends RegexParsers {
   def keyValueStringsToMap(kvs: List[String]): Dictionary = kvs match {
     case Nil => Map()
     case key :: ":" :: remainder => stringsToMapLoadKey(key, List(), Map(), remainder)
-    case x => throw new Exception("Unmatched: " + x)
+    case x => stringsToMapLoadKey("Unparsed", x, Map(), List())
   }
   
   def stringsToMapLoadKey(key: String, vals: Values, accum: Dictionary, remainder: List[String]): Dictionary =
@@ -106,7 +106,6 @@ class BCatOutputParser extends RegexParsers {
     case "," :: tail => stringsToMapLoadKey(key, vals, accum, tail)
     case str :: ":" :: tail => stringsToMapLoadKey(str, List(), accum + (key -> vals), tail)
     case str :: tail => stringsToMapLoadKey(key, vals :+ str, accum, tail)
-    case x => throw new Exception("Unmatched: " + x)    
   }
   
 }

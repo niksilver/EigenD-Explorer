@@ -48,11 +48,11 @@ class DictionarySuite extends FunSuite {
 
   test("New key-value pairs parser") {
     new BCatOutputParser {
-      assert(parsePhrase(keysAndValues, "key1:value1") ===
+      assert(parsePhrase(keyValuePairs, "key1:value1") ===
         Some(Map("key1" -> List("value1"))))
 
       println("Onto second test...")
-      assert(parsePhrase(keysAndValues, "key1:value1,key2:value2") ===
+      assert(parsePhrase(keyValuePairs, "key1:value1,key2:value2") ===
         Some(Map("key1" -> List("value1"), "key2" -> List("value2"))))
     }
   }
@@ -111,7 +111,9 @@ class DictionarySuite extends FunSuite {
         Some(Map("aa" -> List("bb"), "cc" -> List("dd"), "ee" -> List("ff"))))
 
       assert(parsePhrase(dictionary, "something else") === None)
-      assert(parsePhrase(dictionary, "{something else}") === None)
+      
+      assert(parsePhrase(dictionary, "{something else}") ===
+        Some(Map("Unparsed" -> List("something else"))))
     }
   }
 
