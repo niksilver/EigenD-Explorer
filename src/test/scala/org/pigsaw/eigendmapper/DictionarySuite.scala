@@ -116,9 +116,9 @@ class DictionarySuite extends FunSuite {
     }
   }
 
-  ignore("Read dictionary string (no values)") {
+  test("Read dictionary string (no values)") {
     new BCatOutputParser {
-      assert(parsePhrase(dictionary, "{ key1: }") === Some(Map("key1" -> List())))
+      assert(parsePhrase(dictionary, "{key1:}") === Some(Map("key1" -> List())))
     }
   }
 
