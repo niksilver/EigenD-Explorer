@@ -56,9 +56,17 @@ class DictionarySuite extends FunSuite {
     }
   }
 
-  ignore("Multivalue") {
+  test("Multivalue") {
     new BCatOutputParser {
       assert(parsePhrase(multiValue, "hello") === Some(List("hello")))
+      assert(parsePhrase(multiValue, "hello,byebye") === Some(List("hello", "byebye")))
+      assert(parsePhrase(multiValue, "hello,bye bye") === Some(List("hello", "bye bye")))
+      assert(parsePhrase(multiValue, " hello ,bye bye") === Some(List(" hello ", "bye bye")))
+
+      assert(parsePhrase(multiValue, "hello,bye(bye)") === Some(List("hello", "bye(bye)")))
+      assert(parsePhrase(multiValue, "hello,bye(bye,ee)") === Some(List("hello", "bye(bye,ee)")))
+      
+      assert(parsePhrase(multiValue, "hello,bye(bye,'e'e)") === Some(List("hello", "bye(bye,'e'e)")))
     }
   }
   

@@ -50,7 +50,7 @@ class BCatOutputParser extends RegexParsers {
   def key = """\w+""".r
   def multiValue = someValues | noValues
   def noValues = "" ^^ { s => List() }
-  def someValues = value ~ (( whitespace ~> value )*) ^^ {
+  def someValues = value ~ (( "," ~> value )*) ^^ {
     case value ~ List() => List(value)
     case value ~ values => value :: values
   } 
