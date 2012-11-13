@@ -50,7 +50,7 @@ class BCatOutputParser extends RegexParsers {
   
   //def keysAndValues = repsep(key ~ ":" ~ repsep(value, ","), ",") ^^ { trace("New parser part: ", _) }
   //def keysAndValues = repsep(key | value , ":" | ",") ^^ { trace("New parser part: ", _) }
-  def keysAndValues = ((key | value | ":" | ",")*) ^^ { trace("New parser part: ", _) }
+  def keysAndValues = ((key | value | ":" | ",")*) ^^ { keyValueStringsToMap(_) }
   // ----------------------------------------------------------
   
   def keyValuePair = key ~ ":" ~ multiValue ^^ { case key ~ colon ~ multivalue => trace("K/V pair: ", (key, multivalue)) }
