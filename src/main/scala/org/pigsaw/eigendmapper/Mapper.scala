@@ -24,11 +24,7 @@ class BCatOutputParser extends RegexParsers {
   
   /** Positive inline whitepace only. */
   def whitespace = """[ \t]+""".r
-  /** Optional inline whitepace only. */
-  def whitespace0 = """[ \t]*""".r
   
-  /** Create a parser for a string with whitespace around it. */
-  def ws(s: String) = whitespace0 ~> s <~ whitespace0
   def stateVariableName = """\d+(\.\d+)*""".r
   def stateVariableString = """.*""".r
   
