@@ -47,7 +47,7 @@ class BCatOutputParser extends RegexParsers {
   def keyValuePairs = ((value | key | ":" | ",")*) ^^ { keyValueStringsToMap(_) }
   
   def key = """\w+""".r
-  def value: Parser[String] = (( bracketValue | quoteValue | bareValue ) +) ^^ { _.mkString }
+  def value = (( bracketValue | quoteValue | bareValue ) +) ^^ { _.mkString }
   
   /** A value that doesn't have surrounding protection characters such as (...) or '...' */
   def bareValue = """[^\]\[()'<>{},:]+""".r
