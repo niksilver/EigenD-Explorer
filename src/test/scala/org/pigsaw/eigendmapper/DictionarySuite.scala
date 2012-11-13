@@ -110,9 +110,9 @@ class DictionarySuite extends FunSuite {
     }
   }
 
-  ignore("Read dictionary string (multi-values)") {
+  test("Read dictionary string (multi-values)") {
     new BCatOutputParser {
-      assert(parsePhrase(dictionary, "{ key1:value1a value2a }") === Some(Map("key1" -> List("value1a", "value2a"))))
+      assert(parsePhrase(dictionary, "{key1:value1a,value2a}") === Some(Map("key1" -> List("value1a", "value2a"))))
     }
   }
 
