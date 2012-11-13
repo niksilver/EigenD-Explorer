@@ -200,4 +200,26 @@ class DictionarySuite extends FunSuite {
 
   }
 
+  test("Some real dictionary outputs") {
+    new TestParser {
+      assert(parsePhrase(dictionary, "{domain:aniso([]),cname:status output,protocols:output}") ===
+        Some(Map(
+          ("domain" -> List("aniso([])")),
+          ("cname" -> List("status output")),
+          ("protocols" -> List("output"))
+        ))
+      )
+
+      assert(parsePhrase(dictionary, "{domain:bint(1,32,1,[]),master:,cname:preroll,protocols:input explicit output}") ===
+        Some(Map(
+          ("domain" -> List("bint(1,32,1,[])")),
+          ("master" -> List()),
+          ("cname" -> List("preroll")),
+          ("protocols" -> List("input explicit output"))
+        ))
+      )
+
+    }
+  }
+
 }
