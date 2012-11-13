@@ -35,10 +35,7 @@ class BCatOutputParser extends RegexParsers {
   def outputLine = stateVariableName ~ whitespace ~ stateVariableString ^^
     { case name ~ ws ~ string => StateVariableLine(name, string) }
   
-  def dictionary = "{" ~> (keyValuePairs ?) <~ "}" ^^ {
-    case Some(map) => map
-    case None => Map()
-  }
+  def dictionary = "{" ~> keyValuePairs <~ "}"
 
   /** Key/value pairs have to be parsed like this because the comma is used
    * to separate key/value pairs and items in a value list, and the default
