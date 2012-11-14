@@ -19,13 +19,20 @@ class BCatParserSuite extends FunSuite {
       }
   }
 
-  test("Read dictionary line") {
+  test("Read bcat line - text") {
     new TestParser {
-      assert(parseOption(outputLine, "1 hello") === Some(StateVariableLine("1", "hello")))
-      assert(parseOption(outputLine, "12 hello") === Some(StateVariableLine("12", "hello")))
-      assert(parseOption(outputLine, "12.34 hello") === Some(StateVariableLine("12.34", "hello")))
-      assert(parseOption(outputLine, "12.34.56 hello") === Some(StateVariableLine("12.34.56", "hello")))
+      assert(parseOption(outputLine, "1 hello") === Some(StateVariableLine("1", StringValue("hello"))))
+      assert(parseOption(outputLine, "12 hello") === Some(StateVariableLine("12", StringValue("hello"))))
+      assert(parseOption(outputLine, "12.34 hello") === Some(StateVariableLine("12.34", StringValue("hello"))))
+      assert(parseOption(outputLine, "12.34.56 hello") === Some(StateVariableLine("12.34.56", StringValue("hello"))))
       assert(parseOption(outputLine, "something else") === None)
+    }
+  }
+
+  test("Read bcat line - dictionary") {
+    new TestParser {
+      assert(parseOption(outputLine, "1 {hello:world}") ===
+        Some(StateVariableLine("1", DictValue(Map("hello" -> List("world"))))))
     }
   }
 

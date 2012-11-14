@@ -26,12 +26,16 @@ class BCatParser extends RegexParsers {
   def whitespace = """[ \t]+""".r
   
   def stateVariableName = """\d+(\.\d+)*""".r
-  def stateVariableString = """.*""".r
+  def stringValue = """.*""".r
+  def wrappedStringValue = stringValue ^^ { StringValue(_) }
   
-  def outputLine = stateVariableName ~ whitespace ~ stateVariableString ^^
-    { case name ~ ws ~ string => StateVariableLine(name, string) }
+  def stateValue = wrappedDictionary | wrappedStringValue
+  
+  def outputLine = stateVariableName ~ whitespace ~ stateValue ^^
+    { case name ~ ws ~ state_value => StateVariableLine(name, state_value) }
   
   def dictionary = "{" ~> keyValuePairs <~ "}"
+  def wrappedDictionary = dictionary ^^ { DictValue(_) }
 
   /** Key/value pairs have to be parsed like this because the comma is used
    * to separate key/value pairs and items in a value list, and the default
@@ -97,4 +101,8 @@ class BCatParser extends RegexParsers {
   
 }
 
-case class StateVariableLine(name: String, string: String)
+sealed abstract class StateValue
+case class StringValue(v: String) extends StateValue
+case class DictValue(v: Map[String, List[String]]) extends StateValue
+
+case class StateVariableLine(name: String, value: StateValue)
