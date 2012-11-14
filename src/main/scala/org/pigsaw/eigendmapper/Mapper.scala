@@ -18,7 +18,7 @@ object Mapper {
   
 }
 
-class BCatOutputParser extends RegexParsers {
+class BCatParser extends RegexParsers {
   override type Elem = Char
   override def skipWhitespace = false
   

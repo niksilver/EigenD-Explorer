@@ -9,9 +9,9 @@ import org.pigsaw.eigendmapper._
 import org.pigsaw.eigendmapper.Mapper._
 
 @RunWith(classOf[JUnitRunner])
-class DictionarySuite extends FunSuite {
+class BCatParserSuite extends FunSuite {
 
-  trait TestParser extends BCatOutputParser {
+  trait TestParser extends BCatParser {
     def parsePhrase[T](parser: Parser[T], dictstr: String): Option[T] =
       parseAll(parser, dictstr) match {
         case Success(out, _) => Some(out)
