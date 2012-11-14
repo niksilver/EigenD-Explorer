@@ -218,6 +218,22 @@ class DictionarySuite extends FunSuite {
           ("protocols" -> List("input explicit output"))
         ))
       )
+      
+      // 
+
+      assert(parsePhrase(dictionary, "{domain:bool([]),master:,cname:midi clock enable," +
+          "protocols:input set explicit output,verbs:v(1,set([],~a,role(None,[instance(~self)])))," +
+          "v(2,set([un],~a,role(None,[instance(~self)]))),v(3,set([toggle],~a,role(None,[instance(~self)])))}") ===
+        Some(Map(
+          ("domain" -> List("bool([])")),
+          ("master" -> List()),
+          ("cname" -> List("midi clock enable")),
+          ("protocols" -> List("input set explicit output")),
+          ("verbs" -> List("v(1,set([],~a,role(None,[instance(~self)])))",
+              "v(2,set([un],~a,role(None,[instance(~self)])))",
+              "v(3,set([toggle],~a,role(None,[instance(~self)])))"))
+        ))
+      )
 
     }
   }
