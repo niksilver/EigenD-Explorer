@@ -32,7 +32,7 @@ class BCatParser extends RegexParsers {
   def stateValue = wrappedDictionary | wrappedStringValue
   
   def outputLine = stateVariableName ~ whitespace ~ stateValue ^^
-    { case name ~ ws ~ state_value => StateVariableLine(name, state_value) }
+    { case name ~ ws ~ state_value => (name -> state_value) }
   
   def dictionary = "{" ~> keyValuePairs <~ "}"
   def wrappedDictionary = dictionary ^^ { DictValue(_) }
@@ -105,4 +105,4 @@ sealed abstract class StateValue
 case class StringValue(v: String) extends StateValue
 case class DictValue(v: Map[String, List[String]]) extends StateValue
 
-case class StateVariableLine(name: String, value: StateValue)
+//case class StateVariableLine(name: String, value: StateValue)
