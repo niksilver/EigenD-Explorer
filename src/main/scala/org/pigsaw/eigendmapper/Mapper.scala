@@ -66,12 +66,27 @@ class BCatOutputParser extends RegexParsers {
   type Values = List[String]
   type Dictionary = Map[String, Values]
   
+  /** Take a series of strings that make up the key value sequence and turn it into
+   * a mapping of keys to (lists of) values. Strings will include the separating
+   * colons and commas. E.g.:
+   * <pre>
+   *     key1 : value1 , key2 : value2a , value2b
+   * </pre>
+   */
   def keyValueStringsToMap(kvs: List[String]): Dictionary = kvs match {
     case Nil => Map()
     case key :: ":" :: remainder => stringsToMapLoadKey(key, List(), Map(), remainder)
     case x => stringsToMapLoadKey("Unparsed", x, Map(), List())
   }
   
+  /**
+   * Helper function for <code>keyValueStringsToMap</code>.
+   * @param key  The key whose values are currently being collected
+   * @param vals  The values collected so far for the given key
+   * @param accum  The accumulated mapping of keys to values, excluding the key
+   *               that's currently being worked on
+   * @param remainder  The key value string (and separator) list that's yet to be processed.
+   */
   def stringsToMapLoadKey(key: String, vals: Values, accum: Dictionary, remainder: List[String]): Dictionary =
     remainder match {
     case Nil => accum + (key -> vals)
