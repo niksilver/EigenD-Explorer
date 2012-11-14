@@ -105,4 +105,3 @@ sealed abstract class StateValue
 case class StringValue(v: String) extends StateValue
 case class DictValue(v: Map[String, List[String]]) extends StateValue
 
-//case class StateVariableLine(name: String, value: StateValue)
