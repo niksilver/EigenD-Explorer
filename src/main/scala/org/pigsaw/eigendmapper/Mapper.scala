@@ -59,8 +59,8 @@ class BCatOutputParser extends RegexParsers {
   def nonEmptyBracketedValue = (( bracketValue | quoteValue | bracketedBareValue ) +) ^^ { _.mkString }
   
   def parentheticalValue = "(" ~ bracketedValue ~ ")" ^^ { case op ~ value ~ cl => op + value + cl }
-  def angleBracketValue = "<" ~ bracketedValue ~ ">" ^^ { case op ~ value ~ cl => op + value + cl }
-  def bracesValue = "{" ~ bracketedValue ~ "}" ^^ { case op ~ value ~ cl => op + value + cl }
+  def angleBracketValue  = "<" ~ bracketedValue ~ ">" ^^ { case op ~ value ~ cl => op + value + cl }
+  def bracesValue        = "{" ~ bracketedValue ~ "}" ^^ { case op ~ value ~ cl => op + value + cl }
   def squareBracketValue = "[" ~ bracketedValue ~ "]" ^^ { case op ~ value ~ cl => op + value + cl }
   
   type Values = List[String]
