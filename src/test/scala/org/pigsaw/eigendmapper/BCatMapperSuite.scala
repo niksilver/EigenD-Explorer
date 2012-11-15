@@ -20,9 +20,19 @@ class BCatMapperSuite extends FunSuite {
   }
 
   test("Read bcat line - text") {
-    new TestParser {
-      // Insert tests here
+    val output =""""log:using portbase 5555
+      |. {cname:metronome,cordinal:1}
+      |1 {cname:outputs,protocols:}
+      |1.1 one point one
+      |1.3.254""".stripMargin
+    val bcat = new BCat("<something>") {
+      override def text: String = output
     }
+    assert(bcat.map === Map(
+        "." -> DictValue(Map("cname" -> List("metronome"), "cordinal" -> List("1"))),
+        "1" -> DictValue(Map("cname" -> List("outputs"), "protocols" -> List())),
+        "1.1" -> StringValue("one point one")
+        ))
   }
 
 }

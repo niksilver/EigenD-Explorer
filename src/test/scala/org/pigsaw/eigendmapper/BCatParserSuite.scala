@@ -36,6 +36,15 @@ class BCatParserSuite extends FunSuite {
     }
   }
 
+  test("State variable name") {
+    new TestParser {
+      assert(parseOption(stateVariableName, "1") === Some("1"))
+      assert(parseOption(stateVariableName, "1.23") === Some("1.23"))
+      assert(parseOption(stateVariableName, "1.23.45") === Some("1.23.45"))
+      assert(parseOption(stateVariableName, ".") === Some("."))
+    }
+  }
+
   test("Key-value pairs (single value)") {
     new TestParser {
       assert(parseOption(keyValuePairs, "key1:value1") ===
