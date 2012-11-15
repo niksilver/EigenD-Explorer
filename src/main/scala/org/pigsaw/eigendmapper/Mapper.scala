@@ -1,6 +1,7 @@
 package org.pigsaw.eigendmapper
 
 import scala.util.parsing.combinator.RegexParsers
+import scala.sys.process.Process
 
 object Mapper {
 
@@ -25,15 +26,17 @@ object Mapper {
  */
 class BCat(agent: String) {
 
-  /** The text output of the bcat command, including all newlines etc.
+  private val eigend_bin = "C:\\Program Files (x86)\\Eigenlabs\\release-2.0.68-stable\\bin"
+
+  /** The text output of the bcat command, line by line.
    */
-  def text: String = "dummy"
+  def text: Stream[String] = Process(eigend_bin + "/bcat.exe " + agent).lines
 
   /** A translation of the bcat text into a map of state variables and values.
    */
-  def map: Map[String, StateValue] = {
+  def state: Map[String, StateValue] = {
     val parser = new BCatParser
-    val lineOptions = (for (line <- text.lines) yield parser.parseLine(line))
+    val lineOptions = for (line <- text) yield parser.parseLine(line)
     lineOptions.flatten.toMap
   }
 }
@@ -124,7 +127,7 @@ class BCatParser extends RegexParsers {
   def parseLine(line: String): Option[(String, StateValue)] =
     parseAll(phrase(outputLine), line) match {
       case Success(out, _) => Some(out)
-      case fail => None
+      case Failure(msg, _) => None
     }
 
 }
