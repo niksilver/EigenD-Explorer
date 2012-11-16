@@ -39,7 +39,32 @@ class BCat(agent: String) {
     val lineOptions = for (line <- text) yield parser.parseLine(line)
     lineOptions.flatten.toMap
   }
+  
+  lazy val connections = {
+    val conns = for {
+      stateVarValue <- state
+      dictValue <- stateVarValue._2.dictValue.seq
+      dict = dictValue.value
+      slaveList = dict.get("slave") getOrElse List()
+      slave <- slaveList
+      slaveStripped = slave.stripPrefix("'").stripSuffix("'")
+      stateVar = stateVarValue._1
+      masterPort = Port(agent + "#" + stateVar, dict.get("cname") map { _.mkString })
+      slavePort = Port(slaveStripped, None)
+    } yield Connection(masterPort, slavePort)
+    conns.toSet
+  }
 }
+
+/**
+ * A port in an agent that might be one end of a connection.
+ * @param id  Agent name, including angle brackets and ordinal, and port
+ *               e.g. "&lt;metronome1&gt#3.6;
+ * @param name  The name of the port if known, e.g. "bar beat output" 
+ */
+case class Port(id: String, name: Option[String])
+
+case class Connection(master: Port, slave: Port)
 
 class BCatParser extends RegexParsers {
   override type Elem = Char
@@ -132,7 +157,18 @@ class BCatParser extends RegexParsers {
 
 }
 
-sealed abstract class StateValue
-case class StringValue(v: String) extends StateValue
-case class DictValue(v: Map[String, List[String]]) extends StateValue
+sealed abstract class StateValue {
+  def stringValue: Option[String]
+  def dictValue: Option[DictValue]
+}
+
+case class StringValue(value: String) extends StateValue {
+  def stringValue = Some(value)
+  def dictValue = None
+}
+
+case class DictValue(value: Map[String, List[String]]) extends StateValue {
+  def stringValue = None
+  def dictValue = Some(this)
+}
 
