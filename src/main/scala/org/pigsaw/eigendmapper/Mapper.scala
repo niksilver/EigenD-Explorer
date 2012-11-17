@@ -13,6 +13,16 @@ object EigenD {
   def exec(command: String): Stream[String] = Process(EigenD.bin + "/" + command).lines
 }
 
+class ConnectionSet {
+  private val conns = Set[Connection]()
+  
+  def size() = conns.size
+}
+
+object ConnectionSet {
+  def apply(): ConnectionSet = new ConnectionSet()
+}
+
 /**
  * A bls command.
  * @param index  The index being listed, including angle brackets.
