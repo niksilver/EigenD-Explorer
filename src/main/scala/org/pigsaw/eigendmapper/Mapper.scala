@@ -28,31 +28,43 @@ class BCat(agent: String) {
 
   private val eigend_bin = "C:\\Program Files (x86)\\Eigenlabs\\release-2.0.68-stable\\bin"
 
-  /** The text output of the bcat command, line by line.
+  /**
+   * The text output of the bcat command, line by line.
    */
   def text: Stream[String] = Process(eigend_bin + "/bcat.exe " + agent).lines
 
-  /** A translation of the bcat text into a map of state variables and values.
+  /**
+   * A translation of the bcat text into a map of state variables and values.
    */
   def state: Map[String, StateValue] = {
     val parser = new BCatParser
     val lineOptions = for (line <- text) yield parser.parseLine(line)
     lineOptions.flatten.toMap
   }
-  
+
   lazy val connections = {
     val conns = for {
       stateVarValue <- state
-      dictValue <- stateVarValue._2.dictValue.seq
-      dict = dictValue.value
-      slaveList = dict.get("slave") getOrElse List()
-      slave <- slaveList
-      slaveStripped = slave.stripPrefix("'").stripSuffix("'")
       stateVar = stateVarValue._1
-      masterPort = Port(agent + "#" + stateVar, dict.get("cname") map { _.mkString })
+      dictValue <- stateVarValue._2.dictValue.seq
+      dict = dictValue.dict
+      agentCName = dict.get("cname") map { _.mkString }
+      (key, valueList) <- dict
+      conn <- key match {
+        case "slave" => slaveConnections(agentCName, stateVar, valueList)
+        case _ => List()
+      }
+    } yield conn
+    conns.toSet
+  }
+
+  def slaveConnections(agentCName: Option[String], stateVar: String, valueList: List[String]): List[Connection] = {
+    for {
+      slave <- valueList
+      slaveStripped = slave.stripPrefix("'").stripSuffix("'")
+      masterPort = Port(agent + "#" + stateVar, agentCName)
       slavePort = Port(slaveStripped, None)
     } yield Connection(masterPort, slavePort)
-    conns.toSet
   }
 }
 
@@ -60,7 +72,7 @@ class BCat(agent: String) {
  * A port in an agent that might be one end of a connection.
  * @param id  Agent name, including angle brackets and ordinal, and port
  *               e.g. "&lt;metronome1&gt#3.6;
- * @param name  The name of the port if known, e.g. "bar beat output" 
+ * @param name  The name of the port if known, e.g. "bar beat output"
  */
 case class Port(id: String, name: Option[String])
 
@@ -167,7 +179,7 @@ case class StringValue(value: String) extends StateValue {
   def dictValue = None
 }
 
-case class DictValue(value: Map[String, List[String]]) extends StateValue {
+case class DictValue(dict: Map[String, List[String]]) extends StateValue {
   def stringValue = None
   def dictValue = Some(this)
 }
