@@ -8,7 +8,7 @@ import org.scalatest.junit.JUnitRunner
 @RunWith(classOf[JUnitRunner])
 class MapperSuite extends FunSuite {
   
-  test("Filter stream - sensible case") {
+  test("Filter bls stream - sensible case") {
     val bls = new BLs("<main>") {
       override def text = Stream("one", "<two>", "<three>", "four")
     }
@@ -20,7 +20,7 @@ class MapperSuite extends FunSuite {
     assert(!(output contains "four"))
   }
 
-  test("Filter stream - empty case 1") {
+  test("Filter bls stream - empty case 1") {
     val bls = new BLs("<main>") {
       override def text = Stream("one", "four")
     }
@@ -28,7 +28,7 @@ class MapperSuite extends FunSuite {
     assert(output.length === 0)
   }
 
-  test("Filter stream - empty case 2") {
+  test("Filter bls stream - empty case 2") {
     val bls = new BLs("<main>") {
       override def text = Stream()
     }
