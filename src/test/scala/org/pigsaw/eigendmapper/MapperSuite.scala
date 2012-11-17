@@ -35,5 +35,10 @@ class MapperSuite extends FunSuite {
     val output = bls.agents
     assert(output.length === 0)
   }
-  
+ 
+  /*test("Real bls output") {
+    val bls = new BLs("<main>")
+    bls.agents.toList map println
+  }*/
+ 
 }
