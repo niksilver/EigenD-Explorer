@@ -7,7 +7,16 @@ object EigenD {
   val bin = "C:\\Program Files (x86)\\Eigenlabs\\release-2.0.68-stable\\bin"
 }
 
-object BLs {
+/**
+ * A bls command.
+ * @param index  The index being listed, including angle brackets.
+ *               E.g. &lt;main&gt;
+ */
+class BLs(index: String) {
+  /**
+   * The text output of the <code>bls <i>index</i></code> command, line by line.
+   */
+  def text: Stream[String] = Process(EigenD.bin + "/bls.exe " + index).lines
 
   /**
    * Get the agents from a stream, which is expected to be the output
@@ -19,8 +28,8 @@ object BLs {
    * </pre>
    * and this will return a list of the agent names, including the angle brackets.
    */
-  def agents(in: Stream[String]): List[String] =
-    (in flatMap ("(<.*>)".r unapplySeq (_)) flatten).toList
+  def agents: List[String] =
+    (text flatMap ("(<.*>)".r unapplySeq (_)) flatten).toList
 
 }
 

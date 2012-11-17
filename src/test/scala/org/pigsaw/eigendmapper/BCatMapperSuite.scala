@@ -5,9 +5,6 @@ import org.scalatest.FunSuite
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
-import org.pigsaw.eigendmapper._
-import org.pigsaw.eigendmapper.BLs._
-
 @RunWith(classOf[JUnitRunner])
 class BCatMapperSuite extends FunSuite {
 
