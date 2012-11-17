@@ -13,10 +13,16 @@ object EigenD {
   def exec(command: String): Stream[String] = Process(EigenD.bin + "/" + command).lines
 }
 
+/**
+ * A set of connections. Adding a connection will also update any existing connections,
+ * including adding port names.
+ */
 class ConnectionSet {
   private val conns = Set[Connection]()
   
   def size() = conns.size
+  
+  def +(conn: Connection) = conns + conn
 }
 
 object ConnectionSet {
