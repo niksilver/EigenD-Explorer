@@ -7,10 +7,6 @@ import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
 class MapperSuite extends FunSuite {
-
-  test("Initial test") {
-    assert(1 + 1 === 2)
-  }
   
   test("Filter stream - sensible case") {
     val bls = new BLs("<main>") {

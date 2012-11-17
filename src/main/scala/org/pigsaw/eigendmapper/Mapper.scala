@@ -5,6 +5,12 @@ import scala.sys.process.Process
 
 object EigenD {  
   val bin = "C:\\Program Files (x86)\\Eigenlabs\\release-2.0.68-stable\\bin"
+    
+  /**
+   * The output of an EigenD command, with newlines omitted.
+   * @param command  The command, e.g. <code>"bls.exe &lt;main&gt;"</code>
+   */
+  def exec(command: String): Stream[String] = Process(EigenD.bin + "/" + command).lines
 }
 
 /**
@@ -16,7 +22,7 @@ class BLs(index: String) {
   /**
    * The text output of the <code>bls <i>index</i></code> command, line by line.
    */
-  def text: Stream[String] = Process(EigenD.bin + "/bls.exe " + index).lines
+  def text: Stream[String] = EigenD.exec("bls.exe " + index)
 
   /**
    * Get the agents from a stream, which is expected to be the output
@@ -42,7 +48,7 @@ class BCat(agent: String) {
   /**
    * The text output of the bcat command, line by line.
    */
-  def text: Stream[String] = Process(EigenD.bin + "/bcat.exe " + agent).lines
+  def text: Stream[String] = EigenD.exec("bcat.exe " + agent)
 
   /**
    * A translation of the bcat text into a map of state variables and values.
