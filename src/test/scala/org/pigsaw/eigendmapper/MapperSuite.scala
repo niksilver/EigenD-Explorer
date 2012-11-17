@@ -19,8 +19,8 @@ class MapperSuite extends FunSuite {
     val output = filterAgents(stream)
     assert(output.length === 2)
     assert(!(output contains "one"))
-    assert(output contains "two")
-    assert(output contains "three")
+    assert(output contains "<two>")
+    assert(output contains "<three>")
     assert(!(output contains "four"))
   }
 

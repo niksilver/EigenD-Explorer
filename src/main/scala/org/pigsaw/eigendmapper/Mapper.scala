@@ -3,6 +3,10 @@ package org.pigsaw.eigendmapper
 import scala.util.parsing.combinator.RegexParsers
 import scala.sys.process.Process
 
+object EigenD {  
+  val bin = "C:\\Program Files (x86)\\Eigenlabs\\release-2.0.68-stable\\bin"
+}
+
 object Mapper {
 
   /**
@@ -13,25 +17,23 @@ object Mapper {
    *   &lt;agent 2 name&gt;
    *   etc
    * </pre>
-   * and this will return a list of the agent names, without the angle brackets.
+   * and this will return a list of the agent names, including the angle brackets.
    */
   def filterAgents(in: Stream[String]): List[String] =
-    (in flatMap ("<(.*)>".r unapplySeq (_)) flatten).toList
+    (in flatMap ("(<.*>)".r unapplySeq (_)) flatten).toList
 
 }
 
 /**
  * A bcat command with the agent name.
- * @param agent  The agent name, including angle brackets
+ * @param agent  The agent name, including angle brackets and ordinal.
  */
 class BCat(agent: String) {
-
-  private val eigend_bin = "C:\\Program Files (x86)\\Eigenlabs\\release-2.0.68-stable\\bin"
 
   /**
    * The text output of the bcat command, line by line.
    */
-  def text: Stream[String] = Process(eigend_bin + "/bcat.exe " + agent).lines
+  def text: Stream[String] = Process(EigenD.bin + "/bcat.exe " + agent).lines
 
   /**
    * A translation of the bcat text into a map of state variables and values.
@@ -41,8 +43,11 @@ class BCat(agent: String) {
     val lineOptions = for (line <- text) yield parser.parseLine(line)
     lineOptions.flatten.toMap
   }
-
-  lazy val connections = {
+ 
+  /** The set of all master/slave connections that involve this agent
+   * on one side or the other.
+   */
+  lazy val connections: Set[Connection] = {
     val conns = for {
       stateVarValue <- state
       stateVar = stateVarValue._1
