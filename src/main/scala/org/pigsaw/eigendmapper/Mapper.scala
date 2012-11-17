@@ -7,7 +7,7 @@ object EigenD {
   val bin = "C:\\Program Files (x86)\\Eigenlabs\\release-2.0.68-stable\\bin"
 }
 
-object Mapper {
+object BLs {
 
   /**
    * Get the agents from a stream, which is expected to be the output
@@ -19,7 +19,7 @@ object Mapper {
    * </pre>
    * and this will return a list of the agent names, including the angle brackets.
    */
-  def filterAgents(in: Stream[String]): List[String] =
+  def agents(in: Stream[String]): List[String] =
     (in flatMap ("(<.*>)".r unapplySeq (_)) flatten).toList
 
 }

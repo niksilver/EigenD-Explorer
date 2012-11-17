@@ -5,7 +5,7 @@ import org.scalatest.FunSuite
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
-import org.pigsaw.eigendmapper.Mapper._
+import org.pigsaw.eigendmapper.BLs._
 
 @RunWith(classOf[JUnitRunner])
 class MapperSuite extends FunSuite {
@@ -16,7 +16,7 @@ class MapperSuite extends FunSuite {
   
   test("Filter stream - sensible case") {
     val stream = Stream("one", "<two>", "<three>", "four")
-    val output = filterAgents(stream)
+    val output = agents(stream)
     assert(output.length === 2)
     assert(!(output contains "one"))
     assert(output contains "<two>")
@@ -26,13 +26,13 @@ class MapperSuite extends FunSuite {
 
   test("Filter stream - empty case 1") {
     val stream = Stream("one", "four")
-    val output = filterAgents(stream)
+    val output = agents(stream)
     assert(output.length === 0)
   }
 
   test("Filter stream - empty case 2") {
     val stream = Stream()
-    val output = filterAgents(stream)
+    val output = agents(stream)
     assert(output.length === 0)
   }
   
