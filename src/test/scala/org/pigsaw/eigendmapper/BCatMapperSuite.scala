@@ -87,6 +87,37 @@ class BCatMapperSuite extends FunSuite {
     assert(connections contains Connection(master_port_2_b, slave_port_2))
     assert(connections contains Connection(master_port_4_8, slave_port_4_8))
   }
+  
+  test("Connections - masters and slaves together") {
+    val output = """"log:using portbase 5555
+      |. {cname:metronome}
+      |2 {domain:bfloat(),cname:tempo input,slave:,master:conn(None,None,'<controller1>#4.1.4',None,ctl),conn(None,None,'<interpreter1>#15.3',None,ctl)}
+      |3.4.2 {domain:bfloat(),cname:click input}
+      |4.8 {domain:bfloat(),cname:beat input,master:conn(None,None,'<interpreter1>#15.253.2',None,ctl),slave:'<drummer1>#2.1'}
+      |1.3.254""".stripMargin
+
+    val bcat = new BCat("<metronome1>") {
+      override def text: Stream[String] = output.lines.toStream
+    }
+
+    val connections = bcat.connections
+    
+    val master_port_2_a = Port("<controller1>#4.1.4", None)
+    val master_port_2_b = Port("<interpreter1>#15.3", None)
+    val slave_port_2 = Port("<metronome1>#2", Some("tempo input"))
+    
+    val master_port_int_4_8 = Port("<interpreter1>#15.253.2", None)
+    val slave_port_int_4_8 = Port("<metronome1>#4.8", Some("beat input"))
+    
+    val master_port_drum_4_8 = Port("<metronome1>#4.8", Some("beat input"))
+    val slave_port_drum_4_8 = Port("<drummer1>#2.1", None)
+
+    assert(connections.size === 4)
+    assert(connections contains Connection(master_port_2_a, slave_port_2))
+    assert(connections contains Connection(master_port_2_b, slave_port_2))
+    assert(connections contains Connection(master_port_int_4_8, slave_port_int_4_8))
+    assert(connections contains Connection(master_port_drum_4_8, slave_port_drum_4_8))
+  }
 
   /*test("Real bcat output") {
     val bcat = new BCat("<metronome1>")
