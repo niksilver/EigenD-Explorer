@@ -43,16 +43,16 @@ class BCatMapperSuite extends FunSuite {
       |3.5 {cname:twoer,slave:'<rig2>#4','<clarinet7>#8.8.8',protocols:output}
       |1.3.254""".stripMargin
 
-    val bcat = new BCat("<clicker>") {
+    val bcat = new BCat("<clicker1>") {
       override def text: Stream[String] = output.lines.toStream
     }
 
     val connections = bcat.connections
     
-    val master_port_1_2 = Port("<clicker>#1.2", Some("oner"))
+    val master_port_1_2 = Port("<clicker1>#1.2", Some("oner"))
     val slave_port_1_2 = Port("<drummer1>#2.1", None)
     
-    val master_port_3_5 = Port("<clicker>#3.5", Some("twoer"))
+    val master_port_3_5 = Port("<clicker1>#3.5", Some("twoer"))
     val slave_port_3_5_a = Port("<rig2>#4", None)
     val slave_port_3_5_b = Port("<clarinet7>#8.8.8", None)
     assert(connections.size === 3)
