@@ -48,22 +48,32 @@ class BCat(agent: String) {
       stateVar = stateVarValue._1
       dictValue <- stateVarValue._2.dictValue.seq
       dict = dictValue.dict
-      agentCName = dict.get("cname") map { _.mkString }
+      portCName = dict.get("cname") map { _.mkString }
       (key, valueList) <- dict
       conn <- key match {
-        case "slave" => slaveConnections(agentCName, stateVar, valueList)
+        case "slave"  =>  slaveConnections(portCName, stateVar, valueList)
+        case "master" => masterConnections(portCName, stateVar, valueList)
         case _ => List()
       }
     } yield conn
     conns.toSet
   }
 
-  def slaveConnections(agentCName: Option[String], stateVar: String, valueList: List[String]): List[Connection] = {
+  def slaveConnections(portCName: Option[String], stateVar: String, valueList: List[String]): List[Connection] = {
     for {
       slave <- valueList
       slaveStripped = slave.stripPrefix("'").stripSuffix("'")
-      masterPort = Port(agent + "#" + stateVar, agentCName)
+      masterPort = Port(agent + "#" + stateVar, portCName)
       slavePort = Port(slaveStripped, None)
+    } yield Connection(masterPort, slavePort)
+  }
+
+  def masterConnections(portCName: Option[String], stateVar: String, valueList: List[String]): List[Connection] = {
+    for {
+      masterConn <- valueList
+      master = masterConn.split(',')(2).stripPrefix("'").stripSuffix("'")
+      masterPort = Port(master, None)
+      slavePort = Port(agent + "#" + stateVar, portCName)
     } yield Connection(masterPort, slavePort)
   }
 }
