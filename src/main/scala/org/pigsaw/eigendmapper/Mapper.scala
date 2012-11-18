@@ -30,7 +30,9 @@ object Grapher {
   def unified(conns: Set[Connection]): Set[Connection] = {
     // Get the name for a given port id
     def name(id: String): Option[String] = {
-      conns flatMap { c => List(c.master, c.slave) } find { p => p.id == id && !p.name.isEmpty } match {
+      val ports = conns flatMap { c => List(c.master, c.slave) }
+      val namingPort = ports find { p => p.id == id && !p.name.isEmpty }
+      namingPort match {
         case Some(p) => p.name
         case None => None
         }
