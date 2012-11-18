@@ -14,15 +14,35 @@ object EigenD {
   def exec(command: String): Stream[String] = Process(EigenD.bin + "/" + command).lines
 }
 
-/**
- * A set of connections. Adding a connection will also update any existing connections,
- * including adding port names.
- */
-class ConnectionSet extends HashSet[Connection] {
+trait ConnectionAddition extends Set[Connection] {
+  
 }
 
-object ConnectionSet {
-  def apply(): ConnectionSet = new ConnectionSet()
+/**
+ * Graph utils.
+ */
+object Grapher {
+  /**
+   * Create a unified set of connections. This means if any connections
+   * carry a port name, then those names are applied wherever those
+   * ports are used.
+   */
+  def unified(conns: Set[Connection]): Set[Connection] = {
+    // Get the name for a given port id
+    def name(id: String): Option[String] = {
+      conns find { c => c.slave.id == id && !c.slave.name.isEmpty } match {
+        case Some(c) => c.slave.name
+        case None => None
+        }
+      }
+    // Produce an updated version of the port, with names filled in if available.
+    def updated(port: Port): Port = {
+      if (!port.name.isEmpty) port
+      else Port(port.id, name(port.id))
+    }
+    
+    conns map (c => Connection(updated(c.master), updated(c.slave)))
+  }
 }
 
 /**
@@ -116,9 +136,9 @@ class BCat(agent: String) {
  *               e.g. "&lt;metronome1&gt#3.6;
  * @param name  The name of the port if known, e.g. "bar beat output"
  */
-case class Port(id: String, name: Option[String])
+case class Port(val id: String, val name: Option[String])
 
-case class Connection(master: Port, slave: Port)
+case class Connection(val master: Port, val slave: Port)
 
 class BCatParser extends RegexParsers {
   override type Elem = Char
