@@ -32,13 +32,10 @@ object Grapher {
     val namingPorts = ports filter ( !_.name.isEmpty )
     val names: Map[String, String] = namingPorts map { p => (p.id -> p.name.get) } toMap
     
-    // Get the name for a given port id
-    def name(id: String): Option[String] = names.get(id)
-    
     // Produce an updated version of the port, with names filled in if available.
     def updated(port: Port): Port = {
       if (!port.name.isEmpty) port
-      else Port(port.id, name(port.id))
+      else Port(port.id, names.get(port.id))
     }
     
     conns map (c => Connection(updated(c.master), updated(c.slave)))
