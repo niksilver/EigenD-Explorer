@@ -80,4 +80,28 @@ class GrapherSuite extends FunSuite with ShouldMatchers {
     connSet2 should contain (conn_aubn)
   }
 
+  test("Unify - Add a master name, expect a master updated") {
+    val port_a_unnamed = Port("<a>#1.1", None)
+    val port_b_named = Port("<b>#1.2", Some("b"))
+    val port_b_unnamed = Port("<b>#1.2", None)
+    val port_c_unnamed = Port("<c>#1.3", None)
+
+    val conn_buau = Connection(port_b_unnamed, port_a_unnamed)
+
+    val connSet1 = Set(conn_buau)
+
+    connSet1.size should equal (1)
+    connSet1 should contain (conn_buau)
+
+    val conn_bncu = Connection(port_b_named, port_c_unnamed) // We'll add this
+    val conn_bnau = Connection(port_b_named, port_a_unnamed) // This should get created
+    
+    val connSet2 = Grapher.unified(connSet1 + conn_bncu)
+
+    connSet2.size should equal (2)
+    connSet2 should contain (conn_bncu)
+    connSet2 should not contain (conn_buau)
+    connSet2 should contain (conn_bnau)
+  }
+
 }
