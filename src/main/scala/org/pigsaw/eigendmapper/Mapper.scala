@@ -28,15 +28,13 @@ object Grapher {
    * ports are used.
    */
   def unified(conns: Set[Connection]): Set[Connection] = {
+    val ports = conns flatMap { c => List(c.master, c.slave) }
+    val namingPorts = ports filter ( !_.name.isEmpty )
+    val names: Map[String, String] = namingPorts map { p => (p.id -> p.name.get) } toMap
+    
     // Get the name for a given port id
-    def name(id: String): Option[String] = {
-      val ports = conns flatMap { c => List(c.master, c.slave) }
-      val namingPort = ports find { p => p.id == id && !p.name.isEmpty }
-      namingPort match {
-        case Some(p) => p.name
-        case None => None
-        }
-      }
+    def name(id: String): Option[String] = names.get(id)
+    
     // Produce an updated version of the port, with names filled in if available.
     def updated(port: Port): Port = {
       if (!port.name.isEmpty) port
