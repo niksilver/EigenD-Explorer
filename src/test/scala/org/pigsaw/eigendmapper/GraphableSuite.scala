@@ -162,5 +162,10 @@ class GraphableSuite extends FunSuite with ShouldMatchers {
   test("Connection XML id") {
     Connection(Port("<alpha>#4.5", None), Port("<b>#1.1", None)).xmlId should equal ("_alpha__4.5_b__1.1")
   }
+  
+  test("Port node XML") {
+    Port("<alpha>#4.5", None).nodeXML should equal ("""<node id="_alpha__4.5" label="<alpha>#4.5" />""")
+    Port("<alpha>#4.5", Some("light out")).nodeXML should equal ("""<node id="_alpha__4.5" label="light out" />""")
+  }
 
 }

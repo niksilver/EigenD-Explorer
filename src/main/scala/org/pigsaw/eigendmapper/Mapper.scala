@@ -88,11 +88,16 @@ object Graphable {
     lazy val xmlId: String = "[^A-Za-z0-9.]".r replaceAllIn (s, "_")
   }
   
-  class GPort(p: org.pigsaw.eigendmapper.Port) {
+  class GPort(p: Port) {
     lazy val xmlId: String = p.id.xmlId
+    
+    lazy val nodeXML: String = {
+      val label = p.name getOrElse p.id
+      "<node id=\"" + p.xmlId + "\" label=\"" + label + "\" />"
+    }
   }
   
-  class GConnection(c: org.pigsaw.eigendmapper.Connection) {
+  class GConnection(c: Connection) {
     lazy val xmlId: String = c.master.xmlId + c.slave.xmlId
   }
 }
