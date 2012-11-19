@@ -7,6 +7,27 @@ import scala.collection.immutable.HashSet
 object Mapper {
   def main(args: Array[String]) {
     import Graphable._
+    
+    val filename = "C:\\cygwin\\home\\Nik\\graph\\output.gexf"
+    val out = new java.io.FileWriter(filename)
+    out write Graphable.gexfHeader
+    
+    val conns = unifiedConnections
+
+    out write "<nodes>\n"
+    conns.ports foreach { out write _.nodeXML + "\n" }
+    out write "</nodes>\n"
+
+    out write "<edges>\n"
+    conns foreach { out write _.edgeXML + "\n" }
+    out write "</edges>\n"
+    
+    out write Graphable.gexfFooter
+    out.close
+  }
+
+  def unifiedConnections: Set[Connection] = {
+    import Graphable._
 
     val bls = new BLs("<main>")
     val agents = bls.agents
@@ -17,6 +38,7 @@ object Mapper {
     } yield { println("Agent " + agent + ", connection " + conn); conn }
     val unifiedConnections = allConnections.normalised.unified
     unifiedConnections foreach { c => println("Unified: " + c) }
+    unifiedConnections
   }
 }
 
@@ -34,6 +56,8 @@ object EigenD {
  * Graph utils.
  */
 class Graphable(val conns: Set[Connection]) {
+  import Graphable._
+  
   /**
    * Create a unified set of connections. This means if any connections
    * carry a port name, then those names are applied wherever those
@@ -41,7 +65,7 @@ class Graphable(val conns: Set[Connection]) {
    */
   def unified: Set[Connection] = {
     val ports = conns flatMap { c => List(c.master, c.slave) }
-    val namingPorts = ports filter ( _.name.nonEmpty )
+    val namingPorts = ports filter (_.name.nonEmpty)
     val names: Map[String, String] = namingPorts map { p => (p.id -> p.name.get) } toMap
 
     // Produce an updated version of the port, with names filled in if available.
@@ -67,6 +91,19 @@ class Graphable(val conns: Set[Connection]) {
    */
   def agents: Set[String] =
     conns flatMap { _.agents }
+  
+  /**
+   * Get all the ports named in the connections.
+   */
+  def ports: Set[Port] =
+    conns flatMap { c => List(c.master, c.slave) }
+  
+  /**
+   * Get a map from each agent (a string including angle brackets)
+   * to all its ports.
+   */
+  def agentPortConnections: Set[(String, Port)] =
+    conns.ports map { p => ((p.agent getOrElse "UNKNOWN") -> p) }
 }
 
 object Graphable {
@@ -75,33 +112,35 @@ object Graphable {
   implicit def port2GraphableString(s: String) = new GString(s)
   implicit def port2GraphablePort(p: Port) = new GPort(p)
   implicit def port2GraphableConnection(c: Connection) = new GConnection(c)
-  
+
   val gexfHeader =
     """<?xml version="1.0" encoding="UTF-8"?>
       |    <gexf xmlns="http://www.gexf.net/1.2draft" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.gexf.net/1.2draft http://www.gexf.net/1.2draft/gexf.xsd" version="1.2">
-      |        <graph mode="static" defaultedgetype="directed">""".stripMargin
+      |        <graph mode="static" defaultedgetype="directed">""".stripMargin + "\n"
   val gexfFooter =
     """    </graph>
       |</gexf>""".stripMargin
-  
+
   class GString(s: String) {
     lazy val xmlId: String = "[^A-Za-z0-9.]".r replaceAllIn (s, "_")
+    lazy val xmlEscaped: String =
+      s.replaceAllLiterally("<", "&lt;").replaceAllLiterally(">", "&gt;").replaceAllLiterally("'", "&apos;")
   }
-  
+
   class GPort(p: Port) {
     lazy val xmlId: String = p.id.xmlId
-    
+
     lazy val nodeXML: String = {
       val label = p.name getOrElse p.id
-      """<node id="%s" label="%s" />""".format(p.xmlId, label)
+      """<node id="%s" label="%s" />""".format(p.xmlId, label.xmlEscaped)
     }
   }
-  
+
   class GConnection(c: Connection) {
     lazy val xmlId: String = c.master.xmlId + c.slave.xmlId
-    
+
     lazy val edgeXML: String = {
-      val template = """<edge id="%s" source="%s" target="%s" weight="5" />"""
+      val template = """<edge id="%s" source="%s" target="%s" weight="1" />"""
       template.format(c.xmlId, c.master.xmlId, c.slave.xmlId)
     }
   }
@@ -211,7 +250,7 @@ case class Port(val id: String, val name: Option[String]) {
   /**
    * Get the agent name embedded in the port id, including the angle brackets.
    */
-  def agent: Option[String] = "(<.*>)".r findFirstIn(id)
+  def agent: Option[String] = "(<.*>)".r findFirstIn (id)
 
 }
 
@@ -227,7 +266,7 @@ case class Connection(val master: Port, val slave: Port) {
     if ((normMaster eq master) && (normSlave eq slave)) this
     else Connection(normMaster, normSlave)
   }
-  
+
   /**
    * Get the agent names embedded in the master and slave port ids.
    */

@@ -155,6 +155,10 @@ class GraphableSuite extends FunSuite with ShouldMatchers {
     "<alpha>".xmlId should equal ("_alpha_")
   }
   
+  test("String XML escaped") {
+    "<alph'a>".xmlEscaped should equal ("&lt;alph&apos;a&gt;")
+  }
+  
   test("Port XML id") {
     Port("<alpha>#4.5", None).xmlId should equal ("_alpha__4.5")
   }
@@ -164,13 +168,74 @@ class GraphableSuite extends FunSuite with ShouldMatchers {
   }
   
   test("Port node XML") {
-    Port("<alpha>#4.5", None).nodeXML should equal ("""<node id="_alpha__4.5" label="<alpha>#4.5" />""")
+    Port("<alpha>#4.5", None).nodeXML should equal ("""<node id="_alpha__4.5" label="&lt;alpha&gt;#4.5" />""")
     Port("<alpha>#4.5", Some("light out")).nodeXML should equal ("""<node id="_alpha__4.5" label="light out" />""")
   }
   
   test("Connection edge XML") {
     val conn = Connection(Port("<alpha>#4.5", None), Port("<b>#1.1", None))
-    conn.edgeXML should equal ("""<edge id="_alpha__4.5_b__1.1" source="_alpha__4.5" target="_b__1.1" weight="5" />""")
+    conn.edgeXML should equal ("""<edge id="_alpha__4.5_b__1.1" source="_alpha__4.5" target="_b__1.1" weight="1" />""")
+  }
+  
+  test("Ports") {
+    val a = Port("<a>#1.1", None)
+    val b = Port("<b>#1.2", Some("b12"))
+    val c = Port("<c>#1.3", None)
+    val d = Port("d#1.4", None) // No parseable agent name
+
+    val conns = Set(
+        Connection(a, b),
+        Connection(b, c),
+        Connection(c, d)
+    )
+    
+    val ports = conns.ports
+    
+    ports.size should equal (4)
+    ports should contain (a)
+    ports should contain (b)
+    ports should contain (c)
+    ports should contain (d)
+  }
+  
+  test("Agent-port connections") {
+    val a1 = Port("<a>#1.1", None)
+    val a2 = Port("<a>#1.2", Some("b12"))
+    val b1 = Port("<b>#1.1", None)
+    val b2 = Port("<b>#1.2", None)
+
+    val conns = Set(
+        Connection(a1, b1),
+        Connection(a2, b2)
+    )
+    
+    val conns2 = conns.agentPortConnections
+    
+    conns2.size should equal (4)
+    conns2 should contain ("<a>" -> a1)
+    conns2 should contain ("<a>" -> a2)
+    conns2 should contain ("<b>" -> b1)
+    conns2 should contain ("<b>" -> b2)
+  }
+  
+  test("Agent-port connections - with unparseable agent name") {
+    val a1 = Port("<a>#1.1", None)
+    val a2 = Port("a#1.2", Some("b12"))
+    val b1 = Port("b#1.1", None)
+    val b2 = Port("b#1.2", None)
+
+    val conns = Set(
+        Connection(a1, b1),
+        Connection(a2, b2)
+    )
+    
+    val conns2 = conns.agentPortConnections
+    
+    conns2.size should equal (4)
+    conns2 should contain ("<a>" -> a1)
+    conns2 should contain ("UNKNOWN" -> a2)
+    conns2 should contain ("UNKNOWN" -> b1)
+    conns2 should contain ("UNKNOWN" -> b2)
   }
 
 }
