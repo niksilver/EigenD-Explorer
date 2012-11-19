@@ -5,8 +5,6 @@ import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.matchers.ShouldMatchers
 
-import org.pigsaw.eigendmapper.Graphable._
-
 @RunWith(classOf[JUnitRunner])
 class PortSuite extends FunSuite with ShouldMatchers {
 
@@ -19,5 +17,13 @@ class PortSuite extends FunSuite with ShouldMatchers {
     val b = Port("<main:b>#1.2", None).normalised
     
     assert(b.normalised eq b)
+  }
+  
+  test("Agent - Port has agent name") {
+    Port("<alpha>#1.1", None).agent should equal (Some("<alpha>"))
+  }
+  
+  test("Agent - Port doesn't have agent name") {
+    Port("alpha#1.1", None).agent should equal (None)
   }
 }

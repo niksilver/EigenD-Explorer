@@ -7,7 +7,7 @@ import scala.collection.immutable.HashSet
 object Mapper {
   def main(args: Array[String]) {
     import Graphable._
-    
+
     val bls = new BLs("<main>")
     val agents = bls.agents
     val allConnections = for {
@@ -20,9 +20,9 @@ object Mapper {
   }
 }
 
-object EigenD {  
+object EigenD {
   val bin = "C:\\Program Files (x86)\\Eigenlabs\\release-2.0.68-stable\\bin"
-    
+
   /**
    * The output of an EigenD command, with newlines omitted.
    * @param command  The command, e.g. <code>"bls.exe &lt;main&gt;"</code>
@@ -41,31 +41,32 @@ class Graphable(val conns: Set[Connection]) {
    */
   def unified: Set[Connection] = {
     val ports = conns flatMap { c => List(c.master, c.slave) }
-    val namingPorts = ports filter ( !_.name.isEmpty )
+    val namingPorts = ports filter (!_.name.isEmpty)
     val names: Map[String, String] = namingPorts map { p => (p.id -> p.name.get) } toMap
-    
+
     // Produce an updated version of the port, with names filled in if available.
     def updated(port: Port): Port = {
       if (!port.name.isEmpty) port
       else Port(port.id, names.get(port.id))
     }
-    
+
     conns map (c => Connection(updated(c.master), updated(c.slave)))
   }
-  
+
   /**
    * Make a normalised version of this set of connections, in which
    * every port of the form ID &lt;main:agentnameN&gt; is changed to
    * its shorter form of &lt;agentnameN&gt;.
    */
   def normalised: Set[Connection] =
-    conns map { c=> Connection(c.master.normalised, c.slave.normalised) }
-  
+    conns map { _.normalised }
+
   /**
    * Get all the agent names mentioned in the set of connections,
    * including the angle brackets.
    */
-  def agents: Set[String] = Set()
+  def agents: Set[String] =
+    conns flatMap { _.agents }
 }
 
 object Graphable {
@@ -118,8 +119,9 @@ class BCat(agent: String) {
     val lineOptions = for (line <- text) yield parser.parseLine(line)
     lineOptions.flatten.toMap
   }
- 
-  /** The set of all master/slave connections that involve this agent
+
+  /**
+   * The set of all master/slave connections that involve this agent
    * on one side or the other.
    */
   lazy val connections: Set[Connection] = {
@@ -131,7 +133,7 @@ class BCat(agent: String) {
       portCName = dict.get("cname") map { _.mkString }
       (key, valueList) <- dict
       conn <- key match {
-        case "slave"  =>  slaveConnections(portCName, stateVar, valueList)
+        case "slave" => slaveConnections(portCName, stateVar, valueList)
         case "master" => masterConnections(portCName, stateVar, valueList)
         case _ => List()
       }
@@ -173,6 +175,11 @@ case class Port(val id: String, val name: Option[String]) {
     if (id.startsWith("<main:")) Port("<" + id.drop(6), name)
     else this
 
+  /**
+   * Get the agent name embedded in the port id, including the angle brackets.
+   */
+  def agent: Option[String] = "(<.*>)".r findFirstIn(id)
+
 }
 
 case class Connection(val master: Port, val slave: Port) {
@@ -187,6 +194,11 @@ case class Connection(val master: Port, val slave: Port) {
     if ((normMaster eq master) && (normSlave eq slave)) this
     else Connection(normMaster, normSlave)
   }
+  
+  /**
+   * Get the agent names embedded in the master and slave port ids.
+   */
+  def agents: Set[String] = Set() ++ master.agent.toSeq ++ slave.agent.toSeq
 }
 
 class BCatParser extends RegexParsers {

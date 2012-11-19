@@ -131,22 +131,24 @@ class GrapherSuite extends FunSuite with ShouldMatchers {
     
   }
   
-  ignore("Agents") {
+  test("Agents") {
     val a = Port("<a>#1.1", None)
     val b = Port("<b>#1.2", Some("b12"))
     val c = Port("<c>#1.3", None)
+    val d = Port("d#1.4", None) // No parseable agent name
 
     val conns = Set(
         Connection(a, b),
-        Connection(b, c)
+        Connection(b, c),
+        Connection(c, d)
     )
     
     val agents = conns.agents
     
     agents.size should equal (3)
-    agents should contain ("a")
-    agents should contain ("b")
-    agents should contain ("c")
+    agents should contain ("<a>")
+    agents should contain ("<b>")
+    agents should contain ("<c>")
   }
 
 }
