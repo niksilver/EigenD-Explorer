@@ -4,6 +4,22 @@ import scala.util.parsing.combinator.RegexParsers
 import scala.sys.process.Process
 import scala.collection.immutable.HashSet
 
+object Mapper {
+  def main(args: Array[String]) {
+    import Graphable._
+    
+    val bls = new BLs("<main>")
+    val agents = bls.agents
+    val allConnections = for {
+      agent <- agents
+      bcat = new BCat(agent)
+      conn <- bcat.connections
+    } yield { println("Agent " + agent + ", connection " + conn); conn }
+    val unifiedConnections = allConnections.unified
+    unifiedConnections foreach { c => println("Unified: " + c) }
+  }
+}
+
 object EigenD {  
   val bin = "C:\\Program Files (x86)\\Eigenlabs\\release-2.0.68-stable\\bin"
     
@@ -14,20 +30,16 @@ object EigenD {
   def exec(command: String): Stream[String] = Process(EigenD.bin + "/" + command).lines
 }
 
-trait ConnectionAddition extends Set[Connection] {
-  
-}
-
 /**
  * Graph utils.
  */
-object Grapher {
+class Graphable(val conns: Set[Connection]) {
   /**
    * Create a unified set of connections. This means if any connections
    * carry a port name, then those names are applied wherever those
    * ports are used.
    */
-  def unified(conns: Set[Connection]): Set[Connection] = {
+  def unified: Set[Connection] = {
     val ports = conns flatMap { c => List(c.master, c.slave) }
     val namingPorts = ports filter ( !_.name.isEmpty )
     val names: Map[String, String] = namingPorts map { p => (p.id -> p.name.get) } toMap
@@ -40,6 +52,11 @@ object Grapher {
     
     conns map (c => Connection(updated(c.master), updated(c.slave)))
   }
+}
+
+object Graphable {
+  implicit def setConnection2Graphable(conns: Set[Connection]): Graphable = new Graphable(conns)
+  implicit def listConnection2Graphable(conns: List[Connection]): Graphable = new Graphable(conns.toSet)
 }
 
 /**
