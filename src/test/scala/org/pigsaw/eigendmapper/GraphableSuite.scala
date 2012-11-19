@@ -12,7 +12,7 @@ class GrapherSuite extends FunSuite with ShouldMatchers {
 
   test("Unify - Add a slave name, expect a slave updated") {
     val port_a_unnamed = Port("<a>#1.1", None)
-    val port_b_named = Port("<b>#1.2", Some("b"))
+    val port_b_named = Port("<b>#1.2", Some("b12"))
     val port_b_unnamed = Port("<b>#1.2", None)
     val port_c_unnamed = Port("<c>#1.3", None)
 
@@ -36,7 +36,7 @@ class GrapherSuite extends FunSuite with ShouldMatchers {
 
   test("Unify - Add a slave name, expect a master updated") {
     val port_a_unnamed = Port("<a>#1.1", None)
-    val port_b_named = Port("<b>#1.2", Some("b"))
+    val port_b_named = Port("<b>#1.2", Some("b12"))
     val port_b_unnamed = Port("<b>#1.2", None)
     val port_c_unnamed = Port("<c>#1.3", None)
 
@@ -60,7 +60,7 @@ class GrapherSuite extends FunSuite with ShouldMatchers {
 
   test("Unify - Add a master name, expect a slave updated") {
     val port_a_unnamed = Port("<a>#1.1", None)
-    val port_b_named = Port("<b>#1.2", Some("b"))
+    val port_b_named = Port("<b>#1.2", Some("b12"))
     val port_b_unnamed = Port("<b>#1.2", None)
     val port_c_unnamed = Port("<c>#1.3", None)
 
@@ -84,7 +84,7 @@ class GrapherSuite extends FunSuite with ShouldMatchers {
 
   test("Unify - Add a master name, expect a master updated") {
     val port_a_unnamed = Port("<a>#1.1", None)
-    val port_b_named = Port("<b>#1.2", Some("b"))
+    val port_b_named = Port("<b>#1.2", Some("b12"))
     val port_b_unnamed = Port("<b>#1.2", None)
     val port_c_unnamed = Port("<c>#1.3", None)
 
@@ -109,8 +109,8 @@ class GrapherSuite extends FunSuite with ShouldMatchers {
   test("Normalise port IDs (cut the 'main:' in <main:agentname3>") {
     val a_short = Port("<a>#1.1", None)
     val a_long = Port("<main:a>#1.1", None)
-    val b_short = Port("<b>#1.2", Some("b"))
-    val b_long = Port("<main:b>#1.2", Some("b"))
+    val b_short = Port("<b>#1.2", Some("b12"))
+    val b_long = Port("<main:b>#1.2", Some("b12"))
     val c_short = Port("<c>#1.3", None)
     val c_long = Port("<main:c>#1.3", None)
     
@@ -129,6 +129,24 @@ class GrapherSuite extends FunSuite with ShouldMatchers {
     conns2 should contain (Connection(a_short, b_short))
     conns2 should contain (Connection(b_short, c_short))
     
+  }
+  
+  ignore("Agents") {
+    val a = Port("<a>#1.1", None)
+    val b = Port("<b>#1.2", Some("b12"))
+    val c = Port("<c>#1.3", None)
+
+    val conns = Set(
+        Connection(a, b),
+        Connection(b, c)
+    )
+    
+    val agents = conns.agents
+    
+    agents.size should equal (3)
+    agents should contain ("a")
+    agents should contain ("b")
+    agents should contain ("c")
   }
 
 }

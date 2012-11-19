@@ -15,7 +15,7 @@ object Mapper {
       bcat = new BCat(agent)
       conn <- bcat.connections
     } yield { println("Agent " + agent + ", connection " + conn); conn }
-    val unifiedConnections = allConnections.unified
+    val unifiedConnections = allConnections.normalised.unified
     unifiedConnections foreach { c => println("Unified: " + c) }
   }
 }
@@ -60,6 +60,12 @@ class Graphable(val conns: Set[Connection]) {
    */
   def normalised: Set[Connection] =
     conns map { c=> Connection(c.master.normalised, c.slave.normalised) }
+  
+  /**
+   * Get all the agent names mentioned in the set of connections,
+   * including the angle brackets.
+   */
+  def agents: Set[String] = Set()
 }
 
 object Graphable {
@@ -163,13 +169,25 @@ case class Port(val id: String, val name: Option[String]) {
    * Generate a normalised version of this port. I.e. If the id is of
    * the form &lt;<main:agentnameN&gt; then it's converted to &lt;agentnameN&gt;.
    */
-  def normalised: Port = {
+  def normalised: Port =
     if (id.startsWith("<main:")) Port("<" + id.drop(6), name)
     else this
-  }
+
 }
 
-case class Connection(val master: Port, val slave: Port)
+case class Connection(val master: Port, val slave: Port) {
+  /**
+   * Generate a normalised version of this connection. I.e. If the id of either
+   * the master or the slave is of the form &lt;<main:agentnameN&gt; then it's
+   * converted to &lt;agentnameN&gt;.
+   */
+  def normalised: Connection = {
+    val normMaster = master.normalised
+    val normSlave = slave.normalised
+    if ((normMaster eq master) && (normSlave eq slave)) this
+    else Connection(normMaster, normSlave)
+  }
+}
 
 class BCatParser extends RegexParsers {
   override type Elem = Char
