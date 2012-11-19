@@ -99,6 +99,11 @@ object Graphable {
   
   class GConnection(c: Connection) {
     lazy val xmlId: String = c.master.xmlId + c.slave.xmlId
+    
+    lazy val edgeXML: String = {
+      val template = """<edge id="%s" source="%s" target="%s" weight="5" />"""
+      template.format(c.xmlId, c.master.xmlId, c.slave.xmlId)
+    }
   }
 }
 

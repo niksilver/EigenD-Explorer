@@ -167,5 +167,10 @@ class GraphableSuite extends FunSuite with ShouldMatchers {
     Port("<alpha>#4.5", None).nodeXML should equal ("""<node id="_alpha__4.5" label="<alpha>#4.5" />""")
     Port("<alpha>#4.5", Some("light out")).nodeXML should equal ("""<node id="_alpha__4.5" label="light out" />""")
   }
+  
+  test("Connection edge XML") {
+    val conn = Connection(Port("<alpha>#4.5", None), Port("<b>#1.1", None))
+    conn.edgeXML should equal ("""<edge id="_alpha__4.5_b__1.1" source="_alpha__4.5" target="_b__1.1" weight="5" />""")
+  }
 
 }
