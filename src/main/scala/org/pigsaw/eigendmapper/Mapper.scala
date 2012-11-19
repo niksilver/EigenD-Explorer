@@ -72,6 +72,7 @@ class Graphable(val conns: Set[Connection]) {
 object Graphable {
   implicit def setConnection2Graphable(conns: Set[Connection]): Graphable = new Graphable(conns)
   implicit def listConnection2Graphable(conns: List[Connection]): Graphable = new Graphable(conns.toSet)
+  implicit def port2GraphableString(s: String) = new GString(s)
   implicit def port2GraphablePort(p: Port) = new GPort(p)
   implicit def port2GraphableConnection(c: Connection) = new GConnection(c)
   
@@ -83,8 +84,12 @@ object Graphable {
     """    </graph>
       |</gexf>""".stripMargin
   
+  class GString(s: String) {
+    lazy val xmlId: String = "[^A-Za-z0-9.]".r replaceAllIn (s, "_")
+  }
+  
   class GPort(p: org.pigsaw.eigendmapper.Port) {
-    lazy val xmlId: String = "[^A-Za-z0-9.]".r replaceAllIn (p.id, "_")
+    lazy val xmlId: String = p.id.xmlId
   }
   
   class GConnection(c: org.pigsaw.eigendmapper.Connection) {

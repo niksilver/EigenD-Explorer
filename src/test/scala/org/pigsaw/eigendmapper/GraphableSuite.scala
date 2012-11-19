@@ -8,7 +8,7 @@ import org.scalatest.matchers.ShouldMatchers
 import org.pigsaw.eigendmapper.Graphable._
 
 @RunWith(classOf[JUnitRunner])
-class GrapherSuite extends FunSuite with ShouldMatchers {
+class GraphableSuite extends FunSuite with ShouldMatchers {
 
   test("Unify - Add a slave name, expect a slave updated") {
     val port_a_unnamed = Port("<a>#1.1", None)
@@ -106,7 +106,7 @@ class GrapherSuite extends FunSuite with ShouldMatchers {
     connSet2 should contain (conn_bnau)
   }
   
-  test("Normalise port IDs (cut the 'main:' in <main:agentname3>") {
+  test("Normalise port IDs (cut the 'main:' in <main:agentname3>)") {
     val a_short = Port("<a>#1.1", None)
     val a_long = Port("<main:a>#1.1", None)
     val b_short = Port("<b>#1.2", Some("b12"))
@@ -149,6 +149,10 @@ class GrapherSuite extends FunSuite with ShouldMatchers {
     agents should contain ("<a>")
     agents should contain ("<b>")
     agents should contain ("<c>")
+  }
+  
+  test("Agent name (string) XML id") {
+    "<alpha>".xmlId should equal ("_alpha_")
   }
   
   test("Port XML id") {
