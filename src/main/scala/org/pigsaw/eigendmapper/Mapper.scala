@@ -52,6 +52,14 @@ class Graphable(val conns: Set[Connection]) {
     
     conns map (c => Connection(updated(c.master), updated(c.slave)))
   }
+  
+  /**
+   * Make a normalised version of this set of connections, in which
+   * every port of the form ID &lt;main:agentnameN&gt; is changed to
+   * its shorter form of &lt;agentnameN&gt;.
+   */
+  def normalised: Set[Connection] =
+    conns map { c=> Connection(c.master.normalised, c.slave.normalised) }
 }
 
 object Graphable {
@@ -150,7 +158,16 @@ class BCat(agent: String) {
  *               e.g. "&lt;metronome1&gt#3.6;
  * @param name  The name of the port if known, e.g. "bar beat output"
  */
-case class Port(val id: String, val name: Option[String])
+case class Port(val id: String, val name: Option[String]) {
+  /**
+   * Generate a normalised version of this port. I.e. If the id is of
+   * the form &lt;<main:agentnameN&gt; then it's converted to &lt;agentnameN&gt;.
+   */
+  def normalised: Port = {
+    if (id.startsWith("<main:")) Port("<" + id.drop(6), name)
+    else this
+  }
+}
 
 case class Connection(val master: Port, val slave: Port)
 
