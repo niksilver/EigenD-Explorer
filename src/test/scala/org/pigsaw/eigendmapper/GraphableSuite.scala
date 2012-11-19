@@ -150,5 +150,9 @@ class GrapherSuite extends FunSuite with ShouldMatchers {
     agents should contain ("<b>")
     agents should contain ("<c>")
   }
+  
+  test("Port XML id") {
+    Port("<alpha>#4.5", None).xmlId should equal ("_alpha__4.5")
+  }
 
 }

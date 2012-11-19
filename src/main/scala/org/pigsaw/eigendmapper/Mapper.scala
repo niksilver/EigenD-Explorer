@@ -72,6 +72,19 @@ class Graphable(val conns: Set[Connection]) {
 object Graphable {
   implicit def setConnection2Graphable(conns: Set[Connection]): Graphable = new Graphable(conns)
   implicit def listConnection2Graphable(conns: List[Connection]): Graphable = new Graphable(conns.toSet)
+  implicit def port2GraphablePort(p: org.pigsaw.eigendmapper.Port) = new Graphable.Port(p)
+  
+  val gexfHeader =
+    """<?xml version="1.0" encoding="UTF-8"?>
+      |    <gexf xmlns="http://www.gexf.net/1.2draft" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.gexf.net/1.2draft http://www.gexf.net/1.2draft/gexf.xsd" version="1.2">
+      |        <graph mode="static" defaultedgetype="directed">""".stripMargin
+  val gexfFooter =
+    """    </graph>
+      |</gexf>""".stripMargin
+  
+  class Port(p: org.pigsaw.eigendmapper.Port) {
+    lazy val xmlId: String = "[^A-Za-z0-9.]".r replaceAllIn (p.id, "_")
+  }
 }
 
 /**
