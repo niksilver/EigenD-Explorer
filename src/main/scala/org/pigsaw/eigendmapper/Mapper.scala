@@ -93,7 +93,7 @@ object Graphable {
     
     lazy val nodeXML: String = {
       val label = p.name getOrElse p.id
-      "<node id=\"" + p.xmlId + "\" label=\"" + label + "\" />"
+      """<node id="%s" label="%s" />""".format(p.xmlId, label)
     }
   }
   
