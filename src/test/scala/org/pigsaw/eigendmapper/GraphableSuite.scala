@@ -159,6 +159,20 @@ class GraphableSuite extends FunSuite with ShouldMatchers {
     "<alph'a>".xmlEscaped should equal ("&lt;alph&apos;a&gt;")
   }
   
+  test("Agent (string) node XML") {
+    "<alpha>".nodeXML should equal ("""<node id="_alpha_" label="&lt;alpha&gt;" />""")
+  }
+  
+  test("Agent-port XML id") {
+    val agentPort = ("<alpha>" -> Port("<alpha>#4.5", None))
+    agentPort.xmlId should equal ("_alpha__alpha__4.5")
+  }
+  
+  test("Agent-port edge XML") {
+    val agentPort = ("<alpha>" -> Port("<alpha>#4.5", None))
+    agentPort.edgeXML should equal ("""<edge id="_alpha__alpha__4.5" source="_alpha_" target="_alpha__4.5" weight="5" />""")
+  }
+  
   test("Port XML id") {
     Port("<alpha>#4.5", None).xmlId should equal ("_alpha__4.5")
   }
@@ -196,6 +210,30 @@ class GraphableSuite extends FunSuite with ShouldMatchers {
     ports should contain (b)
     ports should contain (c)
     ports should contain (d)
+  }
+  
+  test("Agent-agent connections") {
+    val a = Port("<a>#1.1", None)
+    val b = Port("<b>#1.2", Some("b12"))
+    val c1 = Port("<c>#1.3", None)
+    val c2 = Port("<c>#2.3", None)
+    val d = Port("d#1.4", None) // No parseable agent name
+
+    val conns = Set(
+        Connection(a, b),
+        Connection(b, c1),
+        Connection(c1, b),
+        Connection(c2, b),
+        Connection(c1, d)
+    )
+    
+    val agAgConns = conns.agentAgentConnections
+    
+    agAgConns.size should equal (4)
+    agAgConns should contain ("<a>", "<b>")
+    agAgConns should contain ("<b>", "<c>")
+    agAgConns should contain ("<c>", "<b>")
+    agAgConns should contain ("<c>", "UNKNOWN")
   }
   
   test("Agent-port connections") {

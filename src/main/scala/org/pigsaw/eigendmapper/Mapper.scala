@@ -13,13 +13,16 @@ object Mapper {
     out write Graphable.gexfHeader
     
     val conns = unifiedConnections
+    val localConns = conns.agentPortConnections
 
     out write "<nodes>\n"
     conns.ports foreach { out write _.nodeXML + "\n" }
+    localConns foreach { out write _._1.nodeXML + "\n" }
     out write "</nodes>\n"
 
     out write "<edges>\n"
     conns foreach { out write _.edgeXML + "\n" }
+    localConns foreach { out write _.edgeXML + "\n" }
     out write "</edges>\n"
     
     out write Graphable.gexfFooter
@@ -99,6 +102,13 @@ class Graphable(val conns: Set[Connection]) {
     conns flatMap { c => List(c.master, c.slave) }
   
   /**
+   * Get a map from each agent to each agent (strings, including
+   * angle brackets.)
+   */
+  def agentAgentConnections: Set[(String, String)] =
+    conns map { c => (c.master.agent getOrElse "UNKNOWN", c.slave.agent getOrElse "UNKNOWN") }
+  
+  /**
    * Get a map from each agent (a string including angle brackets)
    * to all its ports.
    */
@@ -109,9 +119,10 @@ class Graphable(val conns: Set[Connection]) {
 object Graphable {
   implicit def setConnection2Graphable(conns: Set[Connection]): Graphable = new Graphable(conns)
   implicit def listConnection2Graphable(conns: List[Connection]): Graphable = new Graphable(conns.toSet)
-  implicit def port2GraphableString(s: String) = new GString(s)
+  implicit def string2GraphableString(s: String) = new GString(s)
   implicit def port2GraphablePort(p: Port) = new GPort(p)
-  implicit def port2GraphableConnection(c: Connection) = new GConnection(c)
+  implicit def connection2GraphableConnection(c: Connection) = new GConnection(c)
+  implicit def agentPortGraphableAgentPort(ap: (String, Port)) = new GAgentPort(ap)
 
   val gexfHeader =
     """<?xml version="1.0" encoding="UTF-8"?>
@@ -123,8 +134,13 @@ object Graphable {
 
   class GString(s: String) {
     lazy val xmlId: String = "[^A-Za-z0-9.]".r replaceAllIn (s, "_")
+
     lazy val xmlEscaped: String =
       s.replaceAllLiterally("<", "&lt;").replaceAllLiterally(">", "&gt;").replaceAllLiterally("'", "&apos;")
+
+    lazy val nodeXML: String = {
+      """<node id="%s" label="%s" />""".format(s.xmlId, s.xmlEscaped)
+    }
   }
 
   class GPort(p: Port) {
@@ -142,6 +158,15 @@ object Graphable {
     lazy val edgeXML: String = {
       val template = """<edge id="%s" source="%s" target="%s" weight="1" />"""
       template.format(c.xmlId, c.master.xmlId, c.slave.xmlId)
+    }
+  }
+
+  class GAgentPort(ap: (String, Port)) {
+    lazy val xmlId: String = ap._1.xmlId + ap._2.xmlId
+    
+    lazy val edgeXML: String = {
+      val template = """<edge id="%s" source="%s" target="%s" weight="5" />"""
+      template.format(ap.xmlId, ap._1.xmlId, ap._2.xmlId)
     }
   }
 }
