@@ -24,7 +24,7 @@ object Mapper {
     out write "<edges>\n"
     // conns foreach { out write _.edgeXML + "\n" }
     // localConns foreach { out write _.edgeXML + "\n" }
-    
+    agentConns foreach { out write _.edgeXML + "\n" }
     out write "</edges>\n"
     
     out write Graphable.gexfFooter
