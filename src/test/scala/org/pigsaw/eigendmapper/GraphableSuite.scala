@@ -168,6 +168,11 @@ class GraphableSuite extends FunSuite with ShouldMatchers {
     agentPort.xmlId should equal ("_alpha__alpha__4.5")
   }
   
+  test("Agent-agent edge XML") {
+    val agentAgent = ("<alpha>" -> "<beta>")
+    agentAgent.edgeXML should equal ("""<edge id="_alpha__beta_" source="_alpha_" target="_beta_" weight="3" />""")
+  }
+  
   test("Agent-port edge XML") {
     val agentPort = ("<alpha>" -> Port("<alpha>#4.5", None))
     agentPort.edgeXML should equal ("""<edge id="_alpha__alpha__4.5" source="_alpha_" target="_alpha__4.5" weight="5" />""")

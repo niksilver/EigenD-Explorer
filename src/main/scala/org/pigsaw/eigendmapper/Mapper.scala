@@ -14,15 +14,17 @@ object Mapper {
     
     val conns = unifiedConnections
     val localConns = conns.agentPortConnections
+    val agentConns = conns.agentAgentConnections
 
     out write "<nodes>\n"
-    conns.ports foreach { out write _.nodeXML + "\n" }
+    // conns.ports foreach { out write _.nodeXML + "\n" }
     localConns foreach { out write _._1.nodeXML + "\n" }
     out write "</nodes>\n"
 
     out write "<edges>\n"
-    conns foreach { out write _.edgeXML + "\n" }
-    localConns foreach { out write _.edgeXML + "\n" }
+    // conns foreach { out write _.edgeXML + "\n" }
+    // localConns foreach { out write _.edgeXML + "\n" }
+    
     out write "</edges>\n"
     
     out write Graphable.gexfFooter
@@ -122,7 +124,8 @@ object Graphable {
   implicit def string2GraphableString(s: String) = new GString(s)
   implicit def port2GraphablePort(p: Port) = new GPort(p)
   implicit def connection2GraphableConnection(c: Connection) = new GConnection(c)
-  implicit def agentPortGraphableAgentPort(ap: (String, Port)) = new GAgentPort(ap)
+  implicit def agentPort2GraphableAgentPort(ap: (String, Port)) = new GAgentPort(ap)
+  implicit def agentAgent2GraphableAgentAgent(aa: (String, String)) = new GAgentAgent(aa)
 
   val gexfHeader =
     """<?xml version="1.0" encoding="UTF-8"?>
@@ -169,6 +172,15 @@ object Graphable {
       template.format(ap.xmlId, ap._1.xmlId, ap._2.xmlId)
     }
   }
+
+  class GAgentAgent(aa: (String, String)) {
+    lazy val xmlId: String = aa._1.xmlId + aa._2.xmlId
+
+    lazy val edgeXML: String = {
+      val template = """<edge id="%s" source="%s" target="%s" weight="3" />"""
+      template.format(aa.xmlId, aa._1.xmlId, aa._2.xmlId)
+    }
+  }  
 }
 
 /**
