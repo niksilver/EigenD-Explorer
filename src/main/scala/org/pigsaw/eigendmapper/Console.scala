@@ -3,18 +3,36 @@ package org.pigsaw.eigendmapper
 object Console {
   def main(args: Array[String]) {
     val ul = new UserLine(">> ")
-    val line = ul.line
-    println("Output is : " + line + ", length is " + (line getOrElse("")).length)
+    actLoop(Set())
+
+    def actLoop(state: Set[Connection]): Unit = {
+      ul.line match {
+        case None => ; // Do nothing
+        case Some(input) => {
+          val state2 = act(input, state)
+          actLoop(state2)
+        }
+      }
+    }
+
+    def act(line: String, state: Set[Connection]): Set[Connection] = {
+      line match {
+        case "snapshot" => snapshot
+        case "graph agents" => graphAgents(state); state
+        case _ => println("Unknown command"); state
+      }
+    }
   }
   
-  def x_main(args: Array[String]) {
+  def snapshot: Set[Connection] = unifiedConnections
+
+  def graphAgents(conns: Set[Connection]) {
     import Graphable._
-    
+
     val filename = "C:\\cygwin\\home\\Nik\\graph\\output.gexf"
     val out = new java.io.FileWriter(filename)
     out write Graphable.gexfHeader
-    
-    val conns = unifiedConnections
+
     val localConns = conns.agentPortConnections
     val agentConns = conns.agentAgentConnections
 
@@ -28,9 +46,11 @@ object Console {
     localConns foreach { out write _.edgeXML + "\n" }
     //agentConns foreach { out write _.edgeXML + "\n" }
     out write "</edges>\n"
-    
+
     out write Graphable.gexfFooter
     out.close
+    
+    println("Output to " + filename)
   }
 
   def unifiedConnections: Set[Connection] = {
