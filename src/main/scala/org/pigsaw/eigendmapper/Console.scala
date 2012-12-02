@@ -1,12 +1,14 @@
 package org.pigsaw.eigendmapper
 
 import java.io.FileWriter
+import scala.util.parsing.combinator.RegexParsers
 
 object Console {
 
   type Conns = Set[Connection]
 
   def main(args: Array[String]) {
+    val parser = new ConsoleParser
     val ul = new UserLine(">> ")
     actLoop(Set())
 
@@ -21,27 +23,48 @@ object Console {
     }
 
     def act(line: String, state: Conns): Conns = {
-      line match {
-        case "snapshot" => snapshot
-        case "graph ports" =>  writeGraph(PortsWithAgents)(state); state
-        case "graph agents" => writeGraph(AgentsToAgents)(state); state
-        case _ => println("Unknown command"); state
+      parser.parseLine(line) match {
+        case Some(Snapshot) => snapshot
+        case Some(GraphPorts) => writeGraph(GraphPorts)(state); state
+        case Some(GraphAgents) => writeGraph(GraphAgents)(state); state
+        //case String("show ", agentName) => ;
+        case None => println("Unknown command"); state
       }
     }
   }
 
-  def snapshot: Set[Connection] = unifiedConnections
+  sealed abstract class Command
+  object Snapshot extends Command
+  abstract class GraphCommand extends Command
+  object GraphPorts extends GraphCommand
+  object GraphAgents extends GraphCommand
 
-  sealed abstract class GraphType
-  object PortsWithAgents extends GraphType
-  object AgentsToAgents extends GraphType
+  class ConsoleParser extends RegexParsers {
+    override type Elem = Char
+    override def skipWhitespace = false
+
+    def command = snapshot | graphPorts | graphAgents
+    
+    def snapshot = "snapshot" ^^ { _ => Snapshot }
+    def graphPorts = "graph ports" ^^ { _ => GraphPorts }
+    def graphAgents = "graph agents" ^^ { _ => GraphAgents }
+
+    def parseLine(line: String): Option[Command] =
+      parseAll(phrase(command), line) match {
+        case Success(out, _) => Some(out)
+        case Failure(msg, _) => None
+      }
+
+  }
+
+  def snapshot: Set[Connection] = unifiedConnections
 
   /**
    * Output the gexf file.
    * @param gtype  Whether the graph should be ports (with their agents) or just agents
    * @param conns  The port connections (the state)
    */
-  def writeGraph(gtype: GraphType)(conns: Conns) {
+  def writeGraph(command: GraphCommand)(conns: Conns) {
     import Graphable._
 
     val filename = "C:\\cygwin\\home\\Nik\\graph\\output.gexf"
@@ -57,23 +80,23 @@ object Console {
     localConns foreach { out write _._1.nodeXML + "\n" }
 
     // Maybe declare the port nodes
-    gtype match {
-      case PortsWithAgents => conns.ports foreach { out write _.nodeXML + "\n" }
-      case AgentsToAgents => ; // Do nothing
+    command match {
+      case GraphPorts => conns.ports foreach { out write _.nodeXML + "\n" }
+      case GraphAgents => ; // Do nothing
     }
 
     out write "</nodes>\n"
 
     out write "<edges>\n"
 
-    gtype match {
+    command match {
       // When graphing ports: Write port-port edges and agent-port edges
-      case PortsWithAgents => {
+      case GraphPorts => {
         conns foreach { out write _.edgeXML + "\n" }
         localConns foreach { out write _.edgeXML + "\n" }
       }
       // When graphing agents: Write agent-agent-edges
-      case AgentsToAgents => {
+      case GraphAgents => {
         agentConns foreach { out write _.edgeXML + "\n" }
       }
     }
