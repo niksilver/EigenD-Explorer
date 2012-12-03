@@ -1,13 +1,5 @@
 package org.pigsaw.eigendmapper
 
-
-/**
- * Utilities to make our data graphable with Gephi, and the gexf file format.
- */
-class Graphable(val conns: Set[Connection]) {
-  import Graphable._
-}
-
 object Graphable {
   implicit def string2GraphableString(s: String) = new GString(s)
   implicit def port2GraphablePort(p: Port) = new GPort(p)
