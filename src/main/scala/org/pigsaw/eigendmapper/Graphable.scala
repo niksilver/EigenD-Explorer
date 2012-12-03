@@ -36,8 +36,6 @@ class Graphable(val conns: Set[Connection]) {
 }
 
 object Graphable {
-  implicit def setConnection2Graphable(conns: Set[Connection]): Graphable = new Graphable(conns)
-  implicit def listConnection2Graphable(conns: List[Connection]): Graphable = new Graphable(conns.toSet)
   implicit def string2GraphableString(s: String) = new GString(s)
   implicit def port2GraphablePort(p: Port) = new GPort(p)
   implicit def connection2GraphableConnection(c: Connection) = new GConnection(c)

@@ -25,8 +25,8 @@ class GraphableSuite extends FunSuite with ShouldMatchers {
 
     val conn_cubn = Connection(port_c_unnamed, port_b_named) // We'll add this
     val conn_aubn = Connection(port_a_unnamed, port_b_named) // This should get created
-    
-    val connSet2 = (connSet1 + conn_cubn).unified
+
+    val connSet2 = new Graphable(connSet1 + conn_cubn).unified
 
     connSet2.size should equal (2)
     connSet2 should contain (conn_cubn)
@@ -50,7 +50,7 @@ class GraphableSuite extends FunSuite with ShouldMatchers {
     val conn_cubn = Connection(port_c_unnamed, port_b_named) // We'll add this
     val conn_bnau = Connection(port_b_named, port_a_unnamed) // This should get created
     
-    val connSet2 = (connSet1 + conn_cubn).unified
+    val connSet2 = new Graphable(connSet1 + conn_cubn).unified
 
     connSet2.size should equal (2)
     connSet2 should contain (conn_cubn)
@@ -74,7 +74,7 @@ class GraphableSuite extends FunSuite with ShouldMatchers {
     val conn_bncu = Connection(port_b_named, port_c_unnamed) // We'll add this
     val conn_aubn = Connection(port_a_unnamed, port_b_named) // This should get created
     
-    val connSet2 = (connSet1 + conn_bncu).unified
+    val connSet2 = new Graphable(connSet1 + conn_bncu).unified
 
     connSet2.size should equal (2)
     connSet2 should contain (conn_bncu)
@@ -98,7 +98,7 @@ class GraphableSuite extends FunSuite with ShouldMatchers {
     val conn_bncu = Connection(port_b_named, port_c_unnamed) // We'll add this
     val conn_bnau = Connection(port_b_named, port_a_unnamed) // This should get created
     
-    val connSet2 = (connSet1 + conn_bncu).unified
+    val connSet2 = new Graphable(connSet1 + conn_bncu).unified
 
     connSet2.size should equal (2)
     connSet2 should contain (conn_bncu)
@@ -120,7 +120,7 @@ class GraphableSuite extends FunSuite with ShouldMatchers {
     		Connection(b_short, c_long)
     )
     
-    val conns2 = conns.normalised
+    val conns2 = new Graphable(conns).normalised
     
     conns2.size should equal (2)
     conns2 should not contain (Connection(a_short, b_long))

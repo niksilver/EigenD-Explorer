@@ -77,15 +77,15 @@ object Console {
    * @param gtype  Whether the graph should be ports (with their agents) or just agents
    * @param conns  The port connections (the state)
    */
-  def writeGraph(command: GraphCommand)(setup: Setup) {
+  def writeGraph(command: GraphCommand)(state: Setup) {
     import Graphable._
 
     val filename = "C:\\cygwin\\home\\Nik\\graph\\output.gexf"
     val out = new FileWriter(filename)
     out write Graphable.gexfHeader
 
-    val localConns = setup.agentPortConnections
-    val agentConns = setup.agentAgentConnections
+    val localConns = state.agentPortConnections
+    val agentConns = state.agentAgentConnections
 
     out write "<nodes>\n"
 
@@ -94,7 +94,7 @@ object Console {
 
     // Maybe declare the port nodes
     command match {
-      case GraphPorts => setup.ports foreach { out write _.nodeXML + "\n" }
+      case GraphPorts => state.ports foreach { out write _.nodeXML + "\n" }
       case GraphAgents => ; // Do nothing
     }
 
@@ -105,7 +105,7 @@ object Console {
     command match {
       // When graphing ports: Write port-port edges and agent-port edges
       case GraphPorts => {
-        setup.conns foreach { out write _.edgeXML + "\n" }
+        state.conns foreach { out write _.edgeXML + "\n" }
         localConns foreach { out write _.edgeXML + "\n" }
       }
       // When graphing agents: Write agent-agent-edges
@@ -135,7 +135,7 @@ object Console {
       bcat = new BCat(agent)
       conn <- bcat.connections
     } yield { println("Agent " + agent + ", connection " + conn); conn }
-    val unifiedConnections = allConnections.normalised.unified
+    val unifiedConnections = new Graphable(new Graphable(allConnections.toSet).normalised).unified
     unifiedConnections foreach { c => println("Unified: " + c) }
     new Setup(unifiedConnections)
   }
