@@ -28,6 +28,7 @@ object Console {
         case Some(GraphPorts) => writeGraph(GraphPorts)(state); state
         case Some(GraphAgents) => writeGraph(GraphAgents)(state); state
         case Some(Show(agent)) => show(agent, state); state
+        case Some(Help) => help; state
         case None => println("Unknown command"); state
       }
     }
@@ -39,17 +40,19 @@ object Console {
   object GraphPorts extends GraphCommand
   object GraphAgents extends GraphCommand
   case class Show(agent: String) extends Command
+  object Help extends Command
 
   class ConsoleParser extends RegexParsers {
     override type Elem = Char
 
-    def command = snapshot | graphPorts | graphAgents | show
+    def command = snapshot | graphPorts | graphAgents | show | help
 
     def snapshot = "snapshot" ^^ { _ => Snapshot }
     def graphPorts = "graph" ~ "ports" ^^ { _ => GraphPorts }
     def graphAgents = "graph" ~ "agents" ^^ { _ => GraphAgents }
     def show = "show" ~> agent ^^ { Show(_) }
     def agent = """\S+""".r
+    def help = "help" ^^ { _ => Help }
 
     def parseLine(line: String): Option[Command] =
       parseAll(phrase(command), line) match {
@@ -59,6 +62,16 @@ object Console {
 
   }
 
+  def help {
+    println("""Commands are:
+        |help      Show this message
+        |graph [agents|ports]  Dump a gexf format file of all the agent or
+        |          port connections
+        |show <agentName>   Show the connections into and out of an agent.
+        |          The agent name includes angle brackets, e.g. <drummer1>
+        |snapshot  Capture the state of all the agents' connections"""
+        .stripMargin)
+  }
   def snapshot: Set[Connection] = unifiedConnections
 
   /**
