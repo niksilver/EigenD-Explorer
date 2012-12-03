@@ -6,14 +6,6 @@ package org.pigsaw.eigendmapper
  */
 class Graphable(val conns: Set[Connection]) {
   import Graphable._
-
-  /**
-   * Make a normalised version of this set of connections, in which
-   * every port of the form ID &lt;main:agentnameN&gt; is changed to
-   * its shorter form of &lt;agentnameN&gt;.
-   */
-  def normalised: Set[Connection] =
-    conns map { _.normalised }
 }
 
 object Graphable {
