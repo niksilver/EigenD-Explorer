@@ -135,9 +135,9 @@ object Console {
       bcat = new BCat(agent)
       conn <- bcat.connections
     } yield { println("Agent " + agent + ", connection " + conn); conn }
-    val unifiedConnections = new Graphable(new Graphable(allConnections.toSet).normalised).unified
-    unifiedConnections foreach { c => println("Unified: " + c) }
-    new Setup(unifiedConnections)
+    val unifiedSetup = new Setup(new Graphable(allConnections.toSet).normalised).unified
+    unifiedSetup.conns foreach { c => println("Unified: " + c) }
+    unifiedSetup
   }
 
   def show(agent: String, state: Setup): Unit = {

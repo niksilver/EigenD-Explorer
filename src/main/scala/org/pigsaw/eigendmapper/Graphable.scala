@@ -6,25 +6,6 @@ package org.pigsaw.eigendmapper
  */
 class Graphable(val conns: Set[Connection]) {
   import Graphable._
-  
-  /**
-   * Create a unified set of connections. This means if any connections
-   * carry a port name, then those names are applied wherever those
-   * ports are used.
-   */
-  def unified: Set[Connection] = {
-    val ports = conns flatMap { c => List(c.master, c.slave) }
-    val namingPorts = ports filter (_.name.nonEmpty)
-    val names: Map[String, String] = namingPorts map { p => (p.id -> p.name.get) } toMap
-
-    // Produce an updated version of the port, with names filled in if available.
-    def updated(port: Port): Port = {
-      if (port.name.nonEmpty) port
-      else Port(port.id, names.get(port.id))
-    }
-
-    conns map (c => Connection(updated(c.master), updated(c.slave)))
-  }
 
   /**
    * Make a normalised version of this set of connections, in which
