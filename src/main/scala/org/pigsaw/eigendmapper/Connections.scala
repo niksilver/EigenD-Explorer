@@ -24,6 +24,14 @@ case class Port(val id: String, val name: Option[String]) {
    * Get the name given to the port, or if it's None, the id of the port.
    */
   def nonEmptyName: String = name getOrElse id
+
+  /**
+   * Get the name given to the port, or if it's None, the id of the port, and make
+   * sure the agent is also included
+   */
+  def nonEmptyFQName: String =
+    if (name.isEmpty) id
+    else (agent getOrElse "<UNKNOWN>") + " " + name.get
 }
 
 case class Connection(val master: Port, val slave: Port) {

@@ -145,13 +145,13 @@ object Console {
   def show(agent: String, state: Conns): Unit = {
     val links: Set[(String, String, String)] = for {
       conn <- state
-      val masterAgent = conn.master.agent
-      val slaveAgent = conn.slave.agent
-      if (masterAgent == Some(agent) || slaveAgent == Some(agent))
-      val masterName = conn.master.nonEmptyName
-      val slaveName = conn.slave.nonEmptyName
-      val link = if (masterAgent == Some(agent)) ("", masterName, slaveName)
-      else (masterName, slaveName, "")
+      val master = conn.master
+      val slave = conn.slave
+      if (master.agent == Some(agent) || slave.agent == Some(agent))
+      val link = if (master.agent == Some(agent))
+          ("", master.nonEmptyName, slave.nonEmptyFQName)
+        else
+          (master.nonEmptyFQName, slave.nonEmptyName, "")
     } yield link
     
     if (links.size == 0)
