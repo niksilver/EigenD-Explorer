@@ -52,3 +52,37 @@ case class Connection(val master: Port, val slave: Port) {
    */
   def agents: Set[String] = Set() ++ master.agent.toSeq ++ slave.agent.toSeq
 }
+
+/**
+ * A particular set of connections
+ */
+class State(val conns: Set[Connection]) {
+
+  /**
+   * Get all the agent names mentioned in the set of connections,
+   * including the angle brackets.
+   */
+  lazy val agents: Set[String] =
+    conns flatMap { _.agents }
+      
+  /**
+   * Get all the ports named in the connections.
+   */
+  lazy val ports: Set[Port] =
+    conns flatMap { c => List(c.master, c.slave) }
+  
+  /**
+   * Get a map from each agent to each agent (strings, including
+   * angle brackets.)
+   */
+  lazy val agentAgentConnections: Set[(String, String)] =
+    conns map { c => (c.master.agent getOrElse "UNKNOWN", c.slave.agent getOrElse "UNKNOWN") }
+
+  /**
+   * Get a map from each agent (a string including angle brackets)
+   * to all its ports.
+   */
+  lazy val agentPortConnections: Set[(String, Port)] =
+    ports map { p => ((p.agent getOrElse "UNKNOWN") -> p) }
+
+}

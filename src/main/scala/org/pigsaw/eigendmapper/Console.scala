@@ -5,14 +5,12 @@ import scala.util.parsing.combinator.RegexParsers
 
 object Console {
 
-  type Conns = Set[Connection]
-
   def main(args: Array[String]) {
     val parser = new ConsoleParser
     val ul = new UserLine(">> ")
-    actLoop(Set())
+    actLoop(new State(Set()))
 
-    def actLoop(state: Conns): Unit = {
+    def actLoop(state: State): Unit = {
       ul.line match {
         case None => ; // Do nothing
         case Some(input) => {
@@ -22,7 +20,7 @@ object Console {
       }
     }
 
-    def act(line: String, state: Conns): Conns = {
+    def act(line: String, state: State): State = {
       parser.parseLine(line) match {
         case Some(Snapshot) => snapshot
         case Some(GraphPorts) => writeGraph(GraphPorts)(state); state
@@ -72,22 +70,22 @@ object Console {
         |snapshot  Capture the state of all the agents' connections"""
         .stripMargin)
   }
-  def snapshot: Set[Connection] = unifiedConnections
+  def snapshot: State = unifiedConnections
 
   /**
    * Output the gexf file.
    * @param gtype  Whether the graph should be ports (with their agents) or just agents
    * @param conns  The port connections (the state)
    */
-  def writeGraph(command: GraphCommand)(conns: Conns) {
+  def writeGraph(command: GraphCommand)(state: State) {
     import Graphable._
 
     val filename = "C:\\cygwin\\home\\Nik\\graph\\output.gexf"
     val out = new FileWriter(filename)
     out write Graphable.gexfHeader
 
-    val localConns = conns.agentPortConnections
-    val agentConns = conns.agentAgentConnections
+    val localConns = state.agentPortConnections
+    val agentConns = state.agentAgentConnections
 
     out write "<nodes>\n"
 
@@ -96,7 +94,7 @@ object Console {
 
     // Maybe declare the port nodes
     command match {
-      case GraphPorts => conns.ports foreach { out write _.nodeXML + "\n" }
+      case GraphPorts => state.ports foreach { out write _.nodeXML + "\n" }
       case GraphAgents => ; // Do nothing
     }
 
@@ -107,7 +105,7 @@ object Console {
     command match {
       // When graphing ports: Write port-port edges and agent-port edges
       case GraphPorts => {
-        conns foreach { out write _.edgeXML + "\n" }
+        state.conns foreach { out write _.edgeXML + "\n" }
         localConns foreach { out write _.edgeXML + "\n" }
       }
       // When graphing agents: Write agent-agent-edges
@@ -127,7 +125,7 @@ object Console {
    * Take all the (port) connections and make sure all the unnamed ports
    * are given names, if such names are known elsewhere.
    */
-  def unifiedConnections: Set[Connection] = {
+  def unifiedConnections: State = {
     import Graphable._
 
     val bls = new BLs("<main>")
@@ -139,12 +137,12 @@ object Console {
     } yield { println("Agent " + agent + ", connection " + conn); conn }
     val unifiedConnections = allConnections.normalised.unified
     unifiedConnections foreach { c => println("Unified: " + c) }
-    unifiedConnections
+    new State(unifiedConnections)
   }
 
-  def show(agent: String, state: Conns): Unit = {
+  def show(agent: String, state: State): Unit = {
     val links: Set[(String, String, String)] = for {
-      conn <- state
+      conn <- state.conns
       val master = conn.master
       val slave = conn.slave
       if (master.agent == Some(agent) || slave.agent == Some(agent))

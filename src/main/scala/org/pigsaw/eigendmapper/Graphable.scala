@@ -33,33 +33,6 @@ class Graphable(val conns: Set[Connection]) {
    */
   def normalised: Set[Connection] =
     conns map { _.normalised }
-
-  /**
-   * Get all the agent names mentioned in the set of connections,
-   * including the angle brackets.
-   */
-  def agents: Set[String] =
-    conns flatMap { _.agents }
-  
-  /**
-   * Get all the ports named in the connections.
-   */
-  def ports: Set[Port] =
-    conns flatMap { c => List(c.master, c.slave) }
-  
-  /**
-   * Get a map from each agent to each agent (strings, including
-   * angle brackets.)
-   */
-  def agentAgentConnections: Set[(String, String)] =
-    conns map { c => (c.master.agent getOrElse "UNKNOWN", c.slave.agent getOrElse "UNKNOWN") }
-  
-  /**
-   * Get a map from each agent (a string including angle brackets)
-   * to all its ports.
-   */
-  def agentPortConnections: Set[(String, Port)] =
-    conns.ports map { p => ((p.agent getOrElse "UNKNOWN") -> p) }
 }
 
 object Graphable {
