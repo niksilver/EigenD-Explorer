@@ -136,6 +136,8 @@ object Console {
     println("Output to " + filename)
   }
 
+  /** Show an agent's connections.
+   */
   def show(agent: String, state: Setup): Unit = {
     val links: Set[(String, String, String)] = for {
       conn <- state.conns
