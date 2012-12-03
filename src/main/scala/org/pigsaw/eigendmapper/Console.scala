@@ -138,10 +138,14 @@ object Console {
       val masterName = conn.master.name getOrElse conn.master.id
       val slaveName = conn.slave.name getOrElse conn.slave.id
       val link = if (masterAgent == Some(agent)) ("", masterName, slaveName)
-        else (masterName, slaveName, "")
+      else (masterName, slaveName, "")
     } yield link
-    val maxPadding = links.map( _._1.length ).max
-    links foreach { link: (String, String, String) => if (link._1 == "") println( " " * (maxPadding + 6) + link._2 + " ---> " + link._3 )
-      else println( link._1 + " ---> " + link._2 ) }
+    
+    if (links.size == 0)
+      println("No agent called " + agent)
+    else {
+      val padder = new Padder(links.toSeq, " --> ")
+      padder.output foreach { println(_) }
+    }
   }
 }
