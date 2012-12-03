@@ -261,4 +261,22 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     
   }
 
+  test("Apply - Make sure it unifies") {
+    val port_a_unnamed = Port("<a>#1.1", None)
+    val port_b_named = Port("<b>#1.2", Some("b12"))
+    val port_b_unnamed = Port("<b>#1.2", None)
+    val port_c_unnamed = Port("<c>#1.3", None)
+
+    val conn_buau = Connection(port_b_unnamed, port_a_unnamed)
+    val conn_bncu = Connection(port_b_named, port_c_unnamed) // We'll add this
+    val conn_bnau = Connection(port_b_named, port_a_unnamed) // This should get created
+    
+    val conns = Setup(Set(conn_buau, conn_bncu)).conns
+
+    conns.size should equal (2)
+    conns should contain (conn_bncu)
+    conns should not contain (conn_buau)
+    conns should contain (conn_bnau)
+  }
+
 }

@@ -119,5 +119,5 @@ object Setup {
   /**
    * Produce a normalised setup.
    */
-  def apply(conns: Set[Connection]): Setup = new Setup(conns).normalised
+  def apply(conns: Set[Connection]): Setup = new Setup(conns).normalised.unified
 }

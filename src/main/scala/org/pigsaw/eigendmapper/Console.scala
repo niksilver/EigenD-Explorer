@@ -70,7 +70,22 @@ object Console {
         |snapshot  Capture the state of all the agents' connections"""
         .stripMargin)
   }
-  def snapshot: Setup = unifiedConnections
+
+  /**
+   * Capture all the connections in a single setup
+   */
+  def snapshot: Setup = {
+    val bls = new BLs("<main>")
+    val agents = bls.agents
+    val allConnections = for {
+      agent <- agents
+      bcat = new BCat(agent)
+      conn <- bcat.connections
+    } yield { println("Agent " + agent + ", connection " + conn); conn }
+    val setup = Setup(allConnections.toSet)
+    setup.conns foreach { c => println("Unified: " + c) }
+    setup
+  }
 
   /**
    * Output the gexf file.
@@ -119,25 +134,6 @@ object Console {
     out.close
 
     println("Output to " + filename)
-  }
-
-  /**
-   * Take all the (port) connections and make sure all the unnamed ports
-   * are given names, if such names are known elsewhere.
-   */
-  def unifiedConnections: Setup = {
-    import Graphable._
-
-    val bls = new BLs("<main>")
-    val agents = bls.agents
-    val allConnections = for {
-      agent <- agents
-      bcat = new BCat(agent)
-      conn <- bcat.connections
-    } yield { println("Agent " + agent + ", connection " + conn); conn }
-    val unifiedSetup = new Setup(allConnections.toSet).normalised.unified
-    unifiedSetup.conns foreach { c => println("Unified: " + c) }
-    unifiedSetup
   }
 
   def show(agent: String, state: Setup): Unit = {
