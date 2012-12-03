@@ -20,6 +20,10 @@ case class Port(val id: String, val name: Option[String]) {
    */
   def agent: Option[String] = "(<.*>)".r findFirstIn (id)
 
+  /**
+   * Get the name given to the port, or if it's None, the id of the port.
+   */
+  def nonEmptyName: String = name getOrElse id
 }
 
 case class Connection(val master: Port, val slave: Port) {

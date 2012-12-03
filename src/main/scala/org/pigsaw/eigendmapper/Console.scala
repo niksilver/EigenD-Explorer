@@ -148,8 +148,8 @@ object Console {
       val masterAgent = conn.master.agent
       val slaveAgent = conn.slave.agent
       if (masterAgent == Some(agent) || slaveAgent == Some(agent))
-      val masterName = conn.master.name getOrElse conn.master.id
-      val slaveName = conn.slave.name getOrElse conn.slave.id
+      val masterName = conn.master.nonEmptyName
+      val slaveName = conn.slave.nonEmptyName
       val link = if (masterAgent == Some(agent)) ("", masterName, slaveName)
       else (masterName, slaveName, "")
     } yield link

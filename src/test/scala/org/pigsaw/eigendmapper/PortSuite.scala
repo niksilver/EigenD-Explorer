@@ -26,4 +26,9 @@ class PortSuite extends FunSuite with ShouldMatchers {
   test("Agent - Port doesn't have agent name") {
     Port("alpha#1.1", None).agent should equal (None)
   }
+  
+  test("Non-empty name") {
+    Port("<alpha>#1.1", None).nonEmptyName should equal ("<alpha>#1.1")
+    Port("<alpha>#1.1", Some("bar beat")).nonEmptyName should equal ("bar beat")
+  }
 }
