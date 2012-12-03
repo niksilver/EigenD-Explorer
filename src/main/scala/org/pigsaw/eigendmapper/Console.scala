@@ -157,7 +157,7 @@ object Console {
     if (links.size == 0)
       println("No agent called " + agent)
     else {
-      val padder = new Padder(links.toSeq, " --> ")
+      val padder = new Padder(links.toSeq.sortBy(_._2), " --> ")
       padder.output foreach { println(_) }
     }
   }
