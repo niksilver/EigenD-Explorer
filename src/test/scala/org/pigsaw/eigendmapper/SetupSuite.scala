@@ -8,7 +8,7 @@ import org.scalatest.matchers.ShouldMatchers
 import org.pigsaw.eigendmapper.Graphable._
 
 @RunWith(classOf[JUnitRunner])
-class StateSuite extends FunSuite with ShouldMatchers {
+class SetupSuite extends FunSuite with ShouldMatchers {
   
   test("Agents") {
     val a = Port("<a>#1.1", None)
@@ -16,13 +16,13 @@ class StateSuite extends FunSuite with ShouldMatchers {
     val c = Port("<c>#1.3", None)
     val d = Port("d#1.4", None) // No parseable agent name
 
-    val state = new State(Set(
+    val setup = new Setup(Set(
         Connection(a, b),
         Connection(b, c),
         Connection(c, d)
     ))
     
-    val agents = state.agents
+    val agents = setup.agents
     
     agents.size should equal (3)
     agents should contain ("<a>")
@@ -36,13 +36,13 @@ class StateSuite extends FunSuite with ShouldMatchers {
     val c = Port("<c>#1.3", None)
     val d = Port("d#1.4", None) // No parseable agent name
 
-    val state = new State(Set(
+    val setup = new Setup(Set(
         Connection(a, b),
         Connection(b, c),
         Connection(c, d)
     ))
     
-    val ports = state.ports
+    val ports = setup.ports
     
     ports.size should equal (4)
     ports should contain (a)
@@ -58,7 +58,7 @@ class StateSuite extends FunSuite with ShouldMatchers {
     val c2 = Port("<c>#2.3", None)
     val d = Port("d#1.4", None) // No parseable agent name
 
-    val state = new State(Set(
+    val setup = new Setup(Set(
         Connection(a, b),
         Connection(b, c1),
         Connection(c1, b),
@@ -66,7 +66,7 @@ class StateSuite extends FunSuite with ShouldMatchers {
         Connection(c1, d)
     ))
     
-    val agAgConns = state.agentAgentConnections
+    val agAgConns = setup.agentAgentConnections
     
     agAgConns.size should equal (4)
     agAgConns should contain ("<a>", "<b>")
@@ -81,12 +81,12 @@ class StateSuite extends FunSuite with ShouldMatchers {
     val b1 = Port("<b>#1.1", None)
     val b2 = Port("<b>#1.2", None)
 
-    val state = new State(Set(
+    val setup = new Setup(Set(
         Connection(a1, b1),
         Connection(a2, b2)
     ))
     
-    val conns2 = state.agentPortConnections
+    val conns2 = setup.agentPortConnections
     
     conns2.size should equal (4)
     conns2 should contain ("<a>" -> a1)
@@ -101,12 +101,12 @@ class StateSuite extends FunSuite with ShouldMatchers {
     val b1 = Port("b#1.1", None)
     val b2 = Port("b#1.2", None)
 
-    val state = new State(Set(
+    val setup = new Setup(Set(
         Connection(a1, b1),
         Connection(a2, b2)
     ))
     
-    val conns2 = state.agentPortConnections
+    val conns2 = setup.agentPortConnections
     
     conns2.size should equal (4)
     conns2 should contain ("<a>" -> a1)

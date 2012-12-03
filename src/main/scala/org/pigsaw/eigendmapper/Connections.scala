@@ -56,7 +56,7 @@ case class Connection(val master: Port, val slave: Port) {
 /**
  * A particular set of connections
  */
-class State(val conns: Set[Connection]) {
+class Setup(val conns: Set[Connection]) {
 
   /**
    * Get all the agent names mentioned in the set of connections,
