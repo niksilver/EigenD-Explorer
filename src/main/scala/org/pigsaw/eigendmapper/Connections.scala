@@ -105,4 +105,12 @@ class Setup(val conns: Set[Connection]) {
     new Setup(updatedConns)
   }
 
+  /**
+   * Make a normalised version of this set of connections, in which
+   * every port of the form ID &lt;main:agentnameN&gt; is changed to
+   * its shorter form of &lt;agentnameN&gt;.
+   */
+  def normalised: Set[Connection] =
+    conns map { _.normalised }
+
 }

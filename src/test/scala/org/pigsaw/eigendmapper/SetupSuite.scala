@@ -210,5 +210,30 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     connSet2 should not contain (conn_buau)
     connSet2 should contain (conn_bnau)
   }
+  
+  test("Normalise port IDs (cut the 'main:' in <main:agentname3>)") {
+    val a_short = Port("<a>#1.1", None)
+    val a_long = Port("<main:a>#1.1", None)
+    val b_short = Port("<b>#1.2", Some("b12"))
+    val b_long = Port("<main:b>#1.2", Some("b12"))
+    val c_short = Port("<c>#1.3", None)
+    val c_long = Port("<main:c>#1.3", None)
+    
+    val conns = Set(
+    		Connection(a_short, b_long),
+    		Connection(b_long, c_long),
+    		Connection(b_short, c_long)
+    )
+    
+    val conns2 = new Setup(conns).normalised
+    
+    conns2.size should equal (2)
+    conns2 should not contain (Connection(a_short, b_long))
+    conns2 should not contain (Connection(b_long, c_long))
+    conns2 should not contain (Connection(b_short, c_long))
+    conns2 should contain (Connection(a_short, b_short))
+    conns2 should contain (Connection(b_short, c_short))
+    
+  }
 
 }
