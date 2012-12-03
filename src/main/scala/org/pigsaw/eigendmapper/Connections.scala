@@ -84,5 +84,25 @@ class Setup(val conns: Set[Connection]) {
    */
   lazy val agentPortConnections: Set[(String, Port)] =
     ports map { p => ((p.agent getOrElse "UNKNOWN") -> p) }
+  
+  /**
+   * Create a unified set of connections. This means if any connections
+   * carry a port name, then those names are applied wherever those
+   * ports are used.
+   */
+  def unified: Setup = {
+    val ports = conns flatMap { c => List(c.master, c.slave) }
+    val namingPorts = ports filter (_.name.nonEmpty)
+    val names: Map[String, String] = namingPorts map { p => (p.id -> p.name.get) } toMap
+
+    // Produce an updated version of the port, with names filled in if available.
+    def updated(port: Port): Port = {
+      if (port.name.nonEmpty) port
+      else Port(port.id, names.get(port.id))
+    }
+
+    val updatedConns = conns map (c => Connection(updated(c.master), updated(c.slave)))
+    new Setup(updatedConns)
+  }
 
 }
