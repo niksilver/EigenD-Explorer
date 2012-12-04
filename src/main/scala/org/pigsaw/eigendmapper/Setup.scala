@@ -1,5 +1,7 @@
 package org.pigsaw.eigendmapper
 
+import java.util.regex.Pattern
+
 /**
  * A particular set of connections
  */
@@ -63,7 +65,7 @@ class Setup(val conns: Set[Connection]) {
   /**
    * The rigs in this setup. E.g. <code>"&lt;rig2;&gt"</code>.
    */
-  def rigs: Set[String] = agents filter { a => "<rig\\d+>".r findFirstMatchIn a nonEmpty }
+  def rigs: Set[String] = agents filter { Pattern.matches("<rig\\d+>", _) }
 
   /**
    * Get the rigs setups inside this one.
