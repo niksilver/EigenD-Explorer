@@ -279,11 +279,22 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     conns should contain (conn_bnau)
   }
   
-  test("Rigs - Contains rigs") {
-    val setup = Setup(Set())
-    val rigs: Map[String, Setup] = setup.rigs
+  test("Rigs - Detects rig names") {
+    val conn1 = Connection(Port("<rig3>#3.3", Some("three")), Port("<rig5>#5.5", Some("five")))
+    val conn2 = Connection(Port("<rig7>#7.7", None), Port("<other>#1.1", Some("other")))
+    val setup = Setup(Set(conn1, conn2))
     
-    rigs.size should equal (0)
+    setup.rigs.size should equal (3)
+    setup.rigs should contain ("<rig3>")
+    setup.rigs should contain ("<rig5>")
+    setup.rigs should contain ("<rig7>")
+  }
+  
+  test("Rigs - Contains rig setups") {
+    val setup = Setup(Set())
+    val rigSetups: Map[String, Setup] = setup.rigSetups
+    
+    rigSetups.size should equal (0)
   }
 
 }

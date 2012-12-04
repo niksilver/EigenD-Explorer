@@ -59,12 +59,17 @@ class Setup(val conns: Set[Connection]) {
    */
   def normalised: Setup =
     new Setup(conns map { _.normalised })
+  
+  /**
+   * The rigs in this setup. E.g. <code>"&lt;rig2;&gt"</code>.
+   */
+  def rigs: Set[String] = agents filter { a => "<rig\\d+>".r findFirstMatchIn a nonEmpty }
 
   /**
-   * Get the rigs (other setups) inside this one.
+   * Get the rigs setups inside this one.
    * Each one is mapped from its name, such as &lt;rig2&gt;.
    */
-  def rigs: Map[String, Setup] = Map()
+  def rigSetups: Map[String, Setup] = Map()
 }
 
 object Setup {
