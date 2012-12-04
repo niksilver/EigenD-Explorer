@@ -296,5 +296,35 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     
     rigSetups.size should equal (0)
   }
+  
+  test("Rigs - Can add one rig") {
+    val conn = Connection(Port("<ttt>#3.3", Some("three")), Port("<fff>#5.5", Some("five")))
+    val setup = Setup(Set(conn))
+
+    val rigConn = Connection(Port("<sss>#7.7", None), Port("<other>#1.1", Some("other")))
+    val rigSetup = Setup(Set(rigConn))
+
+    val setup2 = setup.withRig("<rig1>", rigSetup)
+
+    setup2.rigSetups.size should equal (1)
+    setup2.rigSetups should contain ("<rig1>" -> rigSetup)
+  }
+  
+  test("Rigs - Can add two rigs") {
+    val conn = Connection(Port("<ttt>#3.3", Some("three")), Port("<fff>#5.5", Some("five")))
+    val setup = Setup(Set(conn))
+
+    val rigConn1 = Connection(Port("<sss>#7.7", None), Port("<other>#1.1", Some("other")))
+    val rigSetup1 = Setup(Set(rigConn1))
+
+    val rigConn2 = Connection(Port("<eee>#8.8", None), Port("<other>#2.2", Some("other")))
+    val rigSetup2 = Setup(Set(rigConn2))
+
+    val setup2 = setup.withRig("<rig1>", rigSetup1).withRig("<rig2>", rigSetup2)
+
+    setup2.rigSetups.size should equal (2)
+    setup2.rigSetups should contain ("<rig1>" -> rigSetup1)
+    setup2.rigSetups should contain ("<rig2>" -> rigSetup2)
+  }
 
 }

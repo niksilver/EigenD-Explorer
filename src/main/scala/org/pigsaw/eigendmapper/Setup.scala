@@ -5,7 +5,22 @@ import java.util.regex.Pattern
 /**
  * A particular set of connections
  */
-class Setup(val conns: Set[Connection]) {
+class Setup(conns0: Set[Connection], rigSetups0: Map[String, Setup]) {
+  
+  /**
+   * Port connections
+   */
+  val conns: Set[Connection] = conns0
+  /**
+   * The rigs setups inside this one.
+   * Each one is mapped from its name, such as &lt;rig2&gt;.
+   */
+  val rigSetups: Map[String, Setup] = rigSetups0
+  
+  /**
+   * A setup with no internal rig setups
+   */
+  def this(conns0: Set[Connection]) = this(conns0, Map())
 
   /**
    * Get all the agent names mentioned in the set of connections,
@@ -65,18 +80,19 @@ class Setup(val conns: Set[Connection]) {
   /**
    * The rigs in this setup. E.g. <code>"&lt;rig2;&gt"</code>.
    */
-  def rigs: Set[String] = agents filter { Pattern.matches("<rig\\d+>", _) }
+  def rigs: Set[String] =
+    agents filter { Pattern.matches("<rig\\d+>", _) }
 
   /**
-   * Get the rigs setups inside this one.
-   * Each one is mapped from its name, such as &lt;rig2&gt;.
+   * Create a setup just like this, but with a rig setup inside.
    */
-  def rigSetups: Map[String, Setup] = Map()
+  def withRig(rig: String, setup: Setup): Setup =
+    new Setup(conns, rigSetups + (rig -> setup))
 }
 
 object Setup {
   /**
-   * Produce a normalised setup.
+   * Produce a normalised, unified setup.
    */
-  def apply(conns: Set[Connection]): Setup = new Setup(conns).normalised.unified
+  def apply(conns: Set[Connection]): Setup = new Setup(conns, Map()).normalised.unified
 }
