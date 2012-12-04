@@ -278,5 +278,12 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     conns should not contain (conn_buau)
     conns should contain (conn_bnau)
   }
+  
+  test("Rigs - Contains rigs") {
+    val setup = Setup(Set())
+    val rigs: Map[String, Setup] = setup.rigs
+    
+    rigs.size should equal (0)
+  }
 
 }

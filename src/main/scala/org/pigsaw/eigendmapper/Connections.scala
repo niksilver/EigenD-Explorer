@@ -113,6 +113,11 @@ class Setup(val conns: Set[Connection]) {
   def normalised: Setup =
     new Setup(conns map { _.normalised })
 
+  /**
+   * Get the rigs (other setups) inside this one.
+   * Each one is mapped from its name, such as &lt;rig2&gt;.
+   */
+  def rigs: Map[String, Setup] = Map()
 }
 
 object Setup {
