@@ -22,53 +22,15 @@ object Console {
 
     def act(line: String, setup: Setup): Setup = {
       parser.parseLine(line) match {
-        case Some(Snapshot) => snapshot
+        /*case Some(Snapshot) => snapshot
         case Some(GraphPorts) => writeGraph(GraphPorts)(setup); setup
         case Some(GraphAgents) => writeGraph(GraphAgents)(setup); setup
         case Some(Show(agent)) => show(agent, setup); setup
-        case Some(Help) => help; setup
+        */
+        case Some(command) => command(setup)
         case None => println("Unknown command"); setup
       }
     }
-  }
-
-  sealed abstract class Command
-  object Snapshot extends Command
-  abstract class GraphCommand extends Command
-  object GraphPorts extends GraphCommand
-  object GraphAgents extends GraphCommand
-  case class Show(agent: String) extends Command
-  object Help extends Command
-
-  class ConsoleParser extends RegexParsers {
-    override type Elem = Char
-
-    def command = snapshot | graphPorts | graphAgents | show | help
-
-    def snapshot = "snapshot" ^^ { _ => Snapshot }
-    def graphPorts = "graph" ~ "ports" ^^ { _ => GraphPorts }
-    def graphAgents = "graph" ~ "agents" ^^ { _ => GraphAgents }
-    def show = "show" ~> agent ^^ { Show(_) }
-    def agent = """\S+""".r
-    def help = "help" ^^ { _ => Help }
-
-    def parseLine(line: String): Option[Command] =
-      parseAll(phrase(command), line) match {
-        case Success(out, _) => Some(out)
-        case Failure(msg, _) => None
-      }
-
-  }
-
-  def help {
-    println("""Commands are:
-        |help      Show this message
-        |graph [agents|ports]  Dump a gexf format file of all the agent or
-        |          port connections
-        |show <agentName>   Show the connections into and out of an agent.
-        |          The agent name includes angle brackets, e.g. <drummer1>
-        |snapshot  Capture the state of all the agents' connections"""
-        .stripMargin)
   }
 
   /**
@@ -92,7 +54,7 @@ object Console {
    * @param gtype  Whether the graph should be ports (with their agents) or just agents
    * @param conns  The port connections (the state)
    */
-  def writeGraph(command: GraphCommand)(state: Setup) {
+  /*def writeGraph(command: GraphCommand)(state: Setup) {
     import Graphable._
 
     val filename = "C:\\cygwin\\home\\Nik\\graph\\output.gexf"
@@ -135,8 +97,10 @@ object Console {
 
     println("Output to " + filename)
   }
+  */
 
-  /** Show an agent's connections.
+  /**
+   * Show an agent's connections.
    */
   def show(agent: String, state: Setup): Unit = {
     val links: Set[(String, String, String)] = for {
@@ -145,11 +109,11 @@ object Console {
       val slave = conn.slave
       if (master.agent == Some(agent) || slave.agent == Some(agent))
       val link = if (master.agent == Some(agent))
-          ("", master.nonEmptyName, slave.nonEmptyFQName)
-        else
-          (master.nonEmptyFQName, slave.nonEmptyName, "")
+        ("", master.nonEmptyName, slave.nonEmptyFQName)
+      else
+        (master.nonEmptyFQName, slave.nonEmptyName, "")
     } yield link
-    
+
     if (links.size == 0)
       println("No agent called " + agent)
     else {
@@ -157,4 +121,67 @@ object Console {
       padder.output foreach { println(_) }
     }
   }
+}
+
+/*object Snapshot extends Command
+abstract class GraphCommand extends Command
+object GraphPorts extends GraphCommand
+object GraphAgents extends GraphCommand
+case class Show(agent: String) extends Command
+object Help extends Command
+*/
+
+trait Command {
+  /** The command itself, as a string. */
+  val command: String
+  
+  /** The action to perform when the command is found.
+   * @param setup  The setup that the command has to act on.
+   * @param args   The arguments the user gave after the command
+   * @returns  The new setup, after the command has been executed.
+   */
+  def action(args: Seq[String])(setup: Setup): Setup
+}
+
+class ConsoleParser extends RegexParsers {
+  override type Elem = Char
+
+  val commands = List(HelpCommand)
+  def command = commands.head.command ~> (word *) ^^ { case words => ((s:Setup) => commands.head.action(words)(s)) }
+  def word = """\w+""".r
+  
+  /*def command = snapshot | graphPorts | graphAgents | show | help
+
+  def snapshot = "snapshot" ^^ { _ => Snapshot }
+  def graphPorts = "graph" ~ "ports" ^^ { _ => GraphPorts }
+  def graphAgents = "graph" ~ "agents" ^^ { _ => GraphAgents }
+  def show = "show" ~> agent ^^ { Show(_) }
+  def agent = """\S+""".r
+  */
+
+  def parseLine(line: String): Option[(Setup)=>Setup] =
+    parseAll(phrase(command), line) match {
+      case Success(out, _) => Some(out)
+      case Failure(msg, _) => None
+    }
+
+}
+
+object HelpCommand extends Command {
+
+  val command = "help"
+
+  def action(args: Seq[String])(state: Setup): Setup = {
+    println("""Commands are:
+        |help      Show this message
+        |graph [agents|ports]  Dump a gexf format file of all the agent or
+        |          port connections
+        |show <agentName>   Show the connections into and out of an agent.
+        |          The agent name includes angle brackets, e.g. <drummer1>
+        |snapshot  Capture the state of all the agents' connections"""
+      .stripMargin)
+    println("Extra words are: " + args)
+    state
+  }
+
 }
