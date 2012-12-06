@@ -99,19 +99,21 @@ object Console {
   }
   */
 
-/*object Snapshot extends Command
+  /*object Snapshot extends Command
 abstract class GraphCommand extends Command
 object GraphPorts extends GraphCommand
 object GraphAgents extends GraphCommand
 case class Show(agent: String) extends Command
 object Help extends Command
 */
+}
 
 trait Command {
   /** The command itself, as a string. */
   val command: String
-  
-  /** The action to perform when the command is found.
+
+  /**
+   * The action to perform when the command is found.
    * @param setup  The setup that the command has to act on.
    * @param args   The arguments the user gave after the command
    * @returns  The new setup, after the command has been executed.
@@ -123,20 +125,26 @@ class ConsoleParser extends RegexParsers {
   override type Elem = Char
 
   val commands = List(ShowCommand, HelpCommand)
-  //def command = commands.head.command ~> (word *) ^^ { case words => ((s:Setup) => commands.head.action(words)(s)) }
-  //def command = oneCommandParser(commands(0)) | oneCommandParser(commands(1))
-  def oneCommandParser(cmd: Command): Parser[(Setup)=>Setup] =
-    cmd.command ~> (word *) ^^ { case words => ((s:Setup) => cmd.action(words)(s)) }
-  
+
+  // A parser for a single command. It outputs a parser which has already
+  // been fed the additional arguments, and just needs a setup to process.
+  def oneCommandParser(cmd: Command): Parser[(Setup) => Setup] =
+    cmd.command ~> (word *) ^^ { case words => ((s: Setup) => cmd.action(words)(s)) }
+
+  // A word following the main command. There may be several of these
+  // making up the command's arguments.
   def word = """\w+""".r
-  
+
+  // A parser for any possible command
   def command = commandsParser(commands)
-  
-  def commandsParser(cmds: List[Command]): Parser[(Setup)=>Setup] = cmds match {
-    case Nil         => ".*".r ^^ { _ => ((s:Setup) => { println("No such command"); s } )}
+
+  // A parser of any number of commands. The final parser (if all known
+  // commands fail) is one which reports an unknown command
+  def commandsParser(cmds: List[Command]): Parser[(Setup) => Setup] = cmds match {
+    case Nil => ".*".r ^^ { _ => ((s: Setup) => { println("No such command"); s }) }
     case cmd :: tail => oneCommandParser(cmd) | commandsParser(tail)
   }
-  
+
   /*def command = snapshot | graphPorts | graphAgents | show | help
 
   def snapshot = "snapshot" ^^ { _ => Snapshot }
@@ -146,7 +154,7 @@ class ConsoleParser extends RegexParsers {
   def agent = """\S+""".r
   */
 
-  def parseLine(line: String): Option[(Setup)=>Setup] =
+  def parseLine(line: String): Option[(Setup) => Setup] =
     parseAll(phrase(command), line) match {
       case Success(out, _) => Some(out)
       case Failure(msg, _) => None
@@ -178,7 +186,7 @@ object HelpCommand extends Command {
 object ShowCommand extends Command {
 
   val command = "show"
-    
+
   /**
    * The show action. Should have just one argument, which is the
    * name of the agent to show.
@@ -189,10 +197,10 @@ object ShowCommand extends Command {
       case 1 => showAgent(args(0), setup)
       case _ => println("show: Too many arguments, only one required")
     }
-    
+
     setup
   }
-  
+
   def showAgent(agent: String, setup: Setup) {
     val links: Set[(String, String, String)] = for {
       conn <- setup.conns
@@ -212,6 +220,4 @@ object ShowCommand extends Command {
       padder.output foreach { println(_) }
     }
   }
-}
-  
 }
