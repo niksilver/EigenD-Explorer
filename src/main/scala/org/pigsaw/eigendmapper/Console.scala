@@ -124,10 +124,18 @@ class ConsoleParser extends RegexParsers {
 
   val commands = List(ShowCommand, HelpCommand)
   //def command = commands.head.command ~> (word *) ^^ { case words => ((s:Setup) => commands.head.action(words)(s)) }
-  def command = oneCommandParser(commands(0)) | oneCommandParser(commands(1))
+  //def command = oneCommandParser(commands(0)) | oneCommandParser(commands(1))
   def oneCommandParser(cmd: Command): Parser[(Setup)=>Setup] =
     cmd.command ~> (word *) ^^ { case words => ((s:Setup) => cmd.action(words)(s)) }
+  
   def word = """\w+""".r
+  
+  def command = commandsParser(commands)
+  
+  def commandsParser(cmds: List[Command]): Parser[(Setup)=>Setup] = cmds match {
+    case Nil         => ".*".r ^^ { _ => ((s:Setup) => { println("No such command"); s } )}
+    case cmd :: tail => oneCommandParser(cmd) | commandsParser(tail)
+  }
   
   /*def command = snapshot | graphPorts | graphAgents | show | help
 
