@@ -99,30 +99,6 @@ object Console {
   }
   */
 
-  /**
-   * Show an agent's connections.
-   */
-  def show(agent: String, state: Setup): Unit = {
-    val links: Set[(String, String, String)] = for {
-      conn <- state.conns
-      val master = conn.master
-      val slave = conn.slave
-      if (master.agent == Some(agent) || slave.agent == Some(agent))
-      val link = if (master.agent == Some(agent))
-        ("", master.nonEmptyName, slave.nonEmptyFQName)
-      else
-        (master.nonEmptyFQName, slave.nonEmptyName, "")
-    } yield link
-
-    if (links.size == 0)
-      println("No agent called " + agent)
-    else {
-      val padder = new Padder(links.toSeq.sortBy(_._2), " --> ")
-      padder.output foreach { println(_) }
-    }
-  }
-}
-
 /*object Snapshot extends Command
 abstract class GraphCommand extends Command
 object GraphPorts extends GraphCommand
@@ -140,14 +116,17 @@ trait Command {
    * @param args   The arguments the user gave after the command
    * @returns  The new setup, after the command has been executed.
    */
-  def action(args: Seq[String])(setup: Setup): Setup
+  def action(args: List[String])(setup: Setup): Setup
 }
 
 class ConsoleParser extends RegexParsers {
   override type Elem = Char
 
-  val commands = List(HelpCommand)
-  def command = commands.head.command ~> (word *) ^^ { case words => ((s:Setup) => commands.head.action(words)(s)) }
+  val commands = List(ShowCommand, HelpCommand)
+  //def command = commands.head.command ~> (word *) ^^ { case words => ((s:Setup) => commands.head.action(words)(s)) }
+  def command = oneCommandParser(commands(0)) | oneCommandParser(commands(1))
+  def oneCommandParser(cmd: Command): Parser[(Setup)=>Setup] =
+    cmd.command ~> (word *) ^^ { case words => ((s:Setup) => cmd.action(words)(s)) }
   def word = """\w+""".r
   
   /*def command = snapshot | graphPorts | graphAgents | show | help
@@ -171,7 +150,7 @@ object HelpCommand extends Command {
 
   val command = "help"
 
-  def action(args: Seq[String])(state: Setup): Setup = {
+  def action(args: List[String])(state: Setup): Setup = {
     println("""Commands are:
         |help      Show this message
         |graph [agents|ports]  Dump a gexf format file of all the agent or
@@ -180,8 +159,51 @@ object HelpCommand extends Command {
         |          The agent name includes angle brackets, e.g. <drummer1>
         |snapshot  Capture the state of all the agents' connections"""
       .stripMargin)
-    println("Extra words are: " + args)
     state
   }
 
+}
+
+/**
+ * Show an agent's connections.
+ */
+object ShowCommand extends Command {
+
+  val command = "show"
+    
+  /**
+   * The show action. Should have just one argument, which is the
+   * name of the agent to show.
+   */
+  def action(args: List[String])(setup: Setup): Setup = {
+    args.length match {
+      case 0 => println("show: No agent name given")
+      case 1 => showAgent(args(0), setup)
+      case _ => println("show: Too many arguments, only one required")
+    }
+    
+    setup
+  }
+  
+  def showAgent(agent: String, setup: Setup) {
+    val links: Set[(String, String, String)] = for {
+      conn <- setup.conns
+      val master = conn.master
+      val slave = conn.slave
+      if (master.agent == Some(agent) || slave.agent == Some(agent))
+      val link = if (master.agent == Some(agent))
+        ("", master.nonEmptyName, slave.nonEmptyFQName)
+      else
+        (master.nonEmptyFQName, slave.nonEmptyName, "")
+    } yield link
+
+    if (links.size == 0)
+      println("No agent called " + agent)
+    else {
+      val padder = new Padder(links.toSeq.sortBy(_._2), " --> ")
+      padder.output foreach { println(_) }
+    }
+  }
+}
+  
 }
