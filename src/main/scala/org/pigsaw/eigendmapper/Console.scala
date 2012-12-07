@@ -12,9 +12,9 @@ object Console {
 
     def actLoop(setup: Setup): Unit = {
       ul.line match {
-        case None => ; // Do nothing
-        case Some(input) => {
-          val state2 = act(input, setup)
+        case None => ; // Do nothing and hence exit
+        case Some(line) => {
+          val state2 = act(line, setup)
           actLoop(state2)
         }
       }
@@ -31,22 +31,6 @@ object Console {
         case None => println("Unknown command"); setup
       }
     }
-  }
-
-  /**
-   * Capture all the connections in a single setup
-   */
-  def snapshot: Setup = {
-    val bls = new BLs("<main>")
-    val agents = bls.agents
-    val allConnections = for {
-      agent <- agents
-      bcat = new BCat(agent)
-      conn <- bcat.connections
-    } yield { println("Agent " + agent + ", connection " + conn); conn }
-    val setup = Setup(allConnections.toSet)
-    setup.conns foreach { c => println("Unified: " + c) }
-    setup
   }
 
   /**
@@ -134,7 +118,10 @@ trait Command {
 class ConsoleParser extends RegexParsers {
   override type Elem = Char
 
-  val commands = List(ShowCommand, HelpCommand)
+  val commands = List(
+      SnapshotCommand,
+      ShowCommand,
+      HelpCommand)
 
   // A parser for a single command. It outputs a parser which has already
   // been fed the additional arguments, and just needs a setup to process.
@@ -143,15 +130,16 @@ class ConsoleParser extends RegexParsers {
 
   // A word following the main command. There may be several of these
   // making up the command's arguments.
-  def word = """\w+""".r
+  def word = """\S+""".r
 
   // A parser for any possible command
   def command = commandsParser(commands)
 
-  // A parser of any number of commands. The final parser (if all known
+  // A parser of any number of commands, but at least one. The final parser (if all known
   // commands fail) is one which reports an unknown command
   def commandsParser(cmds: List[Command]): Parser[(Setup) => Setup] = cmds match {
-    case Nil => ".*".r ^^ { _ => ((s: Setup) => { println("No such command"); s }) }
+    case Nil         => throw new Exception("Must have at least one command")
+    case cmd :: Nil  => oneCommandParser(cmd)
     case cmd :: tail => oneCommandParser(cmd) | commandsParser(tail)
   }
 
@@ -204,14 +192,14 @@ object ShowCommand extends Command {
   def action(args: List[String])(setup: Setup)(implicit pr: Printer): Setup = {
     args.length match {
       case 0 => pr.fn("show: No agent name given")
-      case 1 => showAgent(args(0), setup)
+      case 1 => doShow(args(0), setup, pr)
       case _ => pr.fn("show: Too many arguments, only one required")
     }
 
     setup
   }
 
-  def showAgent(agent: String, setup: Setup) {
+  def doShow(agent: String, setup: Setup, pr: Printer) {
     val links: Set[(String, String, String)] = for {
       conn <- setup.conns
       val master = conn.master
@@ -224,10 +212,35 @@ object ShowCommand extends Command {
     } yield link
 
     if (links.size == 0)
-      println("No agent called " + agent)
+      pr.fn("No agent called " + agent)
     else {
       val padder = new Padder(links.toSeq.sortBy(_._2), " --> ")
-      padder.output foreach { println(_) }
+      padder.output foreach { pr.fn(_) }
     }
+  }
+}
+
+/**
+ * Capture all the connections in a single setup
+ */
+object SnapshotCommand extends Command {
+
+  val command = "snapshot"
+
+  def action(args: List[String])(setup: Setup)(implicit pr: Printer): Setup = {
+    doSnapshot(pr)
+  }
+  
+  def doSnapshot(pr: Printer): Setup = {
+    val bls = new BLs("<main>")
+    val agents = bls.agents
+    val allConnections = for {
+      agent <- agents
+      bcat = new BCat(agent)
+      conn <- bcat.connections
+    } yield { println("Agent " + agent + ", connection " + conn); conn }
+    val setup = Setup(allConnections.toSet)
+    setup.conns foreach { c => println("Unified: " + c) }
+    setup
   }
 }
