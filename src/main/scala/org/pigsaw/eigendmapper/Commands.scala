@@ -126,18 +126,19 @@ object GraphCommand extends Command {
   }
   /**
    * Output the gexf file.
-   * @param gtype  Whether the graph should be ports (with their agents) or just agents
-   * @param conns  The port connections (the state)
+   * @param arg    What to graph, either "agents" or "ports"
+   * @param setup  The current setup to graph
+   * @param pr     The print output function
    */
-  def doGraph(arg: String, state: Setup, pr: Printer) {
+  def doGraph(arg: String, setup: Setup, pr: Printer) {
     import Graphable._
 
     val filename = "C:\\cygwin\\home\\Nik\\graph\\output.gexf"
     val out = new FileWriter(filename)
     out write Graphable.gexfHeader
 
-    val localConns = state.agentPortConnections
-    val agentConns = state.agentAgentConnections
+    val localConns = setup.agentPortConnections
+    val agentConns = setup.agentAgentConnections
 
     out write "<nodes>\n"
 
@@ -146,7 +147,7 @@ object GraphCommand extends Command {
 
     // Maybe declare the port nodes
     arg match {
-      case "ports"  => state.ports foreach { out write _.nodeXML + "\n" }
+      case "ports"  => setup.ports foreach { out write _.nodeXML + "\n" }
       case "agents" => ; // Do nothing
     }
 
@@ -157,7 +158,7 @@ object GraphCommand extends Command {
     command match {
       // When graphing ports: Write port-port edges and agent-port edges
       case "ports" => {
-        state.conns foreach { out write _.edgeXML + "\n" }
+        setup.conns foreach { out write _.edgeXML + "\n" }
         localConns foreach { out write _.edgeXML + "\n" }
       }
       // When graphing agents: Write agent-agent-edges
