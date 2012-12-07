@@ -109,8 +109,13 @@ class ConsoleParser extends RegexParsers {
   // making up the command's arguments.
   def word = """\S+""".r
 
+  def command = someCommand | noCommand
+  
+  // In case the user didn't enter anything
+  def noCommand = "" ^^ { _ => ((s: Setup) => s) }
+
   // A parser for any possible command
-  def command = commandsParser(commands)
+  def someCommand = commandsParser(commands)
 
   // A parser of any number of commands, but at least one. The final parser (if all known
   // commands fail) is one which reports an unknown command
