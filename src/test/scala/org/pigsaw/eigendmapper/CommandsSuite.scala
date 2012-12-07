@@ -8,24 +8,19 @@ import org.scalatest.matchers.ShouldMatchers
 @RunWith(classOf[JUnitRunner])
 class CommandsSuite extends FunSuite with ShouldMatchers {
   
-  test("ConsoleParser - Parses show <agent>") {
-    val parser = new ConsoleParser
-    val cmd: Option[Setup => Setup] = parser.parseLine("show <agent>")
-    
-    cmd should be ('defined)
+  class PrintCatcher(var output: String = "") {
+  	val printer = new ShowCommand.Printer({ s => output = output + s.toString + "\n" })
   }
 
   test("Show - handles no agents") {
     val setup = Setup(Set())
     
-    var output = ""
-    def fn(s: Any): Unit = { output += s.toString + "\n" }
-    val printer = new ShowCommand.Printer(fn)
+    val catcher = new PrintCatcher
     
-    ShowCommand.action(List("<rig1>"))(setup)(printer)
+    ShowCommand.action(List("<rig1>"))(setup)(catcher.printer)
     
-    output should not include ("Unknown")
-    output should include ("No agent called <rig1>")
+    catcher.output should not include ("Unknown")
+    catcher.output should include ("No agent called <rig1>")
   }
 
   test("Show - Produces somewhat sensible output") {
