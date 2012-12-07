@@ -64,15 +64,6 @@ class ConsoleParser extends RegexParsers {
     case cmd :: tail => oneCommandParser(cmd) | commandsParser(tail)
   }
 
-  /*def command = snapshot | graphPorts | graphAgents | show | help
-
-  def snapshot = "snapshot" ^^ { _ => Snapshot }
-  def graphPorts = "graph" ~ "ports" ^^ { _ => GraphPorts }
-  def graphAgents = "graph" ~ "agents" ^^ { _ => GraphAgents }
-  def show = "show" ~> agent ^^ { Show(_) }
-  def agent = """\S+""".r
-  */
-
   def parseLine(line: String): Option[(Setup) => Setup] =
     parseAll(phrase(command), line) match {
       case Success(out, _) => Some(out)
