@@ -118,7 +118,17 @@ trait Command {
    * @param args   The arguments the user gave after the command
    * @returns  The new setup, after the command has been executed.
    */
-  def action(args: List[String])(setup: Setup): Setup
+  def action(args: List[String])(setup: Setup)(implicit pr: Printer): Setup
+  
+  /**
+   * Something that allows a println function (fn)
+   * @param fn  The println function
+   */
+  class Printer(val fn: Any => Unit)
+  object Printer {
+	  implicit val fn: Printer = new Printer(scala.Console.println)
+  }
+  
 }
 
 class ConsoleParser extends RegexParsers {
@@ -166,8 +176,8 @@ object HelpCommand extends Command {
 
   val command = "help"
 
-  def action(args: List[String])(state: Setup): Setup = {
-    println("""Commands are:
+  def action(args: List[String])(state: Setup)(implicit pr: Printer): Setup = {
+    pr.fn("""Commands are:
         |help      Show this message
         |graph [agents|ports]  Dump a gexf format file of all the agent or
         |          port connections
@@ -191,11 +201,11 @@ object ShowCommand extends Command {
    * The show action. Should have just one argument, which is the
    * name of the agent to show.
    */
-  def action(args: List[String])(setup: Setup): Setup = {
+  def action(args: List[String])(setup: Setup)(implicit pr: Printer): Setup = {
     args.length match {
-      case 0 => println("show: No agent name given")
+      case 0 => pr.fn("show: No agent name given")
       case 1 => showAgent(args(0), setup)
-      case _ => println("show: Too many arguments, only one required")
+      case _ => pr.fn("show: Too many arguments, only one required")
     }
 
     setup
