@@ -9,7 +9,7 @@ import org.scalatest.matchers.ShouldMatchers
 class CommandsSuite extends FunSuite with ShouldMatchers {
   
   class PrintCatcher(var output: String = "") {
-  	val printer = new ShowCommand.Printer({ s => output = output + s.toString + "\n" })
+  	val printer = new Printer({ s => output = output + s.toString + "\n" })
   }
 
   test("Show - handles no agents") {
@@ -29,11 +29,44 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
     
     var output = ""
     def println(s: Any): Unit = { output += s.toString + "\n" }
-    val printer = new ShowCommand.Printer(println)
+    val printer = new Printer(println)
     
     ShowCommand.action(List("<ttt>"))(setup)(printer)
     
     output should not include ("Unknown")
     output should include ("-->")
+  }
+
+  test("Graph - handles no arguments") {
+    val setup = Setup(Set())
+    
+    val catcher = new PrintCatcher
+    val args = List()
+    
+    GraphCommand.action(args)(setup)(catcher.printer)
+    
+    catcher.output should include ("You need to specify")
+  }
+
+  test("Graph - handles too many args") {
+    val setup = Setup(Set())
+    
+    val catcher = new PrintCatcher
+    val args = List("a", "b")
+    
+    GraphCommand.action(args)(setup)(catcher.printer)
+    
+    catcher.output should include ("Too many arguments")
+  }
+
+  test("Graph - handles single bad argument") {
+    val setup = Setup(Set())
+    
+    val catcher = new PrintCatcher
+    val args = List("wrong")
+    
+    GraphCommand.action(args)(setup)(catcher.printer)
+    
+    catcher.output should include ("Do not recognise what to graph")
   }
 }

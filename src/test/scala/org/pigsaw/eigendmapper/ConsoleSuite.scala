@@ -14,5 +14,12 @@ class ConsoleSuite extends FunSuite with ShouldMatchers {
     
     cmd should be ('defined)
   }
+  
+  test("ConsoleParser - Handles graph nodes") {
+    val parser = new ConsoleParser
+    val cmd: Option[Setup => Setup] = parser.parseLine("graph nodes")
+    
+    cmd should be ('defined)
+  }
 
 }

@@ -14,6 +14,8 @@ trait Command {
    */
   def action(args: List[String])(setup: Setup)(implicit pr: Printer): Setup
   
+}
+  
   /**
    * Something that allows a println function (fn)
    * @param fn  The println function
@@ -22,8 +24,6 @@ trait Command {
   object Printer {
 	  implicit val fn: Printer = new Printer(scala.Console.println)
   }
-  
-}
 
 object HelpCommand extends Command {
 
@@ -108,4 +108,69 @@ object SnapshotCommand extends Command {
     setup.conns foreach { c => println("Unified: " + c) }
     setup
   }
+}
+
+object GraphCommand extends Command {
+
+  val command = "graph"
+
+  def action(args: List[String])(setup: Setup)(implicit pr: Printer): Setup = {
+    args match {
+      case Nil            => pr.fn("graph: You need to specify something to graph")
+      case List("ports")  => doGraph("ports", setup, pr)
+      case List("agents") => doGraph("agents", setup, pr)
+      case List(x)        => pr.fn("graph: Do not recognise what to graph")
+      case _              => pr.fn("graph: Too many arguments")
+    }
+    setup
+  }
+  /**
+   * Output the gexf file.
+   * @param gtype  Whether the graph should be ports (with their agents) or just agents
+   * @param conns  The port connections (the state)
+   */
+  def doGraph(arg: String, state: Setup, pr: Printer) {
+    import Graphable._
+
+    val filename = "C:\\cygwin\\home\\Nik\\graph\\output.gexf"
+    val out = new FileWriter(filename)
+    out write Graphable.gexfHeader
+
+    val localConns = state.agentPortConnections
+    val agentConns = state.agentAgentConnections
+
+    out write "<nodes>\n"
+
+    // Declare the agent nodes
+    localConns foreach { out write _._1.nodeXML + "\n" }
+
+    // Maybe declare the port nodes
+    arg match {
+      case "ports"  => state.ports foreach { out write _.nodeXML + "\n" }
+      case "agents" => ; // Do nothing
+    }
+
+    out write "</nodes>\n"
+
+    out write "<edges>\n"
+
+    command match {
+      // When graphing ports: Write port-port edges and agent-port edges
+      case "ports" => {
+        state.conns foreach { out write _.edgeXML + "\n" }
+        localConns foreach { out write _.edgeXML + "\n" }
+      }
+      // When graphing agents: Write agent-agent-edges
+      case "agents" => {
+        agentConns foreach { out write _.edgeXML + "\n" }
+      }
+    }
+    out write "</edges>\n"
+
+    out write Graphable.gexfFooter
+    out.close
+
+    pr.fn("Output to " + filename)
+  }
+  
 }

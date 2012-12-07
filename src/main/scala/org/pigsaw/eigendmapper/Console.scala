@@ -22,74 +22,12 @@ object Console {
 
     def act(line: String, setup: Setup): Setup = {
       parser.parseLine(line) match {
-        /*case Some(Snapshot) => snapshot
-        case Some(GraphPorts) => writeGraph(GraphPorts)(setup); setup
-        case Some(GraphAgents) => writeGraph(GraphAgents)(setup); setup
-        case Some(Show(agent)) => show(agent, setup); setup
-        */
         case Some(command) => command(setup)
         case None => println("Unknown command"); setup
       }
     }
   }
 
-  /**
-   * Output the gexf file.
-   * @param gtype  Whether the graph should be ports (with their agents) or just agents
-   * @param conns  The port connections (the state)
-   */
-  /*def writeGraph(command: GraphCommand)(state: Setup) {
-    import Graphable._
-
-    val filename = "C:\\cygwin\\home\\Nik\\graph\\output.gexf"
-    val out = new FileWriter(filename)
-    out write Graphable.gexfHeader
-
-    val localConns = state.agentPortConnections
-    val agentConns = state.agentAgentConnections
-
-    out write "<nodes>\n"
-
-    // Declare the agent nodes
-    localConns foreach { out write _._1.nodeXML + "\n" }
-
-    // Maybe declare the port nodes
-    command match {
-      case GraphPorts => state.ports foreach { out write _.nodeXML + "\n" }
-      case GraphAgents => ; // Do nothing
-    }
-
-    out write "</nodes>\n"
-
-    out write "<edges>\n"
-
-    command match {
-      // When graphing ports: Write port-port edges and agent-port edges
-      case GraphPorts => {
-        state.conns foreach { out write _.edgeXML + "\n" }
-        localConns foreach { out write _.edgeXML + "\n" }
-      }
-      // When graphing agents: Write agent-agent-edges
-      case GraphAgents => {
-        agentConns foreach { out write _.edgeXML + "\n" }
-      }
-    }
-    out write "</edges>\n"
-
-    out write Graphable.gexfFooter
-    out.close
-
-    println("Output to " + filename)
-  }
-  */
-
-  /*object Snapshot extends Command
-abstract class GraphCommand extends Command
-object GraphPorts extends GraphCommand
-object GraphAgents extends GraphCommand
-case class Show(agent: String) extends Command
-object Help extends Command
-*/
 }
 
 class ConsoleParser extends RegexParsers {
@@ -98,6 +36,7 @@ class ConsoleParser extends RegexParsers {
   val commands = List(
       SnapshotCommand,
       ShowCommand,
+      GraphCommand,
       HelpCommand)
 
   // A parser for a single command. It outputs a parser which has already
