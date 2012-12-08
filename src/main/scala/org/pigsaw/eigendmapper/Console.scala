@@ -8,7 +8,7 @@ object Console {
   def main(args: Array[String]) {
     val parser = new ConsoleParser
     val ul = new UserLine(">> ")
-    actLoop(new Setup(Set()))
+    actLoop(Setup())
 
     def actLoop(setup: Setup): Unit = {
       ul.line match {

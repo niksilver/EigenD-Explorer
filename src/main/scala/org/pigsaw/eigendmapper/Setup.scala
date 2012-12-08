@@ -92,6 +92,11 @@ class Setup(conns0: Set[Connection], rigSetups0: Map[String, Setup]) {
 
 object Setup {
   /**
+   * Make an empty setup
+   */
+  def apply(): Setup = new Setup(Set())
+  
+  /**
    * Produce a normalised, unified setup.
    */
   def apply(conns: Set[Connection]): Setup = new Setup(conns).normalised.unified

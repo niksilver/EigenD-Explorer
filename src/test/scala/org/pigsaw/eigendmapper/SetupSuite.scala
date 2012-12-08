@@ -236,6 +236,11 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     
   }
   
+  test("Apply - Should allow empty setup with no params") {
+    val setup = Setup()
+    setup.agents.size should be (0)
+  }
+  
   test("Apply - Make sure it normalises") {
     val a_short = Port("<a>#1.1", None)
     val a_long = Port("<main:a>#1.1", None)
@@ -291,7 +296,7 @@ class SetupSuite extends FunSuite with ShouldMatchers {
   }
   
   test("Rigs - Contains rig setups") {
-    val setup = Setup(Set())
+    val setup = Setup()
     val rigSetups: Map[String, Setup] = setup.rigSetups
     
     rigSetups.size should equal (0)
