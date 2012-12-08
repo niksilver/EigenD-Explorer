@@ -4,6 +4,8 @@ import java.util.regex.Pattern
 
 /**
  * A particular set of connections
+ * @param conns0  The set of connections in this setup.
+ * @param rigSetups0  Mapping from each rig name to its setup.
  */
 class Setup(conns0: Set[Connection], rigSetups0: Map[String, Setup]) {
   
@@ -111,3 +113,15 @@ object Setup {
    */
   def apply(conns: Set[Connection]): Setup = new Setup(conns).normalised.unified
 }
+
+/**
+ * A setup with the additional feature of knowing where in the
+ * rig hierarchy we are.
+ * @param conns0  The set of connections in this setup.
+ * @param rigSetups0  Mapping from each rig name to its setup.
+ * @param pos  Our current location in the rig hierarchy, as navigated
+ *     by rig names from the top. Empty list means we're at the top setup.
+ */
+class SetupWithPos(conns0: Set[Connection],
+    rigSetups0: Map[String, Setup],
+    val pos: List[String]) extends Setup(conns0, rigSetups0)

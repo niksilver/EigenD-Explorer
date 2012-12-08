@@ -346,5 +346,19 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     setup2.rigSetups should contain("<rig1>" -> rigSetup1)
     setup2.rigSetups should contain("<rig2>" -> rigSetup2)
   }
+  
+  test("SetupWithPos - Constructor") {
+    val conn = Connection(Port("<rig3>#3.3", Some("three")), Port("<fff>#5.5", Some("five")))
+
+    val rigConn = Connection(Port("<sss>#7.7", None), Port("<other>#1.1", Some("other")))
+    val rigSetup = Setup(Set(rigConn))
+
+    val setup = new SetupWithPos(Set(conn), Map("<rig3>" -> rigSetup), List("<rig3>"))
+    
+    setup.pos should be (List("<rig3>"))
+    setup.conns should be (Set(conn))
+    setup.rigs should be (Set("<rig3>"))
+    setup.rigSetups("<rig3>") should be (rigSetup)
+  }
 
 }
