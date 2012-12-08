@@ -6,31 +6,28 @@ trait Command {
   /** The command itself, as a string. */
   val command: String
 
+  /** A println function (normally scala.Console.println,
+   *     but can be changed for testing purposes). 
+   */
+  type PrintlnFn = Any => Unit
+  
   /**
    * The action to perform when the command is found.
-   * @param setup  The setup that the command has to act on.
    * @param args   The arguments the user gave after the command
+   * @param setup  The setup that the command has to act on.
+   * @param prln   The println function to use
    * @returns  The new setup, after the command has been executed.
    */
-  def action(args: List[String])(setup: Setup)(implicit pr: Printer): Setup
+  def action(args: List[String])(setup: Setup, prln: PrintlnFn): Setup
   
 }
-  
-  /**
-   * Something that allows a println function (fn)
-   * @param fn  The println function
-   */
-  class Printer(val fn: Any => Unit)
-  object Printer {
-	  implicit val fn: Printer = new Printer(scala.Console.println)
-  }
 
 object HelpCommand extends Command {
 
   val command = "help"
 
-  def action(args: List[String])(state: Setup)(implicit pr: Printer): Setup = {
-    pr.fn("""Commands are:
+  def action(args: List[String])(state: Setup, prln: PrintlnFn): Setup = {
+    prln("""Commands are:
         |help      Show this message
         |graph [agents|ports]  Dump a gexf format file of all the agent or
         |          port connections
@@ -54,17 +51,17 @@ object ShowCommand extends Command {
    * The show action. Should have just one argument, which is the
    * name of the agent to show.
    */
-  def action(args: List[String])(setup: Setup)(implicit pr: Printer): Setup = {
+  def action(args: List[String])(setup: Setup, prln: PrintlnFn): Setup = {
     args.length match {
-      case 0 => pr.fn("show: No agent name given")
-      case 1 => doShow(args(0), setup, pr)
-      case _ => pr.fn("show: Too many arguments, only one required")
+      case 0 => prln("show: No agent name given")
+      case 1 => doShow(args(0), setup, prln)
+      case _ => prln("show: Too many arguments, only one required")
     }
 
     setup
   }
 
-  def doShow(agent: String, setup: Setup, pr: Printer) {
+  def doShow(agent: String, setup: Setup, prln: PrintlnFn) {
     val links: Set[(String, String, String)] = for {
       conn <- setup.conns
       val master = conn.master
@@ -77,10 +74,10 @@ object ShowCommand extends Command {
     } yield link
 
     if (links.size == 0)
-      pr.fn("No agent called " + agent)
+      prln("No agent called " + agent)
     else {
       val padder = new Padder(links.toSeq.sortBy(_._2), " --> ")
-      padder.output foreach { pr.fn(_) }
+      padder.output foreach { prln(_) }
     }
   }
 }
@@ -92,11 +89,11 @@ object SnapshotCommand extends Command {
 
   val command = "snapshot"
 
-  def action(args: List[String])(setup: Setup)(implicit pr: Printer): Setup = {
-    doSnapshot(pr)
+  def action(args: List[String])(setup: Setup, prln: PrintlnFn): Setup = {
+    doSnapshot(prln)
   }
   
-  def doSnapshot(pr: Printer): Setup = {
+  def doSnapshot(prln: PrintlnFn): Setup = {
     val bls = new BLs("<main>")
     val agents = bls.agents
     val allConnections = for {
@@ -114,23 +111,24 @@ object GraphCommand extends Command {
 
   val command = "graph"
 
-  def action(args: List[String])(setup: Setup)(implicit pr: Printer): Setup = {
+  def action(args: List[String])(setup: Setup, prln: PrintlnFn): Setup = {
     args match {
-      case Nil            => pr.fn("graph: You need to specify something to graph")
-      case List("ports")  => doGraph("ports", setup, pr)
-      case List("agents") => doGraph("agents", setup, pr)
-      case List(x)        => pr.fn("graph: Do not recognise what to graph")
-      case _              => pr.fn("graph: Too many arguments")
+      case Nil            => prln("graph: You need to specify something to graph")
+      case List("ports")  => doGraph("ports", setup, prln)
+      case List("agents") => doGraph("agents", setup, prln)
+      case List(x)        => prln("graph: Do not recognise what to graph")
+      case _              => prln("graph: Too many arguments")
     }
     setup
   }
+  
   /**
    * Output the gexf file.
    * @param arg    What to graph, either "agents" or "ports"
    * @param setup  The current setup to graph
-   * @param pr     The print output function
+   * @param prln   The print output function
    */
-  def doGraph(arg: String, setup: Setup, pr: Printer) {
+  def doGraph(arg: String, setup: Setup, prln: PrintlnFn) {
     import Graphable._
 
     val filename = "C:\\cygwin\\home\\Nik\\graph\\output.gexf"
@@ -171,7 +169,7 @@ object GraphCommand extends Command {
     out write Graphable.gexfFooter
     out.close
 
-    pr.fn("Output to " + filename)
+    prln("Output to " + filename)
   }
   
 }

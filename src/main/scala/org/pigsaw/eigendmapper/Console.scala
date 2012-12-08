@@ -33,6 +33,11 @@ object Console {
 class ConsoleParser extends RegexParsers {
   override type Elem = Char
 
+  /**
+   * Default println function with one argument; may be overriden.
+   */
+  val prln: Any=>Unit = scala.Console.println
+  
   val commands = List(
       SnapshotCommand,
       ShowCommand,
@@ -42,7 +47,7 @@ class ConsoleParser extends RegexParsers {
   // A parser for a single command. It outputs a parser which has already
   // been fed the additional arguments, and just needs a setup to process.
   def oneCommandParser(cmd: Command): Parser[(Setup) => Setup] =
-    cmd.command ~> (word *) ^^ { case words => ((s: Setup) => cmd.action(words)(s)) }
+    cmd.command ~> (word *) ^^ { case words => ((s: Setup) => cmd.action(words)(s, prln)) }
 
   // A word following the main command. There may be several of these
   // making up the command's arguments.

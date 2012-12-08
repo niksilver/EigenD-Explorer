@@ -8,8 +8,9 @@ import org.scalatest.matchers.ShouldMatchers
 @RunWith(classOf[JUnitRunner])
 class CommandsSuite extends FunSuite with ShouldMatchers {
   
-  class PrintCatcher(var output: String = "") {
-  	val printer = new Printer({ s => output = output + s.toString + "\n" })
+  class PrintCatcher {
+    var output = ""
+  	def println(s: Any): Unit = { output = output + s.toString + "\n" }
   }
 
   test("Show - handles no agents") {
@@ -17,7 +18,7 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
     
     val catcher = new PrintCatcher
     
-    ShowCommand.action(List("<rig1>"))(setup)(catcher.printer)
+    ShowCommand.action(List("<rig1>"))(setup, catcher.println)
     
     catcher.output should not include ("Unknown")
     catcher.output should include ("No agent called <rig1>")
@@ -27,14 +28,12 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
     val conn = Connection(Port("<ttt>#3.3", Some("three")), Port("<fff>#5.5", Some("five")))
     val setup = Setup(Set(conn))
     
-    var output = ""
-    def println(s: Any): Unit = { output += s.toString + "\n" }
-    val printer = new Printer(println)
+    val catcher = new PrintCatcher
     
-    ShowCommand.action(List("<ttt>"))(setup)(printer)
+    ShowCommand.action(List("<ttt>"))(setup, catcher.println)
     
-    output should not include ("Unknown")
-    output should include ("-->")
+    catcher.output should not include ("Unknown")
+    catcher.output should include ("-->")
   }
 
   test("Graph - handles no arguments") {
@@ -43,7 +42,7 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
     val catcher = new PrintCatcher
     val args = List()
     
-    GraphCommand.action(args)(setup)(catcher.printer)
+    GraphCommand.action(args)(setup, catcher.println)
     
     catcher.output should include ("You need to specify")
   }
@@ -54,7 +53,7 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
     val catcher = new PrintCatcher
     val args = List("a", "b")
     
-    GraphCommand.action(args)(setup)(catcher.printer)
+    GraphCommand.action(args)(setup, catcher.println)
     
     catcher.output should include ("Too many arguments")
   }
@@ -65,7 +64,7 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
     val catcher = new PrintCatcher
     val args = List("wrong")
     
-    GraphCommand.action(args)(setup)(catcher.printer)
+    GraphCommand.action(args)(setup, catcher.println)
     
     catcher.output should include ("Do not recognise what to graph")
   }
