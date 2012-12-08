@@ -88,6 +88,16 @@ class Setup(conns0: Set[Connection], rigSetups0: Map[String, Setup]) {
    */
   def withRig(rig: String, setup: Setup): Setup =
     new Setup(conns, rigSetups + (rig -> setup))
+  
+  override def equals(that: Any): Boolean = {
+    if (!that.isInstanceOf[Setup]) false
+    else {
+      val setup2 = this.asInstanceOf[Setup]
+      this.conns == setup2.conns &&
+        this.rigSetups == setup2.rigSetups
+    }
+  }
+  
 }
 
 object Setup {
