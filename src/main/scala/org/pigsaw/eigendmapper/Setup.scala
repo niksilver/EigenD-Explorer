@@ -100,7 +100,7 @@ class Setup(conns0: Set[Connection], rigSetups0: Map[String, Setup]) {
         this.rigSetups == that.rigSetups
       case _ => false
     }
-  
+
   override def hashCode: Int =
     41 * (41 + conns.hashCode) + rigSetups.hashCode
 
@@ -135,14 +135,15 @@ class SetupWithPos(conns0: Set[Connection],
    */
   def this(setup: Setup, pos: List[String]) =
     this(setup.conns, setup.rigSetups, pos)
-    
+
   override def canEqual(other: Any): Boolean = other.isInstanceOf[SetupWithPos]
-  
+
   override def equals(other: Any) =
     other match {
-    case that: SetupWithPos => super.equals(that) && pos.equals(that.pos)
-  }
-  
+      case that: SetupWithPos => super.equals(that) && pos.equals(that.pos)
+      case _ => false
+    }
+
   override def hashCode: Int =
     41 * (41 + super.hashCode) + pos.hashCode
 }
