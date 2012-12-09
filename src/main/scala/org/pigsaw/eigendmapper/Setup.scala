@@ -8,7 +8,7 @@ import java.util.regex.Pattern
  * @param rigSetups0  Mapping from each rig name to its setup.
  */
 class Setup(conns0: Set[Connection], rigSetups0: Map[String, Setup]) {
-  
+
   /**
    * Port connections
    */
@@ -18,7 +18,7 @@ class Setup(conns0: Set[Connection], rigSetups0: Map[String, Setup]) {
    * Each one is mapped from its name, such as &lt;rig2&gt;.
    */
   val rigSetups: Map[String, Setup] = rigSetups0
-  
+
   /**
    * A setup with no internal rig setups
    */
@@ -30,13 +30,13 @@ class Setup(conns0: Set[Connection], rigSetups0: Map[String, Setup]) {
    */
   lazy val agents: Set[String] =
     conns flatMap { _.agents }
-      
+
   /**
    * Get all the ports named in the connections.
    */
   lazy val ports: Set[Port] =
     conns flatMap { c => List(c.master, c.slave) }
-  
+
   /**
    * Get a map from each agent to each agent (strings, including
    * angle brackets.)
@@ -50,7 +50,7 @@ class Setup(conns0: Set[Connection], rigSetups0: Map[String, Setup]) {
    */
   lazy val agentPortConnections: Set[(String, Port)] =
     ports map { p => ((p.agent getOrElse "UNKNOWN") -> p) }
-  
+
   /**
    * Create a unified set of connections. This means if any connections
    * carry a port name, then those names are applied wherever those
@@ -78,7 +78,7 @@ class Setup(conns0: Set[Connection], rigSetups0: Map[String, Setup]) {
    */
   def normalised: Setup =
     new Setup(conns map { _.normalised })
-  
+
   /**
    * The rigs in this setup. E.g. <code>"&lt;rig2;&gt"</code>.
    */
@@ -90,16 +90,20 @@ class Setup(conns0: Set[Connection], rigSetups0: Map[String, Setup]) {
    */
   def withRig(rig: String, setup: Setup): Setup =
     new Setup(conns, rigSetups + (rig -> setup))
-  
-  override def equals(that: Any): Boolean = {
-    if (!that.isInstanceOf[Setup]) false
-    else {
-      val setup2 = this.asInstanceOf[Setup]
-      this.conns == setup2.conns &&
-        this.rigSetups == setup2.rigSetups
+
+  def canEqual(other: Any): Boolean = (other.isInstanceOf[Setup])
+
+  override def equals(other: Any): Boolean =
+    other match {
+      case that: Setup => (that canEqual this) &&
+        this.conns == that.conns &&
+        this.rigSetups == that.rigSetups
+      case _ => false
     }
-  }
   
+  override def hashCode: Int =
+    41 * (41 + conns.hashCode) + rigSetups.hashCode
+
 }
 
 object Setup {
@@ -107,7 +111,7 @@ object Setup {
    * Make an empty setup
    */
   def apply(): Setup = new Setup(Set())
-  
+
   /**
    * Produce a normalised, unified setup.
    */
@@ -123,5 +127,35 @@ object Setup {
  *     by rig names from the top. Empty list means we're at the top setup.
  */
 class SetupWithPos(conns0: Set[Connection],
-    rigSetups0: Map[String, Setup],
-    val pos: List[String]) extends Setup(conns0, rigSetups0)
+  rigSetups0: Map[String, Setup],
+  val pos: List[String]) extends Setup(conns0, rigSetups0) {
+
+  /**
+   * Create a SetupWithPos from a Setup, and a given position
+   */
+  def this(setup: Setup, pos: List[String]) =
+    this(setup.conns, setup.rigSetups, pos)
+    
+  override def canEqual(other: Any): Boolean = other.isInstanceOf[SetupWithPos]
+  
+  override def equals(other: Any) =
+    other match {
+    case that: SetupWithPos => super.equals(that) && pos.equals(that.pos)
+  }
+  
+  override def hashCode: Int =
+    41 * (41 + super.hashCode) + pos.hashCode
+}
+
+object SetupWithPos {
+  /**
+   * An empty setup.
+   */
+  def apply(): SetupWithPos = new SetupWithPos(Set(), Map(), List())
+
+  /**
+   * Produce a normalised, unified setup with the position at the top.
+   */
+  def apply(conns: Set[Connection]): SetupWithPos =
+    new SetupWithPos(Setup(conns), List())
+}

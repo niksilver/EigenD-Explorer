@@ -14,7 +14,7 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
   }
 
   test("Show - handles no agents") {
-    val setup = Setup()
+    val setup = SetupWithPos()
     
     val catcher = new PrintCatcher
     
@@ -26,7 +26,7 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
 
   test("Show - Produces somewhat sensible output") {
     val conn = Connection(Port("<ttt>#3.3", Some("three")), Port("<fff>#5.5", Some("five")))
-    val setup = Setup(Set(conn))
+    val setup = SetupWithPos(Set(conn))
     
     val catcher = new PrintCatcher
     
@@ -37,7 +37,7 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
   }
 
   test("Graph - handles no arguments") {
-    val setup = Setup()
+    val setup = SetupWithPos()
     
     val catcher = new PrintCatcher
     val args = List()
@@ -48,7 +48,7 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
   }
 
   test("Graph - handles too many args") {
-    val setup = Setup()
+    val setup = SetupWithPos()
     
     val catcher = new PrintCatcher
     val args = List("a", "b")
@@ -59,7 +59,7 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
   }
 
   test("Graph - handles single bad argument") {
-    val setup = Setup()
+    val setup = SetupWithPos()
     
     val catcher = new PrintCatcher
     val args = List("wrong")
