@@ -81,6 +81,13 @@ class Setup(val conns: Set[Connection], val rigSetups: Map[String, Setup]) {
    */
   def withRig(rig: String, setup: Setup): Setup =
     new Setup(conns, rigSetups + (rig -> setup))
+  
+  /**
+   * Create a setup just like this, but the connections replaced.
+   * @param conns2  The new connections.
+   */
+  def withConnsReplaced(conns2: Set[Connection]): Setup =
+    new Setup(conns2, rigSetups)
 
   def canEqual(other: Any): Boolean = (other.isInstanceOf[Setup])
 

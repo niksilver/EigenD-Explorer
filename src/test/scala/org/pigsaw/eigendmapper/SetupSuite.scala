@@ -347,6 +347,30 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     setup2.rigSetups should contain("<rig2>" -> rigSetup2)
   }
   
+  test("withConnsReplaced - No args") {
+    val conn = Connection(Port("<rig1>#1.1", Some("one")), Port("<fff>#5.5", Some("five")))
+    val setup = Setup(Set(conn))
+
+    val rigConn1 = Connection(Port("<sss>#7.7", None), Port("<other>#1.1", Some("other")))
+    val rigSetup1 = Setup(Set(rigConn1))
+
+    val setupV2 = setup.withRig("<rig1>", rigSetup1).withRig("<rig2>", rigSetup1)
+    
+    // Just checking some basics are right before we call the
+    // method under test
+    
+    setupV2.conns should equal (Set(conn))
+    setupV2.rigs should equal (Set("<rig1>"))
+    setupV2.rigSetups("<rig1>") should equal (rigSetup1)
+    
+    val newConn = Connection(Port("<rig1>#1.2", Some("one")), Port("<ggg>#7.7", Some("seven")))
+    val setupV3 = setupV2.withConnsReplaced(Set(newConn))
+    
+    setupV3.conns should equal (Set(newConn))
+    setupV3.rigs should equal (Set("<rig1>"))
+    setupV3.rigSetups("<rig1>") should equal (rigSetup1)
+  }
+  
   test("SetupWithPos - Constructor") {
     val conn = Connection(Port("<rig3>#3.3", Some("three")), Port("<fff>#5.5", Some("five")))
 
