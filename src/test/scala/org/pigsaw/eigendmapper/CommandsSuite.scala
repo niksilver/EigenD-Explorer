@@ -18,7 +18,7 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
     
     val catcher = new PrintCatcher
     
-    ShowCommand.action(List("<rig1>"))(setup, catcher.println)
+    (new ShowCommand).action(List("<rig1>"))(setup, catcher.println)
     
     catcher.output should not include ("Unknown")
     catcher.output should include ("No agent called <rig1>")
@@ -30,7 +30,7 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
     
     val catcher = new PrintCatcher
     
-    ShowCommand.action(List("<ttt>"))(setup, catcher.println)
+    (new ShowCommand).action(List("<ttt>"))(setup, catcher.println)
     
     catcher.output should not include ("Unknown")
     catcher.output should include ("-->")
@@ -42,7 +42,7 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
     val catcher = new PrintCatcher
     val args = List()
     
-    GraphCommand.action(args)(setup, catcher.println)
+    (new GraphCommand).action(args)(setup, catcher.println)
     
     catcher.output should include ("You need to specify")
   }
@@ -53,7 +53,7 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
     val catcher = new PrintCatcher
     val args = List("a", "b")
     
-    GraphCommand.action(args)(setup, catcher.println)
+    (new GraphCommand).action(args)(setup, catcher.println)
     
     catcher.output should include ("Too many arguments")
   }
@@ -64,7 +64,7 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
     val catcher = new PrintCatcher
     val args = List("wrong")
     
-    GraphCommand.action(args)(setup, catcher.println)
+    (new GraphCommand).action(args)(setup, catcher.println)
     
     catcher.output should include ("Do not recognise what to graph")
   }

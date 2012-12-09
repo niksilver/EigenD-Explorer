@@ -22,7 +22,7 @@ trait Command {
   
 }
 
-object HelpCommand extends Command {
+class HelpCommand extends Command {
 
   val command = "help"
 
@@ -43,7 +43,7 @@ object HelpCommand extends Command {
 /**
  * Show an agent's connections.
  */
-object ShowCommand extends Command {
+class ShowCommand extends Command {
 
   val command = "show"
 
@@ -85,7 +85,7 @@ object ShowCommand extends Command {
 /**
  * Capture all the connections in a single setup
  */
-object SnapshotCommand extends Command {
+class SnapshotCommand extends Command {
 
   val command = "snapshot"
 
@@ -107,7 +107,7 @@ object SnapshotCommand extends Command {
   }
 }
 
-object GraphCommand extends Command {
+class GraphCommand extends Command {
 
   val command = "graph"
 

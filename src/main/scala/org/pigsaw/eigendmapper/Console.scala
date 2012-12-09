@@ -39,10 +39,10 @@ class ConsoleParser extends RegexParsers {
   val prln: Any=>Unit = scala.Console.println
   
   val commands = List(
-      SnapshotCommand,
-      ShowCommand,
-      GraphCommand,
-      HelpCommand)
+      new SnapshotCommand,
+      new ShowCommand,
+      new GraphCommand,
+      new HelpCommand)
 
   // A parser for a single command. It outputs a parser which has already
   // been fed the additional arguments, and just needs a setup to process.
