@@ -7,13 +7,18 @@ import java.util.regex.Pattern
  * @param conns  The set of connections in this setup.
  * @param rigSetups  The rigs setups inside this one.
  *     Each one is mapped from its name, such as &lt;rig2&gt;.
+ * @param pos  The position in the rig hierarchy in which we're currently
+ *     interested. An empty list means the top level; List("&lt;rig3&gt")
+ *     means rig3 within the top level, and so on.
  */
-class Setup(val conns: Set[Connection], val rigSetups: Map[String, Setup]) {
+class Setup(val conns: Set[Connection],
+    val rigSetups: Map[String, Setup],
+    val pos: List[String]) {
 
   /**
    * A setup with no internal rig setups
    */
-  def this(conns0: Set[Connection]) = this(conns0, Map())
+  def this(conns: Set[Connection]) = this(conns, Map(), List())
 
   /**
    * Get all the agent names mentioned in the set of connections,
@@ -80,14 +85,14 @@ class Setup(val conns: Set[Connection], val rigSetups: Map[String, Setup]) {
    * Create a setup just like this, but with a rig setup inside.
    */
   def withRig(rig: String, setup: Setup): Setup =
-    new Setup(conns, rigSetups + (rig -> setup))
+    new Setup(conns, rigSetups + (rig -> setup), List())
   
   /**
    * Create a setup just like this, but the connections replaced.
    * @param conns2  The new connections.
    */
   def withConnsReplaced(conns2: Set[Connection]): Setup =
-    new Setup(conns2, rigSetups)
+    new Setup(conns2, rigSetups, List())
 
   def canEqual(other: Any): Boolean = (other.isInstanceOf[Setup])
 
@@ -95,7 +100,8 @@ class Setup(val conns: Set[Connection], val rigSetups: Map[String, Setup]) {
     other match {
       case that: Setup => (that canEqual this) &&
         this.conns == that.conns &&
-        this.rigSetups == that.rigSetups
+        this.rigSetups == that.rigSetups &&
+        this.pos == that.pos
       case _ => false
     }
 
@@ -114,47 +120,4 @@ object Setup {
    * Produce a normalised, unified setup.
    */
   def apply(conns: Set[Connection]): Setup = new Setup(conns).normalised.unified
-}
-
-/**
- * A setup with the additional feature of knowing where in the
- * rig hierarchy we are.
- * @param conns  The set of connections in this setup.
- * @param rigSetups  Mapping from each rig name to its setup.
- * @param pos  Our current location in the rig hierarchy, as navigated
- *     by rig names from the top. Empty list means we're at the top setup.
- */
-class SetupWithPos(conns: Set[Connection],
-  rigSetups: Map[String, Setup],
-  val pos: List[String]) extends Setup(conns, rigSetups) {
-
-  /**
-   * Create a SetupWithPos from a Setup, and a given position
-   */
-  def this(setup: Setup, pos: List[String]) =
-    this(setup.conns, setup.rigSetups, pos)
-
-  override def canEqual(other: Any): Boolean = other.isInstanceOf[SetupWithPos]
-
-  override def equals(other: Any) =
-    other match {
-      case that: SetupWithPos => super.equals(that) && pos.equals(that.pos)
-      case _ => false
-    }
-
-  override def hashCode: Int =
-    41 * (41 + super.hashCode) + pos.hashCode
-}
-
-object SetupWithPos {
-  /**
-   * An empty setup.
-   */
-  def apply(): SetupWithPos = new SetupWithPos(Set(), Map(), List())
-
-  /**
-   * Produce a normalised, unified setup with the position at the top.
-   */
-  def apply(conns: Set[Connection]): SetupWithPos =
-    new SetupWithPos(Setup(conns), List())
 }

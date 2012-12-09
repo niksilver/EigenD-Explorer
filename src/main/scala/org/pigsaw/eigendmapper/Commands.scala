@@ -14,12 +14,11 @@ trait Command {
   /**
    * The action to perform when the command is found.
    * @param args   The arguments the user gave after the command
-   * @param setup  The setup that the command has to act on, plus the position
-   *     in the setup that we're currently working from.
+   * @param setup  The setup that the command has to act on.
    * @param prln   The println function to use
    * @returns  The new setup, after the command has been executed.
    */
-  def action(args: List[String])(setup: SetupWithPos, prln: PrintlnFn): SetupWithPos
+  def action(args: List[String])(setup: Setup, prln: PrintlnFn): Setup
   
 }
 
@@ -27,7 +26,7 @@ object HelpCommand extends Command {
 
   val command = "help"
 
-  def action(args: List[String])(state: SetupWithPos, prln: PrintlnFn): SetupWithPos = {
+  def action(args: List[String])(state: Setup, prln: PrintlnFn): Setup = {
     prln("""Commands are:
         |help      Show this message
         |graph [agents|ports]  Dump a gexf format file of all the agent or
@@ -52,7 +51,7 @@ object ShowCommand extends Command {
    * The show action. Should have just one argument, which is the
    * name of the agent to show.
    */
-  def action(args: List[String])(setup: SetupWithPos, prln: PrintlnFn): SetupWithPos = {
+  def action(args: List[String])(setup: Setup, prln: PrintlnFn): Setup = {
     args.length match {
       case 0 => prln("show: No agent name given")
       case 1 => doShow(args(0), setup, prln)
@@ -90,11 +89,11 @@ object SnapshotCommand extends Command {
 
   val command = "snapshot"
 
-  def action(args: List[String])(setup: SetupWithPos, prln: PrintlnFn): SetupWithPos = {
+  def action(args: List[String])(setup: Setup, prln: PrintlnFn): Setup = {
     doSnapshot(prln)
   }
   
-  def doSnapshot(prln: PrintlnFn): SetupWithPos = {
+  def doSnapshot(prln: PrintlnFn): Setup = {
     val bls = new BLs("<main>")
     val agents = bls.agents
     val allConnections = for {
@@ -102,7 +101,7 @@ object SnapshotCommand extends Command {
       bcat = new BCat(agent)
       conn <- bcat.connections
     } yield { println("Agent " + agent + ", connection " + conn); conn }
-    val setup = SetupWithPos(allConnections.toSet)
+    val setup = Setup(allConnections.toSet)
     setup.conns foreach { c => println("Unified: " + c) }
     setup
   }
@@ -112,7 +111,7 @@ object GraphCommand extends Command {
 
   val command = "graph"
 
-  def action(args: List[String])(setup: SetupWithPos, prln: PrintlnFn): SetupWithPos = {
+  def action(args: List[String])(setup: Setup, prln: PrintlnFn): Setup = {
     args match {
       case Nil            => prln("graph: You need to specify something to graph")
       case List("ports")  => doGraph("ports", setup, prln)

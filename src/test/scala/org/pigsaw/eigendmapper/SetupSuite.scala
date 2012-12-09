@@ -251,6 +251,19 @@ class SetupSuite extends FunSuite with ShouldMatchers {
 
     setup1WithRig should equal(setup2WithRig)
   }
+  
+  test("Equals - with pos") {
+    val setupBasic1 = new Setup(Set())
+    val setupBasic2 = new Setup(Set())
+    val setupWithPos1 = new Setup(Set(), Map(), List("<rig1>"))
+    val setupWithPos2 = new Setup(Set(), Map(), List("<rig1>"))
+    
+    setupBasic1 should equal (setupBasic2)
+    setupWithPos1 should equal (setupWithPos2)
+    
+    setupBasic1 should not equal (setupWithPos1)
+    setupWithPos1 should not equal (setupBasic1)
+  }
 
   test("Apply - Should allow empty setup with no params") {
     val setup = Setup()
@@ -347,6 +360,9 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     setup2.rigSetups should contain("<rig2>" -> rigSetup2)
   }
   
+  ignore("Rigs - Adding rig preserves position") {}
+  ignore("Position - Can add position") {}
+  
   test("withConnsReplaced - No args") {
     val conn = Connection(Port("<rig1>#1.1", Some("one")), Port("<fff>#5.5", Some("five")))
     val setup = Setup(Set(conn))
@@ -371,18 +387,7 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     setupV3.rigSetups("<rig1>") should equal (rigSetup1)
   }
   
-  test("SetupWithPos - Constructor") {
-    val conn = Connection(Port("<rig3>#3.3", Some("three")), Port("<fff>#5.5", Some("five")))
-
-    val rigConn = Connection(Port("<sss>#7.7", None), Port("<other>#1.1", Some("other")))
-    val rigSetup = Setup(Set(rigConn))
-
-    val setup = new SetupWithPos(Set(conn), Map("<rig3>" -> rigSetup), List("<rig3>"))
-    
-    setup.pos should be (List("<rig3>"))
-    setup.conns should be (Set(conn))
-    setup.rigs should be (Set("<rig3>"))
-    setup.rigSetups("<rig3>") should be (rigSetup)
-  }
+  ignore("withConnsReplaced - Replacing a specific rig's conns") {}
+  ignore("withConnsReplaced - Preserves position") {}
 
 }
