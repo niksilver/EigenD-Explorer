@@ -4,20 +4,11 @@ import java.util.regex.Pattern
 
 /**
  * A particular set of connections
- * @param conns0  The set of connections in this setup.
- * @param rigSetups0  Mapping from each rig name to its setup.
+ * @param conns  The set of connections in this setup.
+ * @param rigSetups  The rigs setups inside this one.
+ *     Each one is mapped from its name, such as &lt;rig2&gt;.
  */
-class Setup(conns0: Set[Connection], rigSetups0: Map[String, Setup]) {
-
-  /**
-   * Port connections
-   */
-  val conns: Set[Connection] = conns0
-  /**
-   * The rigs setups inside this one.
-   * Each one is mapped from its name, such as &lt;rig2&gt;.
-   */
-  val rigSetups: Map[String, Setup] = rigSetups0
+class Setup(val conns: Set[Connection], val rigSetups: Map[String, Setup]) {
 
   /**
    * A setup with no internal rig setups
@@ -121,14 +112,14 @@ object Setup {
 /**
  * A setup with the additional feature of knowing where in the
  * rig hierarchy we are.
- * @param conns0  The set of connections in this setup.
- * @param rigSetups0  Mapping from each rig name to its setup.
+ * @param conns  The set of connections in this setup.
+ * @param rigSetups  Mapping from each rig name to its setup.
  * @param pos  Our current location in the rig hierarchy, as navigated
  *     by rig names from the top. Empty list means we're at the top setup.
  */
-class SetupWithPos(conns0: Set[Connection],
-  rigSetups0: Map[String, Setup],
-  val pos: List[String]) extends Setup(conns0, rigSetups0) {
+class SetupWithPos(conns: Set[Connection],
+  rigSetups: Map[String, Setup],
+  val pos: List[String]) extends Setup(conns, rigSetups) {
 
   /**
    * Create a SetupWithPos from a Setup, and a given position
