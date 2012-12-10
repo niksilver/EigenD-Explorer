@@ -85,14 +85,47 @@ class Setup(val conns: Set[Connection],
    * Create a setup just like this, but with a rig setup inside.
    */
   def withRig(rig: String, setup: Setup): Setup =
-    new Setup(conns, rigSetups + (rig -> setup), List())
+    new Setup(conns, rigSetups + (rig -> setup), pos)
   
   /**
-   * Create a setup just like this, but the connections replaced.
+   * Create a setup just like this, but the with connections replaced.
    * @param conns2  The new connections.
    */
   def withConnsReplaced(conns2: Set[Connection]): Setup =
     new Setup(conns2, rigSetups, List())
+  
+  /**
+   * Create a setup just like this, but the connections replaced at some
+   * point in the rig hierarchy
+   * @param pos2  The position of the rig to replace
+   * @param conns2  The new connections.
+   */
+  def withConnsReplaced(pos2: List[String], conns2: Set[Connection]): Setup = {
+    // Get a setup with a given pos
+    def getSetup(p: List[String], s: Setup): Setup = p match {
+      case Nil => s
+      case p1 :: tail => getSetup(tail, s.rigSetups(p1))
+    }
+    val oldSetup = getSetup(pos2, this)
+    val newSetup = new Setup(conns2, oldSetup.rigSetups, oldSetup.pos)
+    // Replace a rig in the hierarchy of rig maps
+    def replaceInRigsMaps(p: List[String], s: Setup): Setup = p match {
+      case Nil => newSetup
+      case p1 :: tail => {
+        val nextSetup = s.rigSetups(p1)
+        val updatedSetup = replaceInRigsMaps(tail, nextSetup)
+        val updatedMap = s.rigSetups.updated(p1, updatedSetup)
+        new Setup(s.conns, updatedMap, s.pos)
+      }
+    }
+    replaceInRigsMaps(pos2, this)
+  }
+  
+  /**
+   * Create a new setup just like this, but with the pos updated.
+   */
+  def withPosUpdated(posNow: List[String]) =
+    new Setup(conns, rigSetups, posNow) 
 
   def canEqual(other: Any): Boolean = (other.isInstanceOf[Setup])
 
