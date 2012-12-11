@@ -174,7 +174,7 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     val conn_bncu = Connection(port_b_named, port_c_unnamed) // We'll add this
     val conn_aubn = Connection(port_a_unnamed, port_b_named) // This should get created
 
-    val connSet2 = new Setup(connSet1 + conn_bncu).unified.conns
+    val connSet2 = new Setup(connSet1 + conn_bncu).conns
 
     connSet2.size should equal(2)
     connSet2 should contain(conn_bncu)
@@ -198,7 +198,7 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     val conn_bncu = Connection(port_b_named, port_c_unnamed) // We'll add this
     val conn_bnau = Connection(port_b_named, port_a_unnamed) // This should get created
 
-    val connSet2 = new Setup(connSet1 + conn_bncu).unified.conns
+    val connSet2 = new Setup(connSet1 + conn_bncu).conns
 
     connSet2.size should equal(2)
     connSet2 should contain(conn_bncu)

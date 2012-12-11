@@ -54,26 +54,6 @@ class Setup(val conns0: Set[Connection],
    * carry a port name, then those names are applied wherever those
    * ports are used.
    */
-  def unified: Setup = {
-    val ports = conns flatMap { c => List(c.master, c.slave) }
-    val namingPorts = ports filter (_.name.nonEmpty)
-    val names: Map[String, String] = namingPorts map { p => (p.id -> p.name.get) } toMap
-
-    // Produce an updated version of the port, with names filled in if available.
-    def updated(port: Port): Port = {
-      if (port.name.nonEmpty) port
-      else Port(port.id, names.get(port.id))
-    }
-
-    val updatedConns = conns map (c => Connection(updated(c.master), updated(c.slave)))
-    new Setup(updatedConns)
-  }
-
-  /**
-   * Create a unified set of connections. This means if any connections
-   * carry a port name, then those names are applied wherever those
-   * ports are used.
-   */
   private def unified0: Set[Connection] = {
     val ports = conns0 flatMap { c => List(c.master, c.slave) }
     val namingPorts = ports filter (_.name.nonEmpty)
@@ -173,5 +153,5 @@ object Setup {
   /**
    * Produce a normalised, unified setup.
    */
-  def apply(conns: Set[Connection]): Setup = new Setup(conns).normalised.unified
+  def apply(conns: Set[Connection]): Setup = new Setup(conns).normalised
 }
