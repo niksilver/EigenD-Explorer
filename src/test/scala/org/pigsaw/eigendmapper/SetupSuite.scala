@@ -110,7 +110,7 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     conns2 should contain("UNKNOWN" -> b2)
   }
 
-  test("Unify - Add a slave name, expect a slave updated") {
+  ignore("Unify - Add a slave name, expect a slave updated automatically") {
     val port_a_unnamed = Port("<a>#1.1", None)
     val port_b_named = Port("<b>#1.2", Some("b12"))
     val port_b_unnamed = Port("<b>#1.2", None)
@@ -134,7 +134,7 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     connSet2 should contain(conn_aubn)
   }
 
-  test("Unify - Add a slave name, expect a master updated") {
+  ignore("Unify - Add a slave name, expect a master updated automatically") {
     val port_a_unnamed = Port("<a>#1.1", None)
     val port_b_named = Port("<b>#1.2", Some("b12"))
     val port_b_unnamed = Port("<b>#1.2", None)
@@ -158,7 +158,7 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     connSet2 should contain(conn_bnau)
   }
 
-  test("Unify - Add a master name, expect a slave updated") {
+  ignore("Unify - Add a master name, expect a slave updated automatically") {
     val port_a_unnamed = Port("<a>#1.1", None)
     val port_b_named = Port("<b>#1.2", Some("b12"))
     val port_b_unnamed = Port("<b>#1.2", None)
@@ -182,7 +182,7 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     connSet2 should contain(conn_aubn)
   }
 
-  test("Unify - Add a master name, expect a master updated") {
+  ignore("Unify - Add a master name, expect a master updated automatically") {
     val port_a_unnamed = Port("<a>#1.1", None)
     val port_b_named = Port("<b>#1.2", Some("b12"))
     val port_b_unnamed = Port("<b>#1.2", None)
@@ -206,7 +206,7 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     connSet2 should contain(conn_bnau)
   }
 
-  test("Normalise port IDs (cut the 'main:' in <main:agentname3>)") {
+  ignore("Normalise port IDs automatically (cut the 'main:' in <main:agentname3>)") {
     val a_short = Port("<a>#1.1", None)
     val a_long = Port("<main:a>#1.1", None)
     val b_short = Port("<b>#1.2", Some("b12"))
@@ -435,10 +435,51 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     setupTop2.rigSetups("<rig1>").rigSetups("<rig2>").conns should equal (Set(connsBottom2))
   }
 
-  ignore("withConnsReplaced - Replacing a specific rig's conns - middle of hierarchy") {}
-  ignore("withConnsReplaced - Replacing a specific rig's conns - top of hierarchy") {}
+  test("withConnsReplaced - Replacing a specific rig's conns - middle of hierarchy") {
+    val connsTop = Connection(Port("<rig1>#1.1", Some("one out")), Port("<top>#5.5", Some("top input")))
+    val connsMid = Connection(Port("<rig2>#2.2", Some("two out")), Port("<mid>#7.7", Some("mid input")))
+    val connsBottom = Connection(Port("<lower>#3.3", Some("three out")), Port("<bottom>#7.7", Some("bottom input")))
+    
+    val setupBottom = new Setup(Set(connsBottom))
+    val setupMid = new Setup(Set(connsMid), Map("<rig2>" -> setupBottom), List())
+    val setupTop = new Setup(Set(connsTop), Map("<rig1>" -> setupMid), List("<rig1>", "<rig2>"))
+
+    val connsMid2 = Connection(Port("<rig2>#22.22", Some("two out2")), Port("<mid>#72.72", Some("mid input2")))
+
+    val setupTop2 = setupTop.withConnsReplaced(List("<rig1>"), Set(connsMid2))
+    
+    setupTop2.conns should equal (Set(connsTop))
+    setupTop2.rigSetups.keySet should equal (Set("<rig1>"))
+    setupTop2.pos should equal (List("<rig1>", "<rig2>"))
+    
+    setupTop2.rigSetups("<rig1>").conns should equal (Set(connsMid2))
+    setupTop2.rigSetups("<rig1>").rigSetups.keys should equal (Set("<rig2>"))
+    
+    setupTop2.rigSetups("<rig1>").rigSetups("<rig2>").conns should equal (Set(connsBottom))
+  }
+  
+  test("withConnsReplaced - Replacing a specific rig's conns - top of hierarchy") {
+    val connsTop = Connection(Port("<rig1>#1.1", Some("one out")), Port("<top>#5.5", Some("top input")))
+    val connsMid = Connection(Port("<rig2>#2.2", Some("two out")), Port("<mid>#7.7", Some("mid input")))
+    val connsBottom = Connection(Port("<lower>#3.3", Some("three out")), Port("<bottom>#7.7", Some("bottom input")))
+    
+    val setupBottom = new Setup(Set(connsBottom))
+    val setupMid = new Setup(Set(connsMid), Map("<rig2>" -> setupBottom), List())
+    val setupTop = new Setup(Set(connsTop), Map("<rig1>" -> setupMid), List("<rig1>", "<rig2>"))
+
+    val connsTop2 = Connection(Port("<rig1>#12.12", Some("one out2")), Port("<top>#52.52", Some("top input2")))
+
+    val setupTop2 = setupTop.withConnsReplaced(List(), Set(connsTop2))
+    
+    setupTop2.conns should equal (Set(connsTop2))
+    setupTop2.rigSetups.keySet should equal (Set("<rig1>"))
+    setupTop2.pos should equal (List("<rig1>", "<rig2>"))
+    
+    setupTop2.rigSetups("<rig1>").conns should equal (Set(connsMid))
+    setupTop2.rigSetups("<rig1>").rigSetups.keys should equal (Set("<rig2>"))
+    
+    setupTop2.rigSetups("<rig1>").rigSetups("<rig2>").conns should equal (Set(connsBottom))
+  }
+  
   ignore("withConnsReplaced - Normalises and canonicalises conns") {}
-
-  ignore("withConnsReplaced - Preserves position") {}
-
 }
