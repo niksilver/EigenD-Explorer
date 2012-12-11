@@ -480,6 +480,5 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     
     setupTop2.rigSetups("<rig1>").rigSetups("<rig2>").conns should equal (Set(connsBottom))
   }
-  
-  ignore("withConnsReplaced - Normalises and canonicalises conns") {}
+
 }

@@ -20,6 +20,13 @@ trait Command {
    */
   def action(args: List[String])(setup: Setup, prln: PrintlnFn): Setup
   
+  /** Create a new bls command
+   */
+  def bls(index: String): BLs = new BLs(index)
+  
+  /** Create a new bcat command
+   */
+  def bcat(agent: String): BCat = new BCat(agent)
 }
 
 class HelpCommand extends Command {
@@ -90,20 +97,32 @@ class SnapshotCommand extends Command {
   val command = "snapshot"
 
   def action(args: List[String])(setup: Setup, prln: PrintlnFn): Setup = {
-    doSnapshot(prln)
+    doSnapshot(setup, prln)
   }
   
-  def doSnapshot(prln: PrintlnFn): Setup = {
-    val bls = new BLs("<main>")
+  /**
+   * Convert a pos to an index specification for the bls command:
+   * List() =>         <main>
+   * List("<rig1>") => <main.rig1:main>
+   * List("<rig2>") => <main.rig1:main.rig2:main>
+   */
+  def index(pos: List[String]): String = {
+    def strip(name: String): String = ("<(.*)>".r findFirstMatchIn name).get.group(1)
+    def insertMains(s: String) = "." + strip(s) + ":main"
+    "<main" + (pos map insertMains).mkString + ">"
+  }
+  
+  def doSnapshot(setup: Setup, prln: PrintlnFn): Setup = {
+    val index = this.index(setup.pos)
+    val bls = this.bls(index)
     val agents = bls.agents
     val allConnections = for {
       agent <- agents
-      bcat = new BCat(agent)
+      bcat = this.bcat(agent)
       conn <- bcat.connections
-    } yield { println("Agent " + agent + ", connection " + conn); conn }
-    val setup = Setup(allConnections.toSet)
-    setup.conns foreach { c => println("Unified: " + c) }
-    setup
+    } yield { prln("Agent " + agent + ", connection " + conn); conn }
+    val setupV2 = Setup(allConnections.toSet)
+    setupV2
   }
 }
 
