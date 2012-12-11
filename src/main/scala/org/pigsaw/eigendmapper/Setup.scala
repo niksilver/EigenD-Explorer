@@ -4,16 +4,18 @@ import java.util.regex.Pattern
 
 /**
  * A particular set of connections
- * @param conns  The set of connections in this setup.
+ * @param conns0  The set of connections in this setup.
  * @param rigSetups  The rigs setups inside this one.
  *     Each one is mapped from its name, such as &lt;rig2&gt;.
  * @param pos  The position in the rig hierarchy in which we're currently
  *     interested. An empty list means the top level; List("&lt;rig3&gt")
  *     means rig3 within the top level, and so on.
  */
-class Setup(val conns: Set[Connection],
+class Setup(val conns0: Set[Connection],
     val rigSetups: Map[String, Setup],
     val pos: List[String]) {
+  
+  lazy val conns: Set[Connection] = unified0
 
   /**
    * A setup with no internal rig setups
@@ -65,6 +67,25 @@ class Setup(val conns: Set[Connection],
 
     val updatedConns = conns map (c => Connection(updated(c.master), updated(c.slave)))
     new Setup(updatedConns)
+  }
+
+  /**
+   * Create a unified set of connections. This means if any connections
+   * carry a port name, then those names are applied wherever those
+   * ports are used.
+   */
+  private def unified0: Set[Connection] = {
+    val ports = conns0 flatMap { c => List(c.master, c.slave) }
+    val namingPorts = ports filter (_.name.nonEmpty)
+    val names: Map[String, String] = namingPorts map { p => (p.id -> p.name.get) } toMap
+
+    // Produce an updated version of the port, with names filled in if available.
+    def updated(port: Port): Port = {
+      if (port.name.nonEmpty) port
+      else Port(port.id, names.get(port.id))
+    }
+
+    conns0 map (c => Connection(updated(c.master), updated(c.slave)))
   }
 
   /**

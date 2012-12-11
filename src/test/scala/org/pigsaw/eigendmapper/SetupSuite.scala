@@ -110,7 +110,7 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     conns2 should contain("UNKNOWN" -> b2)
   }
 
-  ignore("Unify - Add a slave name, expect a slave updated automatically") {
+  test("Unify - Add a slave name, expect a slave updated automatically") {
     val port_a_unnamed = Port("<a>#1.1", None)
     val port_b_named = Port("<b>#1.2", Some("b12"))
     val port_b_unnamed = Port("<b>#1.2", None)
@@ -126,7 +126,7 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     val conn_cubn = Connection(port_c_unnamed, port_b_named) // We'll add this
     val conn_aubn = Connection(port_a_unnamed, port_b_named) // This should get created
 
-    val connSet2 = new Setup(connSet1 + conn_cubn).unified.conns
+    val connSet2 = new Setup(connSet1 + conn_cubn).conns
 
     connSet2.size should equal(2)
     connSet2 should contain(conn_cubn)
@@ -134,7 +134,7 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     connSet2 should contain(conn_aubn)
   }
 
-  ignore("Unify - Add a slave name, expect a master updated automatically") {
+  test("Unify - Add a slave name, expect a master updated automatically") {
     val port_a_unnamed = Port("<a>#1.1", None)
     val port_b_named = Port("<b>#1.2", Some("b12"))
     val port_b_unnamed = Port("<b>#1.2", None)
@@ -150,7 +150,7 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     val conn_cubn = Connection(port_c_unnamed, port_b_named) // We'll add this
     val conn_bnau = Connection(port_b_named, port_a_unnamed) // This should get created
 
-    val connSet2 = new Setup(connSet1 + conn_cubn).unified.conns
+    val connSet2 = new Setup(connSet1 + conn_cubn).conns
 
     connSet2.size should equal(2)
     connSet2 should contain(conn_cubn)
@@ -158,7 +158,7 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     connSet2 should contain(conn_bnau)
   }
 
-  ignore("Unify - Add a master name, expect a slave updated automatically") {
+  test("Unify - Add a master name, expect a slave updated automatically") {
     val port_a_unnamed = Port("<a>#1.1", None)
     val port_b_named = Port("<b>#1.2", Some("b12"))
     val port_b_unnamed = Port("<b>#1.2", None)
@@ -182,7 +182,7 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     connSet2 should contain(conn_aubn)
   }
 
-  ignore("Unify - Add a master name, expect a master updated automatically") {
+  test("Unify - Add a master name, expect a master updated automatically") {
     val port_a_unnamed = Port("<a>#1.1", None)
     val port_b_named = Port("<b>#1.2", Some("b12"))
     val port_b_unnamed = Port("<b>#1.2", None)
