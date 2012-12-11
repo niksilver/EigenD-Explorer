@@ -15,7 +15,7 @@ class Setup(val conns0: Set[Connection],
     val rigSetups: Map[String, Setup],
     val pos: List[String]) {
   
-  lazy val conns: Set[Connection] = unified0
+  lazy val conns: Set[Connection] = unified(normalised(conns0))
 
   /**
    * A setup with no internal rig setups
@@ -54,8 +54,8 @@ class Setup(val conns0: Set[Connection],
    * carry a port name, then those names are applied wherever those
    * ports are used.
    */
-  private def unified0: Set[Connection] = {
-    val ports = conns0 flatMap { c => List(c.master, c.slave) }
+  private def unified(cos: Set[Connection]): Set[Connection] = {
+    val ports = cos flatMap { c => List(c.master, c.slave) }
     val namingPorts = ports filter (_.name.nonEmpty)
     val names: Map[String, String] = namingPorts map { p => (p.id -> p.name.get) } toMap
 
@@ -65,16 +65,16 @@ class Setup(val conns0: Set[Connection],
       else Port(port.id, names.get(port.id))
     }
 
-    conns0 map (c => Connection(updated(c.master), updated(c.slave)))
+    cos map (c => Connection(updated(c.master), updated(c.slave)))
   }
 
   /**
-   * Make a normalised version of this set of connections, in which
+   * Make a normalised version of a set of connections, in which
    * every port of the form ID &lt;main:agentnameN&gt; is changed to
    * its shorter form of &lt;agentnameN&gt;.
    */
-  def normalised: Setup =
-    new Setup(conns map { _.normalised })
+  private def normalised(c: Set[Connection]): Set[Connection] =
+    c map { _.normalised }
 
   /**
    * The rigs in this setup. E.g. <code>"&lt;rig2;&gt"</code>.
@@ -151,7 +151,7 @@ object Setup {
   def apply(): Setup = new Setup(Set())
 
   /**
-   * Produce a normalised, unified setup.
+   * Produce a simple setup.
    */
-  def apply(conns: Set[Connection]): Setup = new Setup(conns).normalised
+  def apply(conns: Set[Connection]): Setup = new Setup(conns)
 }
