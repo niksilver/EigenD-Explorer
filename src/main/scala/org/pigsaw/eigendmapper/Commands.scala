@@ -191,3 +191,15 @@ class GraphCommand extends Command {
   }
   
 }
+
+/**
+ * Go into a rig
+ */
+class IntoCommand extends Command {
+
+  val command = "into"
+
+  def action(args: List[String])(setup: Setup, prln: PrintlnFn): Setup =
+    setup.withPosUpdated(setup.pos :+ args(0))
+
+}
