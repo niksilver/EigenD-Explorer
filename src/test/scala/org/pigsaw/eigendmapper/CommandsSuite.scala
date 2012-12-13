@@ -202,10 +202,43 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
     val setupTop2 = command.action(List("<rig77>"))(setupTop, catcher.println)
     
     setupTop2.pos should equal (List("<rig1>"))
-    catcher.output should include ("No such rig: <rig77>")
-    catcher.output should include ("Position: <rig1> - <rig2>")
+    catcher.output.lines.toList(0) should equal ("No such rig: <rig77>")
+    catcher.output.lines.toList(1) should equal ("Position: <rig1>")
   }
   
-  ignore("Into - Handles bad arguments") {}
-  
+  test("Into - Can't go into non-existent rig at top level ") {
+    val connsTop = Connection(Port("<rig1>#1.1", Some("one out")), Port("<top>#5.5", Some("top input")))
+    val connsMid = Connection(Port("<rig2>#2.2", Some("two out")), Port("<mid>#7.7", Some("mid input")))
+    val connsBottom = Connection(Port("<free>#3.3", Some("three out")), Port("<bottom>#7.7", Some("bottom input")))
+    
+    val setupBottom = new Setup(Set(connsBottom))
+    val setupMid = new Setup(Set(connsMid), Map("<rig2>" -> setupBottom), List())
+    val setupTop = new Setup(Set(connsTop), Map("<rig1>" -> setupMid), List())
+
+    val command = new IntoCommand
+    val catcher = new PrintCatcher
+    val setupTop2 = command.action(List("<rig77>"))(setupTop, catcher.println)
+    
+    setupTop2.pos should equal (List())
+    catcher.output.lines.toList(0) should equal ("No such rig: <rig77>")
+    catcher.output.lines.toList(1) should equal ("Position: Top level")
+  }
+
+  test("Into - Handles bad arguments") {
+    val connsTop = Connection(Port("<rig1>#1.1", Some("one out")), Port("<top>#5.5", Some("top input")))
+    val setupTop = new Setup(Set(connsTop), Map(), List())
+
+    val command = new IntoCommand
+
+    val catcher1 = new PrintCatcher
+    command.action(List())(setupTop, catcher1.println)
+    catcher1.output.lines.toList(0) should equal ("into: Too few arguments")
+    catcher1.output.lines.toList(1) should equal ("Position: Top level")
+
+    val catcher2 = new PrintCatcher
+    command.action(List("a", "b"))(setupTop, catcher2.println)
+    catcher2.output.lines.toList(0) should equal ("into: Too many arguments")
+    catcher2.output.lines.toList(1) should equal ("Position: Top level")
+  }
+
 }

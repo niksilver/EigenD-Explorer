@@ -202,14 +202,22 @@ class IntoCommand extends Command {
   val command = "into"
 
   def action(args: List[String])(setup: Setup, prln: PrintlnFn): Setup = {
-    def printPos(pos: List[String]) = prln("Position: " + pos.mkString(" - "))
-    
-    val rig = args(0)
-    val pos = setup.pos :+ rig
-    val optSetup = setup.setupForPos(pos)
+    val setup2 = args.length match {
+      case 0 => prln("into: Too few arguments"); setup
+      case 1 => doInto(args(0), setup, prln)
+      case _ => prln("into: Too many arguments"); setup
+    }
+    val posStr = if (setup2.pos.isEmpty) "Top level" else setup2.pos.mkString(" - ")
+    prln("Position: " + posStr)
+    setup2
+  }
+
+  def doInto(rig: String, setup: Setup, prln: PrintlnFn): Setup = {
+    val targetPos = setup.pos :+ rig
+    val optSetup = setup.setupForPos(targetPos)
     optSetup match {
-      case None    => prln("No such rig: " + rig); printPos(setup.pos); setup
-      case Some(_) => val setup2 = setup.withPosUpdated(pos); printPos(pos); setup2
+      case None    => prln("No such rig: " + rig); setup
+      case Some(_) => setup.withPosUpdated(targetPos)
     }
   }
 
