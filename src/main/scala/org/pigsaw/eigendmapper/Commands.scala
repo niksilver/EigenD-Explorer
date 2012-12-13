@@ -36,11 +36,13 @@ class HelpCommand extends Command {
   def action(args: List[String])(state: Setup, prln: PrintlnFn): Setup = {
     prln("""Commands are:
         |help      Show this message
+        |into <rigN>  Go into a rig. E.g. into <rig3>
         |graph [agents|ports]  Dump a gexf format file of all the agent or
         |          port connections
         |show <agentName>   Show the connections into and out of an agent.
         |          The agent name includes angle brackets, e.g. <drummer1>
-        |snapshot  Capture the state of all the agents' connections"""
+        |snapshot  Capture the state of all the agents' connections. Will not
+        |          go into rigs and snapshot those. You need to do them individually."""
       .stripMargin)
     state
   }
@@ -199,7 +201,11 @@ class IntoCommand extends Command {
 
   val command = "into"
 
-  def action(args: List[String])(setup: Setup, prln: PrintlnFn): Setup =
-    setup.withPosUpdated(setup.pos :+ args(0))
+  def action(args: List[String])(setup: Setup, prln: PrintlnFn): Setup = {
+    val pos = setup.pos :+ args(0)
+    val setup2 = setup.withPosUpdated(pos)
+    prln("Position: " + pos.mkString(" - "))
+    setup2
+  }
 
 }

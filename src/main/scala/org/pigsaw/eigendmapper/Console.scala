@@ -42,6 +42,7 @@ class ConsoleParser extends RegexParsers {
       new SnapshotCommand,
       new ShowCommand,
       new GraphCommand,
+      new IntoCommand,
       new HelpCommand)
 
   // A parser for a single command. It outputs a parser which has already

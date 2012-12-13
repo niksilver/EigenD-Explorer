@@ -168,6 +168,7 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
     val setupTop2 = command.action(List("<rig3>"))(setupTop, catcher.println)
     
     setupTop2.pos should equal (List("<rig1>", "<rig2>", "<rig3>"))
+    catcher.output should include ("Position: <rig1> - <rig2> - <rig3>")
   }
   
   ignore("Into - Can go into an already-present rig") {
