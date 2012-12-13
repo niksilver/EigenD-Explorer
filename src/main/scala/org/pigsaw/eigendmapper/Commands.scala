@@ -136,7 +136,7 @@ class GraphCommand extends Command {
       case Nil            => prln("graph: You need to specify something to graph")
       case List("ports")  => doGraph("ports", setup, prln)
       case List("agents") => doGraph("agents", setup, prln)
-      case List(x)        => prln("graph: Do not recognise what to graph")
+      case List(_)        => prln("graph: Do not recognise what to graph")
       case _              => prln("graph: Too many arguments")
     }
     setup
