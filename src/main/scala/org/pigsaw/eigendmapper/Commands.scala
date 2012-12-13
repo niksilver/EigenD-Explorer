@@ -121,8 +121,7 @@ class SnapshotCommand extends Command {
       bcat = this.bcat(agent)
       conn <- bcat.connections
     } yield { prln("Agent " + agent + ", connection " + conn); conn }
-    val setupV2 = Setup(allConnections.toSet)
-    setupV2
+    setup.withConnsReplaced(setup.pos, allConnections.toSet)
   }
 }
 
