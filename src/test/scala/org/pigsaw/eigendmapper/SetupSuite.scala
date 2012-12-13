@@ -331,7 +331,7 @@ class SetupSuite extends FunSuite with ShouldMatchers {
   }
 
   test("Rigs - Can add one rig") {
-    val conn = Connection(Port("<ttt>#3.3", Some("three")), Port("<fff>#5.5", Some("five")))
+    val conn = Connection(Port("<rig1>#3.3", Some("three")), Port("<fff>#5.5", Some("five")))
     val setup = Setup(Set(conn))
 
     val rigConn = Connection(Port("<sss>#7.7", None), Port("<other>#1.1", Some("other")))
@@ -344,8 +344,9 @@ class SetupSuite extends FunSuite with ShouldMatchers {
   }
 
   test("Rigs - Can add two rigs") {
-    val conn = Connection(Port("<ttt>#3.3", Some("three")), Port("<fff>#5.5", Some("five")))
-    val setup = Setup(Set(conn))
+    val connA = Connection(Port("<rig1>#3.3", Some("three")), Port("<fff>#5.5", Some("five")))
+    val connB = Connection(Port("<fff>#5.5", Some("five")), Port("<rig2>#2.2", Some("two")))
+    val setup = Setup(Set(connA, connB))
 
     val rigConn1 = Connection(Port("<sss>#7.7", None), Port("<other>#1.1", Some("other")))
     val rigSetup1 = Setup(Set(rigConn1))
@@ -480,5 +481,22 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     
     setupTop2.rigSetups("<rig1>").rigSetups("<rig2>").conns should equal (Set(connsBottom))
   }
+  
+  test("withConnsReplaced - If rig disappears from connections, should disappear from rigSetups") {
+    val connsTop = Connection(Port("<rig1>#1.1", Some("one out")), Port("<top>#5.5", Some("top input")))
+    val connsRig = Connection(Port("<too>#2.2", Some("two out")), Port("<mid>#7.7", Some("mid input")))
+    
+    val setupRig = new Setup(Set(connsRig), Map(), List())
+    val setupTop = new Setup(Set(connsTop), Map("<rig1>" -> setupRig), List("<rig1>"))
+    
+    val connsTop2 = Connection(Port("<wig1>#11.11", Some("one out")), Port("<top>#5.5", Some("top input")))
+    
+    val setupTop2 = setupTop.withConnsReplaced(List(), Set(connsTop2))
+    
+    setupTop2.rigSetups.size should equal (0)
+  }
+  
+  ignore("withConnsReplaced - If rig appears in connections, should appear in rigSetups") {}
+  ignore("withConnsReplaced - If rig remains in connections, should remain in rigSetups") {}
 
 }

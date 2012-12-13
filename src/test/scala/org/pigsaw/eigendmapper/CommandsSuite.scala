@@ -113,10 +113,12 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
 
     val connsRig = Connection(Port("<too>#2.2", Some("two out")), Port("<mid>#7.7", Some("mid input")))
     val setupRig = new Setup(Set(connsRig), Map(), List())
+
+    val connsTop = Connection(Port("<rig1>#3.3", Some("three")), Port("<fff>#5.5", Some("five")))
     
     val catcher = new PrintCatcher
     
-    val setup = new Setup(Set(), Map("<rig1>" -> setupRig), List("<rig1>"))
+    val setup = new Setup(Set(connsTop), Map("<rig1>" -> setupRig), List("<rig1>"))
     val setupV2 = command.action(List())(setup, catcher.println)
     
     command.capturedIndex should equal ("<main.rig1:main>")
@@ -151,4 +153,15 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
     setupTop2.rigSetups("<rig1>").rigSetups.keys should equal (Set())
     setupTop2.rigSetups("<rig1>").pos should equal (List())
   }
+  
+  ignore("Into - Can go into an empty rig") {
+    val connsTop = Connection(Port("<rig1>#1.1", Some("one out")), Port("<top>#5.5", Some("top input")))
+  }
+  
+  ignore("Into - Can go into an already-present rig") {
+    
+  }
+
+  ignore("Into - Can't go into a non-existent rig") {}
+  
 }

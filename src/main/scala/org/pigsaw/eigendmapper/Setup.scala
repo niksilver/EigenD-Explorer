@@ -12,10 +12,19 @@ import java.util.regex.Pattern
  *     means rig3 within the top level, and so on.
  */
 class Setup(val conns0: Set[Connection],
-    val rigSetups: Map[String, Setup],
-    val pos: List[String]) {
-  
+  val rigSetups0: Map[String, Setup],
+  val pos: List[String]) {
+
   lazy val conns: Set[Connection] = unified(normalised(conns0))
+
+  lazy val rigSetups: Map[String, Setup] = {
+    rigs map { name =>
+      rigSetups0.get(name) match {
+        case Some(setup) => (name -> setup)
+        case None        => (name -> Setup())
+      }
+    } toMap
+  }
 
   /**
    * A setup with no internal rig setups
@@ -87,14 +96,14 @@ class Setup(val conns0: Set[Connection],
    */
   def withRig(rig: String, setup: Setup): Setup =
     new Setup(conns, rigSetups + (rig -> setup), pos)
-  
+
   /**
    * Create a setup just like this, but the with connections replaced.
    * @param conns2  The new connections.
    */
   def withConnsReplaced(conns2: Set[Connection]): Setup =
     new Setup(conns2, rigSetups, List())
-  
+
   /**
    * Create a setup just like this, but the connections replaced at some
    * point in the rig hierarchy
@@ -121,12 +130,12 @@ class Setup(val conns0: Set[Connection],
     }
     replaceInRigsMaps(pos2, this)
   }
-  
+
   /**
    * Create a new setup just like this, but with the pos updated.
    */
   def withPosUpdated(posNow: List[String]) =
-    new Setup(conns, rigSetups, posNow) 
+    new Setup(conns, rigSetups, posNow)
 
   def canEqual(other: Any): Boolean = (other.isInstanceOf[Setup])
 
