@@ -496,7 +496,36 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     setupTop2.rigSetups.size should equal (0)
   }
   
-  ignore("withConnsReplaced - If rig appears in connections, should appear in rigSetups") {}
-  ignore("withConnsReplaced - If rig remains in connections, should remain in rigSetups") {}
+  test("withConnsReplaced - If rig appears in connections, should appear in rigSetups") {
+    val connsTop = Connection(Port("<rig1>#1.1", Some("one out")), Port("<top>#5.5", Some("top input")))
+    val connsRig = Connection(Port("<too>#2.2", Some("two out")), Port("<mid>#7.7", Some("mid input")))
+    
+    val setupRig = new Setup(Set(connsRig), Map(), List())
+    val setupTop = new Setup(Set(connsTop), Map("<rig1>" -> setupRig), List("<rig1>"))
+
+    val connsTopPlus = Connection(Port("<any>#1.1", Some("any out")), Port("<rig3>#3.3", Some("three input")))
+    
+    val setupTopPlus = setupTop.withConnsReplaced(List(), Set(connsTop, connsTopPlus))
+    
+    setupTopPlus.rigSetups.keys should equal (Set("<rig1>", "<rig3>"))
+    setupTopPlus.rigSetups("<rig1>") should equal (setupRig)
+    setupTopPlus.rigSetups("<rig3>") should equal (Setup())
+  }
+  
+  test("withConnsReplaced - If rig remains in connections, should remain in rigSetups") {
+    val connsTop = Connection(Port("<rig1>#1.1", Some("one out")), Port("<top>#5.5", Some("top input")))
+    val connsRig = Connection(Port("<too>#2.2", Some("two out")), Port("<mid>#7.7", Some("mid input")))
+    
+    val setupRig = new Setup(Set(connsRig), Map(), List())
+    val setupTop = new Setup(Set(connsTop), Map("<rig1>" -> setupRig), List("<rig1>"))
+    
+    // <rig1> is still part of this new set of connections
+    val connsTop2 = Connection(Port("<back1>#11.11", Some("back out")), Port("<rig1>#9.9", Some("one input")))
+    
+    val setupTop2 = setupTop.withConnsReplaced(List(), Set(connsTop2))
+    
+    setupTop2.rigSetups.size should equal (1)
+    setupTop2.rigSetups("<rig1>") should equal (setupRig)
+  }
 
 }
