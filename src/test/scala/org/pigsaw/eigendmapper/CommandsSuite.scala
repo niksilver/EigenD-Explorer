@@ -171,10 +171,41 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
     catcher.output should include ("Position: <rig1> - <rig2> - <rig3>")
   }
   
-  ignore("Into - Can go into an already-present rig") {
+  test("Into - Can go into an already-present rig") {
+    val connsTop = Connection(Port("<rig1>#1.1", Some("one out")), Port("<top>#5.5", Some("top input")))
+    val connsMid = Connection(Port("<rig2>#2.2", Some("two out")), Port("<mid>#7.7", Some("mid input")))
+    val connsBottom = Connection(Port("<free>#3.3", Some("three out")), Port("<bottom>#7.7", Some("bottom input")))
     
+    val setupBottom = new Setup(Set(connsBottom))
+    val setupMid = new Setup(Set(connsMid), Map("<rig2>" -> setupBottom), List())
+    val setupTop = new Setup(Set(connsTop), Map("<rig1>" -> setupMid), List("<rig1>"))
+
+    val command = new IntoCommand
+    val catcher = new PrintCatcher
+    val setupTop2 = command.action(List("<rig2>"))(setupTop, catcher.println)
+    
+    setupTop2.pos should equal (List("<rig1>", "<rig2>"))
+    catcher.output should include ("Position: <rig1> - <rig2>")
   }
   
-  ignore("Into - Can't go into a non-existent rig") {}
+  test("Into - Can't go into a non-existent rig") {
+    val connsTop = Connection(Port("<rig1>#1.1", Some("one out")), Port("<top>#5.5", Some("top input")))
+    val connsMid = Connection(Port("<rig2>#2.2", Some("two out")), Port("<mid>#7.7", Some("mid input")))
+    val connsBottom = Connection(Port("<free>#3.3", Some("three out")), Port("<bottom>#7.7", Some("bottom input")))
+    
+    val setupBottom = new Setup(Set(connsBottom))
+    val setupMid = new Setup(Set(connsMid), Map("<rig2>" -> setupBottom), List())
+    val setupTop = new Setup(Set(connsTop), Map("<rig1>" -> setupMid), List("<rig1>"))
+
+    val command = new IntoCommand
+    val catcher = new PrintCatcher
+    val setupTop2 = command.action(List("<rig77>"))(setupTop, catcher.println)
+    
+    setupTop2.pos should equal (List("<rig1>"))
+    catcher.output should include ("No such rig: <rig77>")
+    catcher.output should include ("Position: <rig1> - <rig2>")
+  }
+  
+  ignore("Into - Handles bad arguments") {}
   
 }

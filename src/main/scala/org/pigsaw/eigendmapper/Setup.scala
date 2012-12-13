@@ -92,6 +92,17 @@ class Setup(val conns0: Set[Connection],
     agents filter { Pattern.matches("<rig\\d+>", _) }
 
   /**
+   * Get the setup in the hierarchy given by the given position.
+   */
+  def setupForPos(pos: List[String]): Option[Setup] = pos match {
+    case Nil => Some(this)
+    case rig :: tail => rigSetups.get(rig) match {
+      case None    => None
+      case Some(s) => s.setupForPos(tail)
+    }
+  }
+  
+  /**
    * Create a setup just like this, but with a rig setup inside.
    */
   def withRig(rig: String, setup: Setup): Setup =

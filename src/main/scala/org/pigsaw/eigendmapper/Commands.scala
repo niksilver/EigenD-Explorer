@@ -202,10 +202,15 @@ class IntoCommand extends Command {
   val command = "into"
 
   def action(args: List[String])(setup: Setup, prln: PrintlnFn): Setup = {
-    val pos = setup.pos :+ args(0)
-    val setup2 = setup.withPosUpdated(pos)
-    prln("Position: " + pos.mkString(" - "))
-    setup2
+    def printPos(pos: List[String]) = prln("Position: " + pos.mkString(" - "))
+    
+    val rig = args(0)
+    val pos = setup.pos :+ rig
+    val optSetup = setup.setupForPos(pos)
+    optSetup match {
+      case None    => prln("No such rig: " + rig); printPos(setup.pos); setup
+      case Some(_) => val setup2 = setup.withPosUpdated(pos); printPos(pos); setup2
+    }
   }
 
 }

@@ -528,4 +528,20 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     setupTop2.rigSetups("<rig1>") should equal (setupRig)
   }
 
+  test("setupForPos") {
+    val connsTop = Connection(Port("<rig1>#1.1", Some("one out")), Port("<top>#5.5", Some("top input")))
+    val connsMid = Connection(Port("<rig2>#2.2", Some("two out")), Port("<mid>#7.7", Some("mid input")))
+    val connsBottom = Connection(Port("<free>#3.3", Some("three out")), Port("<bottom>#7.7", Some("bottom input")))
+    
+    val setupBottom = new Setup(Set(connsBottom))
+    val setupMid = new Setup(Set(connsMid), Map("<rig2>" -> setupBottom), List())
+    val setupTop = new Setup(Set(connsTop), Map("<rig1>" -> setupMid), List("<rig1>"))
+    
+    setupTop.setupForPos(List()) should equal (Some(setupTop))
+    setupTop.setupForPos(List("<rig1>")) should equal (Some(setupMid))
+    setupTop.setupForPos(List("<rig1>", "<rig2>")) should equal (Some(setupBottom))
+    setupTop.setupForPos(List("<rig1>", "<rig22>")) should equal (None)
+    setupTop.setupForPos(List("<rig1>", "<rig2>", "<rig33>")) should equal (None)
+  }
+
 }
