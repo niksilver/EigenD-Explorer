@@ -32,6 +32,11 @@ object Preamble {
       def insertMains(s: String) = "." + s.withoutBrackets + ":main"
       "<main" + (p map insertMains).mkString + ">"
     }
+    
+    def displayString: String =
+      if (p.isEmpty) "Top level"
+        else p.mkString(" - ")
+
   }
   
   implicit def ListString2Pos(p: List[String]) = Pos(p: _*)

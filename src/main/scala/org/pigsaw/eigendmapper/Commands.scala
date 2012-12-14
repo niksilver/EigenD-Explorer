@@ -197,8 +197,7 @@ class IntoCommand extends Command {
       case 1 => doInto(args(0), setup, prln)
       case _ => prln("into: Too many arguments"); setup
     }
-    val posStr = if (setup2.pos.isEmpty) "Top level" else setup2.pos.mkString(" - ")
-    prln("Position: " + posStr)
+    prln("Position: " + setup2.pos.displayString)
     setup2
   }
 
