@@ -24,15 +24,26 @@ object Preamble {
   case class Pos(p: String*) {
     /**
      * Convert a pos to an index specification for the bls command:
-     * List() =>         <main>
-     * List("<rig1>") => <main.rig1:main>
-     * List("<rig2>") => <main.rig1:main.rig2:main>
+     * List()                   => <main>
+     * List("<rig1>")           => <main.rig1:main>
+     * List("<rig1>", "<rig2>") => <main.rig1:main.rig2:main>
      */
     def index: String = {
       def insertMains(s: String) = "." + s.withoutBrackets + ":main"
       "<main" + (p map insertMains).mkString + ">"
     }
     
+    /**
+     * Get the fully qualified name of the given agent at this position.
+     * List() + "<ag1>"                   => <ag1>
+     * List("<rig1>") + "<ag1>"           => <main.rig1:ag1>
+     * List("<rig1>", "<rig2>") + "<ag1>" => <main.rig1:main.rig2:ag1>
+     */
+    def fqName(agent: String): String = {
+      val mains = p map { "main." + _.withoutBrackets + ":" }
+      "<" + mains.mkString + agent.withoutBrackets + ">"
+    }
+
     def displayString: String =
       if (p.isEmpty) "Top level"
         else p.mkString(" - ")

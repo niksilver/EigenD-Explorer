@@ -23,6 +23,12 @@ class PreambleSuite extends FunSuite with ShouldMatchers {
     Pos("<rig1>", "<rig2>").index should equal ("<main.rig1:main.rig2:main>")
   }
   
+  test("Pos.fqName") {
+    Pos().fqName("<summer1>") should equal ("<summer1>")
+    Pos("<rig1>").fqName("<summer1>") should equal ("<main.rig1:summer1>")
+    Pos("<rig1>", "<rig2>").fqName("<summer1>") should equal ("<main.rig1:main.rig2:summer1>")
+  }
+  
   test("Pos.displayString") {
     Pos().displayString should equal ("Top level")
     Pos("<rig1>").displayString should equal ("<rig1>")
