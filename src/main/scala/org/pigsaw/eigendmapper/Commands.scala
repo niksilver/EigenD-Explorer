@@ -1,5 +1,7 @@
 package org.pigsaw.eigendmapper
 
+import Preamble._
+
 import java.io.FileWriter
 
 trait Command {
@@ -102,27 +104,15 @@ class SnapshotCommand extends Command {
     doSnapshot(setup, prln)
   }
   
-  /**
-   * Convert a pos to an index specification for the bls command:
-   * List() =>         <main>
-   * List("<rig1>") => <main.rig1:main>
-   * List("<rig2>") => <main.rig1:main.rig2:main>
-   */
-  def index(pos: List[String]): String = {
-    def strip(name: String): String = ("<(.*)>".r findFirstMatchIn name).get.group(1)
-    def insertMains(s: String) = "." + strip(s) + ":main"
-    "<main" + (pos map insertMains).mkString + ">"
-  }
-  
   def doSnapshot(setup: Setup, prln: PrintlnFn): Setup = {
-    val index = this.index(setup.pos)
+    val index = setup.pos.index
     val bls = this.bls(index)
     val agents = bls.agents
     val allConnections = for {
       agent <- agents
-      bcat = this.bcat(agent)
+      bcat = { val bc = this.bcat(agent); prln("Examining " + agent); bc }
       conn <- bcat.connections
-    } yield { prln("Agent " + agent + ", connection " + conn); conn }
+    } yield conn
     setup.withConnsReplaced(setup.pos, allConnections.toSet)
   }
 }

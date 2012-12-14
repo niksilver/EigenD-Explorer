@@ -35,6 +35,8 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
     catcher.output should not include ("Unknown")
     catcher.output should include ("-->")
   }
+  
+  ignore("Show - Handles being in a rig") {}
 
   test("Graph - handles no arguments") {
     val setup = Setup()
@@ -69,13 +71,7 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
     catcher.output should include ("Do not recognise what to graph")
   }
   
-  test("SnapshotCommand.index") {
-    val command = new SnapshotCommand
-    
-    command.index(List()) should equal ("<main>")
-    command.index(List("<rig1>")) should equal ("<main.rig1:main>")
-    command.index(List("<rig1>", "<rig2>")) should equal ("<main.rig1:main.rig2:main>")
-  }
+  ignore("Snapshot - Handles being in a rig") {}
   
   test("Snapshot - Correct bls index for top level") {
     
@@ -241,4 +237,5 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
     catcher2.output.lines.toList(1) should equal ("Position: Top level")
   }
 
+  ignore("Agents command") {}
 }
