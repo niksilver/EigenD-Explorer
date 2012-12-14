@@ -73,6 +73,13 @@ class ShowCommand extends Command {
   }
 
   def doShow(agent: String, setup: Setup, prln: PrintlnFn) {
+    setup.setupForPos(setup.pos) match {
+      case Some(s) => showLinks(agent, s, prln)
+      case None    => prln("Could not find setup " + setup.pos.displayString)
+    }
+  }
+    
+  private def showLinks(agent: String, setup: Setup, prln: PrintlnFn) {
     val links: Set[(String, String, String)] = for {
       conn <- setup.conns
       val master = conn.master
