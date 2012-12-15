@@ -13,6 +13,11 @@ class PortSuite extends FunSuite with ShouldMatchers {
     Port("<main:b>#1.2", None).normalised should equal (Port("<b>#1.2", None))
   }
 
+  test("Normalised - FQ agent names in rigs") {
+    Port("<main.rig3:summer1>#1.2", None).normalised should equal (Port("<summer1>#1.2", None))
+    Port("<main.rig1:main.rig2:c>#1.2", None).normalised should equal (Port("<c>#1.2", None))
+  }
+
   test("Normalised - object preservation") {
     val b = Port("<main:b>#1.2", None).normalised
     

@@ -34,7 +34,7 @@ object Preamble {
     }
   }
 
-  implicit def String2AgentName(s: String) = new AgentName(s)
+  implicit def String2AgentName(s: String): AgentName = new AgentName(s)
 
   /**
    * A position in a rig hierarchy in which we're currently
@@ -59,5 +59,5 @@ object Preamble {
 
   }
   
-  implicit def ListString2Pos(p: List[String]) = Pos(p: _*)
+  implicit def ListString2Pos(p: List[String]): Pos = Pos(p: _*)
 }

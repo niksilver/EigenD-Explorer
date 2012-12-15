@@ -1,5 +1,7 @@
 package org.pigsaw.eigendmapper
 
+import Preamble._
+
 /**
  * A port in an agent that might be one end of a connection.
  * @param id  Agent name, including angle brackets and ordinal, and port
@@ -11,9 +13,13 @@ case class Port(val id: String, val name: Option[String]) {
    * Generate a normalised version of this port. I.e. If the id is of
    * the form &lt;<main:agentnameN&gt; then it's converted to &lt;agentnameN&gt;.
    */
-  def normalised: Port =
-    if (id.startsWith("<main:")) Port("<" + id.drop(6), name)
-    else this
+  def normalised: Port = {
+    val FullyQualifiedID = """<(.*:)(\w*>.*)""".r
+    id match {
+      case FullyQualifiedID(_, rest) => Port("<" + rest, name)
+      case _ => this
+    }
+  }
 
   /**
    * Get the agent name embedded in the port id, including the angle brackets.

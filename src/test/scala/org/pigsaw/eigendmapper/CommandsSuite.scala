@@ -86,8 +86,6 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
     catcher.output should include("Do not recognise what to graph")
   }
 
-  ignore("Snapshot - Handles being in a rig") {}
-
   test("Snapshot - Correct bls index for top level") {
 
     val command = new SnapshotCommand {
