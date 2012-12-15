@@ -1,6 +1,15 @@
 package org.pigsaw.eigendmapper
 
 object Preamble {
+  
+  /**
+   * Calculate a value, then do something with it before returning it.
+   */
+  class ReturnableAfter[A](a : A) {
+    def returnedAfter(fn: A => Unit): A = { fn(a) ; a }
+  }
+  implicit def Any2ReturnableAfter[A](a: A) = new ReturnableAfter(a)
+  
   /**
    * The name of an agent, including the angle brackets.
    */
@@ -11,6 +20,17 @@ object Preamble {
     def withoutBrackets: String = {
       val strip1 = name.dropWhile(_ == '<')
       if (strip1.endsWith(">")) strip1.init else strip1
+    }
+    
+    /**
+     * Get the fully qualified name of this agent at the given position.
+     * "<ag1>" + List()                   => <ag1>
+     * "<ag1>" + List("<rig1>")           => <main.rig1:ag1>
+     * "<ag1>" + List("<rig1>", "<rig2>") => <main.rig1:main.rig2:ag1>
+     */
+    def fqName(pos: List[String]): String = {
+      val mains = pos map { "main." + _.withoutBrackets + ":" }
+      "<" + mains.mkString + name.withoutBrackets + ">"
     }
   }
 
@@ -31,17 +51,6 @@ object Preamble {
     def index: String = {
       def insertMains(s: String) = "." + s.withoutBrackets + ":main"
       "<main" + (p map insertMains).mkString + ">"
-    }
-    
-    /**
-     * Get the fully qualified name of the given agent at this position.
-     * List() + "<ag1>"                   => <ag1>
-     * List("<rig1>") + "<ag1>"           => <main.rig1:ag1>
-     * List("<rig1>", "<rig2>") + "<ag1>" => <main.rig1:main.rig2:ag1>
-     */
-    def fqName(agent: String): String = {
-      val mains = p map { "main." + _.withoutBrackets + ":" }
-      "<" + mains.mkString + agent.withoutBrackets + ">"
     }
 
     def displayString: String =

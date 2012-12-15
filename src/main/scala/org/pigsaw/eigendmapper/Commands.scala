@@ -112,12 +112,13 @@ class SnapshotCommand extends Command {
   }
   
   def doSnapshot(setup: Setup, prln: PrintlnFn): Setup = {
-    val index = setup.pos.index
+    val pos = setup.pos
+    val index = pos.index
     val bls = this.bls(index)
     val agents = bls.agents
     val allConnections = for {
       agent <- agents
-      bcat = { val bc = this.bcat(agent); prln("Examining " + agent); bc }
+      bcat = this.bcat(agent.fqName(pos)) returnedAfter { bc => prln("Examining " + bc.agent) }
       conn <- bcat.connections
     } yield conn
     setup.withConnsReplaced(setup.pos, allConnections.toSet)

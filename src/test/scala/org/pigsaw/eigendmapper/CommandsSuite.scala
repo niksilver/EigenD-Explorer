@@ -109,15 +109,17 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
     command.capturedIndex should equal("<main>")
   }
 
-  test("Snapshot - Correct bls index for first level down") {
+  test("Snapshot - Correct FQ names for first level down") {
 
     val command = new SnapshotCommand {
       var capturedIndex = "not yet set"
+      var capturedAgents = collection.mutable.Set[String]()
       override def bls(index: String): BLs = new BLs(index) {
         capturedIndex = index
-        override def text: Stream[String] = Stream("something bls-ish")
+        override def text: Stream[String] = Stream("<too>", "<mid>")
       }
       override def bcat(agent: String): BCat = new BCat(agent) {
+        capturedAgents = capturedAgents + agent
         override def text: Stream[String] = Stream("something bcatty")
       }
     }
@@ -133,6 +135,7 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
     val setupV2 = command.action(List())(setup, catcher.println)
 
     command.capturedIndex should equal("<main.rig1:main>")
+    command.capturedAgents should equal(Set("<main.rig1:too>", "<main.rig1:mid>"))
   }
 
   test("Snapshot - Preserves other setup data") {

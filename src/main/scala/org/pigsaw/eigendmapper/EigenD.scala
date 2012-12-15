@@ -41,7 +41,7 @@ class BLs(index: String) {
  * A bcat command with the agent name.
  * @param agent  The agent name, including angle brackets and ordinal.
  */
-class BCat(agent: String) {
+class BCat(val agent: String) {
 
   /**
    * The text output of the bcat command, line by line.
