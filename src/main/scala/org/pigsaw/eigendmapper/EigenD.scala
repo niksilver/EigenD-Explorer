@@ -103,6 +103,15 @@ class BCat(val agent: String) {
    * and its value.
    */
   def settings: Map[String, String] = {
+    val nodeIDNames = for {
+      stateNodeIDValue <- state
+      stateNodeID = stateNodeIDValue._1
+      dictValue <- stateNodeIDValue._2.dictValue.seq
+      dict = dictValue.dict
+      optPortCName = dict.get("cname") map { _.mkString }
+      portCName <- optPortCName.seq
+    } yield (stateNodeID -> portCName)
+
     for {
       stateNodeIDValue <- state
       stateNodeID = stateNodeIDValue._1
@@ -110,7 +119,10 @@ class BCat(val agent: String) {
       // Now turn 1.2.3.254 into 1.2.3
       setNode = stateNodeID.dropRight(4)
       strValue <- stateNodeIDValue._2.stringValue.seq
-      nodeID = agent.unqualified + "#" + setNode
+      nodeID = nodeIDNames.get(setNode) match {
+        case Some(name) => agent.unqualified + " " + name
+        case None => agent.unqualified + "#" + setNode
+      }
     } yield (nodeID -> strValue)
   }
 }

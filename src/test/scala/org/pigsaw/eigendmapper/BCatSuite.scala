@@ -159,5 +159,29 @@ class BCatSuite extends FunSuite with ShouldMatchers {
     settings.size should equal (1)
     settings should contain (("<metronome1>#3.3" -> "0.0"))
   }
+  
+  test("Settings - Will recognise named settings") {
+    val output = """"log:using portbase 5555
+      |. {cname:metronome}
+      |3.3 {domain:bfloat(),cname:tempo input}
+      |3.3.254 0.0
+      |4 {domain:bstring(),cname:arbitrary thing}
+      |4.254 some value with spaces
+      |4.8 {domain:bfloat(),cname:beat input}
+      |5.6.7 {domain:boolean(),cname:open}
+      |5.6.7.254 y
+      |1.3.254""".stripMargin
+
+    val bcat = new BCat("<metronome1>") {
+      override def text: Stream[String] = output.lines.toStream
+    }
+    
+    val settings = bcat.settings
+    
+    settings.size should equal (3)
+    settings should contain (("<metronome1> tempo input" -> "0.0"))
+    settings should contain (("<metronome1> arbitrary thing" -> "some value with spaces"))
+    settings should contain (("<metronome1> open" -> "y"))
+  }
 
 }
