@@ -49,7 +49,7 @@ class BCat(val agent: String) {
   def text: Stream[String] = EigenD.exec("bcat.exe " + agent)
 
   /**
-   * A translation of the bcat text into a map of state variables and values.
+   * A translation of the bcat text into a map of state nodes IDs and values.
    */
   def state: Map[String, StateValue] = {
     val parser = new BCatParser
@@ -63,36 +63,36 @@ class BCat(val agent: String) {
    */
   lazy val connections: Set[Connection] = {
     val conns = for {
-      stateVarValue <- state
-      stateVar = stateVarValue._1
-      dictValue <- stateVarValue._2.dictValue.seq
+      stateNodeIDValue <- state
+      stateNodeID = stateNodeIDValue._1
+      dictValue <- stateNodeIDValue._2.dictValue.seq
       dict = dictValue.dict
       portCName = dict.get("cname") map { _.mkString }
       (key, valueList) <- dict
       conn <- key match {
-        case "slave" => slaveConnections(portCName, stateVar, valueList)
-        case "master" => masterConnections(portCName, stateVar, valueList)
+        case "slave" => slaveConnections(portCName, stateNodeID, valueList)
+        case "master" => masterConnections(portCName, stateNodeID, valueList)
         case _ => List()
       }
     } yield conn
     conns.toSet
   }
 
-  def slaveConnections(portCName: Option[String], stateVar: String, valueList: List[String]): List[Connection] = {
+  def slaveConnections(portCName: Option[String], stateNodeID: String, valueList: List[String]): List[Connection] = {
     for {
       slave <- valueList
       slaveStripped = slave.stripPrefix("'").stripSuffix("'")
-      masterPort = Port(agent + "#" + stateVar, portCName)
+      masterPort = Port(agent + "#" + stateNodeID, portCName)
       slavePort = Port(slaveStripped, None)
     } yield Connection(masterPort, slavePort)
   }
 
-  def masterConnections(portCName: Option[String], stateVar: String, valueList: List[String]): List[Connection] = {
+  def masterConnections(portCName: Option[String], stateNodeID: String, valueList: List[String]): List[Connection] = {
     for {
       masterConn <- valueList
       master = masterConn.split(',')(2).stripPrefix("'").stripSuffix("'")
       masterPort = Port(master, None)
-      slavePort = Port(agent + "#" + stateVar, portCName)
+      slavePort = Port(agent + "#" + stateNodeID, portCName)
     } yield Connection(masterPort, slavePort)
   }
 }

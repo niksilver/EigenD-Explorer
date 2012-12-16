@@ -9,13 +9,13 @@ class BCatParser extends RegexParsers {
   /** Positive inline whitepace only. */
   def whitespace = """[ \t]+""".r
 
-  def stateVariableName = "." | """\d+(\.\d+)*""".r
+  def stateNodeID = "." | """\d+(\.\d+)*""".r
   def stringValue = """.*""".r
   def wrappedStringValue = stringValue ^^ { StringValue(_) }
 
   def stateValue = wrappedDictionary | wrappedStringValue
 
-  def outputLine = stateVariableName ~ whitespace ~ stateValue ^^
+  def outputLine = stateNodeID ~ whitespace ~ stateValue ^^
     { case name ~ ws ~ state_value => (name -> state_value) }
 
   def dictionary = "{" ~> keyValuePairs <~ "}"
