@@ -44,6 +44,7 @@ class BLs(index: String) {
  * @param agent  The agent name, including angle brackets and ordinal.
  */
 class BCat(val agent: String) {
+  type Dict = Map[String, List[String]]
 
   /**
    * The text output of the bcat command, line by line.
@@ -60,14 +61,23 @@ class BCat(val agent: String) {
   }
 
   /**
+   * Get a mapping from all node IDs to their dictionaries -- but only for those
+   * nodes which have a dictionary.
+   */
+  private lazy val nodeIDDicts: Map[String, Dict] =
+    for {
+      stateNodeIDValue <- state
+      stateNodeID = stateNodeIDValue._1
+      dict <- stateNodeIDValue._2.dictValue.seq
+    } yield (stateNodeID -> dict)
+
+  /**
    * The set of all master/slave connections that involve this agent
    * on one side or the other.
    */
   lazy val connections: Set[Connection] = {
     val conns = for {
-      stateNodeIDValue <- state
-      stateNodeID = stateNodeIDValue._1
-      dict <- stateNodeIDValue._2.dictValue.seq
+      (stateNodeID, dict) <- nodeIDDicts
       portCName = dict.get("cname") map { _.mkString }
       (key, valueList) <- dict
       conn <- key match {
@@ -96,20 +106,18 @@ class BCat(val agent: String) {
       slavePort = Port(agent + "#" + stateNodeID, portCName)
     } yield Connection(masterPort, slavePort)
   }
-  
+
   /**
    * Get a map from node IDs to their names. Not all node IDs will have
    * a name, of course.
    */
-  lazy val nodeIDNames: Map[String, String] = for {
-      stateNodeIDValue <- state
-      stateNodeID = stateNodeIDValue._1
-      dict <- stateNodeIDValue._2.dictValue.seq
+  lazy val nodeIDNames: Map[String, String] =
+    for {
+      (stateNodeID, dict) <- nodeIDDicts
       optPortCName = dict.get("cname") map { _.mkString }
       portCName <- optPortCName.seq
     } yield (stateNodeID -> portCName)
 
-  
   /**
    * Get the settings in this agent. Each key value pair is the port ID
    * and its value.
