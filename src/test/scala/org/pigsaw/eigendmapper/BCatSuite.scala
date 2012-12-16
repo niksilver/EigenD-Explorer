@@ -4,9 +4,10 @@ import org.scalatest.FunSuite
 
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
+import org.scalatest.matchers.ShouldMatchers
 
 @RunWith(classOf[JUnitRunner])
-class BCatMapperSuite extends FunSuite {
+class BCatSuite extends FunSuite with ShouldMatchers {
 
   trait TestParser extends BCatParser {
     def parseOption[T](parser: Parser[T], dictstr: String): Option[T] =
@@ -120,5 +121,28 @@ class BCatMapperSuite extends FunSuite {
     val bcat = new BCat("<metronome1>")
     bcat.state.toList map println
   }*/
+  
+  test("Settings - Will recognise unnamed settings") {
+    val output = """"log:using portbase 5555
+      |. {cname:metronome}
+      |2 {domain:bfloat(),cname:tempo input}
+      |3.3.254 0.0
+      |3.4.2 {domain:bfloat(),cname:click input}
+      |4.254 some value with spaces
+      |4.8 {domain:bfloat(),cname:beat input}
+      |5.6.7.254 y
+      |1.3.254""".stripMargin
+
+    val bcat = new BCat("<metronome1>") {
+      override def text: Stream[String] = output.lines.toStream
+    }
+    
+    val settings = bcat.settings
+    
+    settings.size should equal (3)
+    settings should contain (("<metronome1>#3.3" -> "0.0"))
+    settings should contain (("<metronome1>#4" -> "some value with spaces"))
+    settings should contain (("<metronome1>#5.6.7" -> "y"))
+  }
 
 }

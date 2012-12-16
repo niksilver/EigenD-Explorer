@@ -1,5 +1,7 @@
 package org.pigsaw.eigendmapper
 
+import Preamble._
+
 import scala.sys.process.Process
 
 object EigenD {
@@ -94,5 +96,20 @@ class BCat(val agent: String) {
       masterPort = Port(master, None)
       slavePort = Port(agent + "#" + stateNodeID, portCName)
     } yield Connection(masterPort, slavePort)
+  }
+  
+  /**
+   * Get the settings in this agent. Each key value pair is the port ID
+   * and its value.
+   */
+  def settings: Map[String, String] = {
+    for {
+      stateNodeIDValue <- state
+      stateNodeID = stateNodeIDValue._1
+      if stateNodeID.endsWith(".254")
+      // Now turn 1.2.3.254 into 1.2.3
+      setNode = stateNodeID.dropRight(4)
+      strValue <- stateNodeIDValue._2.stringValue.seq returnedAfter { s => println("strValue is " + s)}
+    } yield (agent + "#" + setNode -> strValue)
   }
 }
