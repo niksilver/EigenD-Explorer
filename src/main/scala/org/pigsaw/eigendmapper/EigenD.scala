@@ -98,11 +98,10 @@ class BCat(val agent: String) {
   }
   
   /**
-   * Get the settings in this agent. Each key value pair is the port ID
-   * and its value.
+   * Get a map from node IDs to their names. Not all node IDs will have
+   * a name, of course.
    */
-  def settings: Map[String, String] = {
-    val nodeIDNames = for {
+  lazy val nodeIDNames: Map[String, String] = for {
       stateNodeIDValue <- state
       stateNodeID = stateNodeIDValue._1
       dict <- stateNodeIDValue._2.dictValue.seq
@@ -110,6 +109,12 @@ class BCat(val agent: String) {
       portCName <- optPortCName.seq
     } yield (stateNodeID -> portCName)
 
+  
+  /**
+   * Get the settings in this agent. Each key value pair is the port ID
+   * and its value.
+   */
+  lazy val settings: Map[String, String] = {
     for {
       stateNodeIDValue <- state
       stateNodeID = stateNodeIDValue._1
