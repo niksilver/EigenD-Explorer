@@ -109,7 +109,8 @@ class BCat(val agent: String) {
       if stateNodeID.endsWith(".254")
       // Now turn 1.2.3.254 into 1.2.3
       setNode = stateNodeID.dropRight(4)
-      strValue <- stateNodeIDValue._2.stringValue.seq returnedAfter { s => println("strValue is " + s)}
-    } yield (agent + "#" + setNode -> strValue)
+      strValue <- stateNodeIDValue._2.stringValue.seq
+      nodeID = agent.unqualified + "#" + setNode
+    } yield (nodeID -> strValue)
   }
 }

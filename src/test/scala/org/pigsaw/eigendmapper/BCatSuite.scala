@@ -144,5 +144,20 @@ class BCatSuite extends FunSuite with ShouldMatchers {
     settings should contain (("<metronome1>#4" -> "some value with spaces"))
     settings should contain (("<metronome1>#5.6.7" -> "y"))
   }
+  
+  test("Settings - Names node IDs correctly even if in a rig") {
+    val output = """"log:using portbase 5555
+      |. {cname:metronome}
+      |3.3.254 0.0""".stripMargin
+
+    val bcat = new BCat("<main.rig3:metronome1>") {
+      override def text: Stream[String] = output.lines.toStream
+    }
+    
+    val settings = bcat.settings
+    
+    settings.size should equal (1)
+    settings should contain (("<metronome1>#3.3" -> "0.0"))
+  }
 
 }

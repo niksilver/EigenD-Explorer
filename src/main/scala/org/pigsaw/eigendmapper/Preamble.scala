@@ -1,15 +1,15 @@
 package org.pigsaw.eigendmapper
 
 object Preamble {
-  
+
   /**
    * Calculate a value, then do something with it before returning it.
    */
-  class ReturnableAfter[A](a : A) {
-    def returnedAfter(fn: A => Unit): A = { fn(a) ; a }
+  class ReturnableAfter[A](a: A) {
+    def returnedAfter(fn: A => Unit): A = { fn(a); a }
   }
   implicit def Any2ReturnableAfter[A](a: A) = new ReturnableAfter(a)
-  
+
   /**
    * The name of an agent, including the angle brackets.
    */
@@ -21,7 +21,7 @@ object Preamble {
       val strip1 = name.dropWhile(_ == '<')
       if (strip1.endsWith(">")) strip1.init else strip1
     }
-    
+
     /**
      * Get the fully qualified name of this agent at the given position.
      * "<ag1>" + List()                   => <ag1>
@@ -31,6 +31,18 @@ object Preamble {
     def fqName(pos: List[String]): String = {
       val mains = pos map { "main." + _.withoutBrackets + ":" }
       "<" + mains.mkString + name.withoutBrackets + ">"
+    }
+
+    /**
+     * Get the unqualified version of the agent name, which means
+     * without all the rig position information.
+     */
+    def unqualified: String = {
+      val FullyQualifiedName = """<.*:(.*)>""".r
+      name match {
+        case FullyQualifiedName(shortName) => "<" + shortName + ">"
+        case _ => name
+      }
     }
   }
 
@@ -55,9 +67,9 @@ object Preamble {
 
     def displayString: String =
       if (p.isEmpty) "Top level"
-        else p.mkString(" - ")
+      else p.mkString(" - ")
 
   }
-  
+
   implicit def ListString2Pos(p: List[String]): Pos = Pos(p: _*)
 }
