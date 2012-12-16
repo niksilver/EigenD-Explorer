@@ -72,17 +72,23 @@ class BCat(val agent: String) {
     } yield (stateNodeID -> dict)
 
   /**
+   * Get the (optional) cname from a state dictionary value
+   */
+  private def cname(dict: Dict): Option[String] =
+    dict.get("cname") map { _.mkString }
+    
+  /**
    * The set of all master/slave connections that involve this agent
    * on one side or the other.
    */
   lazy val connections: Set[Connection] = {
     val conns = for {
       (stateNodeID, dict) <- nodeIDDicts
-      portCName = dict.get("cname") map { _.mkString }
+      optPortCName = cname(dict)
       (key, valueList) <- dict
       conn <- key match {
-        case "slave" => slaveConnections(portCName, stateNodeID, valueList)
-        case "master" => masterConnections(portCName, stateNodeID, valueList)
+        case "slave" => slaveConnections(optPortCName, stateNodeID, valueList)
+        case "master" => masterConnections(optPortCName, stateNodeID, valueList)
         case _ => List()
       }
     } yield conn
@@ -114,8 +120,7 @@ class BCat(val agent: String) {
   lazy val nodeIDNames: Map[String, String] =
     for {
       (stateNodeID, dict) <- nodeIDDicts
-      optPortCName = dict.get("cname") map { _.mkString }
-      portCName <- optPortCName.seq
+      portCName <- cname(dict).seq
     } yield (stateNodeID -> portCName)
 
   /**
