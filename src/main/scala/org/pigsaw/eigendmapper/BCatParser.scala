@@ -94,8 +94,9 @@ class BCatParser extends RegexParsers {
 }
 
 sealed abstract class StateValue {
+  type Dict = Map[String, List[String]]
   def stringValue: Option[String]
-  def dictValue: Option[DictValue]
+  def dictValue: Option[Dict]
 }
 
 case class StringValue(value: String) extends StateValue {
@@ -105,5 +106,5 @@ case class StringValue(value: String) extends StateValue {
 
 case class DictValue(dict: Map[String, List[String]]) extends StateValue {
   def stringValue = None
-  def dictValue = Some(this)
+  def dictValue = Some(dict)
 }

@@ -67,8 +67,7 @@ class BCat(val agent: String) {
     val conns = for {
       stateNodeIDValue <- state
       stateNodeID = stateNodeIDValue._1
-      dictValue <- stateNodeIDValue._2.dictValue.seq
-      dict = dictValue.dict
+      dict <- stateNodeIDValue._2.dictValue.seq
       portCName = dict.get("cname") map { _.mkString }
       (key, valueList) <- dict
       conn <- key match {
@@ -106,8 +105,7 @@ class BCat(val agent: String) {
     val nodeIDNames = for {
       stateNodeIDValue <- state
       stateNodeID = stateNodeIDValue._1
-      dictValue <- stateNodeIDValue._2.dictValue.seq
-      dict = dictValue.dict
+      dict <- stateNodeIDValue._2.dictValue.seq
       optPortCName = dict.get("cname") map { _.mkString }
       portCName <- optPortCName.seq
     } yield (stateNodeID -> portCName)
