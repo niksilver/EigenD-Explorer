@@ -8,20 +8,20 @@ import org.scalatest.matchers.ShouldMatchers
 @RunWith(classOf[JUnitRunner])
 class PortSuite extends FunSuite with ShouldMatchers {
 
-  test("Normalised - general") {
-    Port("<a>#1.1", None).normalised should equal (Port("<a>#1.1", None))
-    Port("<main:b>#1.2", None).normalised should equal (Port("<b>#1.2", None))
+  test("Unqualified - general") {
+    Port("<a>#1.1", None).unqualified should equal (Port("<a>#1.1", None))
+    Port("<main:b>#1.2", None).unqualified should equal (Port("<b>#1.2", None))
   }
 
-  test("Normalised - FQ agent names in rigs") {
-    Port("<main.rig3:summer1>#1.2", None).normalised should equal (Port("<summer1>#1.2", None))
-    Port("<main.rig1:main.rig2:c>#1.2", None).normalised should equal (Port("<c>#1.2", None))
+  test("Unqualified - FQ agent names in rigs") {
+    Port("<main.rig3:summer1>#1.2", None).unqualified should equal (Port("<summer1>#1.2", None))
+    Port("<main.rig1:main.rig2:c>#1.2", None).unqualified should equal (Port("<c>#1.2", None))
   }
 
-  test("Normalised - object preservation") {
-    val b = Port("<main:b>#1.2", None).normalised
+  test("Unqualified - object preservation") {
+    val b = Port("<main:b>#1.2", None).unqualified
     
-    assert(b.normalised eq b)
+    assert(b.unqualified eq b)
   }
   
   test("Agent - Port has agent name") {

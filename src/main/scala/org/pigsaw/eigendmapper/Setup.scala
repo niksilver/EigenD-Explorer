@@ -15,7 +15,7 @@ class Setup(val conns0: Set[Connection],
   val rigSetups0: Map[String, Setup],
   val pos: List[String]) {
 
-  lazy val conns: Set[Connection] = unified(normalised(conns0))
+  lazy val conns: Set[Connection] = unified(unqualified(conns0))
 
   lazy val rigSetups: Map[String, Setup] = {
     rigs map { name =>
@@ -78,12 +78,12 @@ class Setup(val conns0: Set[Connection],
   }
 
   /**
-   * Make a normalised version of a set of connections, in which
+   * Make an unqualified version of a set of connections, in which
    * every port of the form ID &lt;main:agentnameN&gt; is changed to
    * its shorter form of &lt;agentnameN&gt;.
    */
-  private def normalised(c: Set[Connection]): Set[Connection] =
-    c map { _.normalised }
+  private def unqualified(c: Set[Connection]): Set[Connection] =
+    c map { _.unqualified }
 
   /**
    * The rigs in this setup. E.g. <code>"&lt;rig2;&gt"</code>.

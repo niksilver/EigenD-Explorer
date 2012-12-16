@@ -10,10 +10,10 @@ import Preamble._
  */
 case class Port(val id: String, val name: Option[String]) {
   /**
-   * Generate a normalised version of this port. I.e. If the id is of
+   * Generate an unqualified version of this port. I.e. If the id is of
    * the form &lt;<main:agentnameN&gt; then it's converted to &lt;agentnameN&gt;.
    */
-  def normalised: Port = {
+  def unqualified: Port = {
     val FullyQualifiedID = """<(.*:)(\w*>.*)""".r
     id match {
       case FullyQualifiedID(_, rest) => Port("<" + rest, name)
@@ -42,15 +42,15 @@ case class Port(val id: String, val name: Option[String]) {
 
 case class Connection(val master: Port, val slave: Port) {
   /**
-   * Generate a normalised version of this connection. I.e. If the id of either
+   * Generate an unqualified version of this connection. I.e. If the id of either
    * the master or the slave is of the form &lt;<main:agentnameN&gt; then it's
    * converted to &lt;agentnameN&gt;.
    */
-  def normalised: Connection = {
-    val normMaster = master.normalised
-    val normSlave = slave.normalised
-    if ((normMaster eq master) && (normSlave eq slave)) this
-    else Connection(normMaster, normSlave)
+  def unqualified: Connection = {
+    val unqualMaster = master.unqualified
+    val unqualSlave = slave.unqualified
+    if ((unqualMaster eq master) && (unqualSlave eq slave)) this
+    else Connection(unqualMaster, unqualSlave)
   }
 
   /**
