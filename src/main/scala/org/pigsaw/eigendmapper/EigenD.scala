@@ -22,7 +22,7 @@ class BLs(index: String) {
   /**
    * The text output of the <code>bls <i>index</i></code> command, line by line.
    */
-  def text: Stream[String] = EigenD.exec("bls.exe " + index)
+  def text: Stream[String] = EigenD.exec("bls.exe " + index) returnedAfter { _ => throw new Exception("In BCat") }
 
   /**
    * Get the agents from a stream, which is expected to be the output
@@ -49,7 +49,7 @@ class BCat(val agent: String) {
   /**
    * The text output of the bcat command, line by line.
    */
-  def text: Stream[String] = EigenD.exec("bcat.exe " + agent)
+  def text: Stream[String] = EigenD.exec("bcat.exe " + agent) returnedAfter { _ => throw new Exception("In BCat") }
 
   /**
    * A translation of the bcat text into a map of state nodes IDs and values.

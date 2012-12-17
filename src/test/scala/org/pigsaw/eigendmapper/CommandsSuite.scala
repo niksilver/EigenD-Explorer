@@ -151,6 +151,7 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
       }
       override def bcat(agent: String): BCat = new BCat(agent) {
         override lazy val connections: Set[Connection] = Set(connsRigV2)
+        override def text: Stream[String] = Stream("nothing here")
       }
     }
 
@@ -164,6 +165,66 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
     setupTop2.rigSetups("<rig1>").conns should equal(Set(connsRigV2))
     setupTop2.rigSetups("<rig1>").rigSetups.keys should equal(Set())
     setupTop2.rigSetups("<rig1>").pos should equal(List())
+  }
+
+  test("Snapshot - Captures port cnames") {
+
+    val command = new SnapshotCommand {
+      var capturedIndex = "not yet set"
+      var capturedAgents = collection.mutable.Set[String]()
+      override def bls(index: String): BLs = new BLs(index) {
+        capturedIndex = index
+        override def text: Stream[String] = Stream("<ag1>", "<ag2>")
+      }
+      // In this setup we have:
+      // <ag1>#1.1 --> <ag2>#2.1
+      // <ag1>#1.2 --> <ag2>#2.2 --> <ag1>#1.22
+      // <ag1>#1.3 --> <ag2>#2.3
+      // <ag1>#1.4 --> <ag2>#2.4
+      // And we have cnames:
+      // <ag1>#1.1 = one one
+      // <ag2>#2.2 = two two
+      // <ag2>#2.3 = two three
+      override def bcat(agent: String): BCat = new BCat(agent) {
+        capturedAgents = capturedAgents + agent
+        val ag1Text = """. {cname:ag1,slave:}
+          |1.1 {cname:one one,protocols:input,slave:'<ag2>#2.1'}
+          |1.2 {protocols:input,slave:'<ag2>#2.2'}
+          |1.3 {protocols:input,slave:'<ag2>#2.3'}
+          |1.4 {protocols:input,slave:'<ag2>#2.4'}
+          |1.22 {master:conn(None,None,'<ag2>#2.2',None,ctl)}""".stripMargin
+        val ag2Text = """. {cname:ag2,slave:}
+          |2.1 {master:conn(None,None,'<ag1>#1.1',None,ctl)}
+          |2.2 {cname:two two,master:conn(None,None,'<ag1>#1.2',None,ctl)}
+          |2.3 {cname:two three,master:conn(None,None,'<ag1>#1.3',None,ctl)}
+          |2.4 {master:conn(None,None,'<ag1>#1.4',None,ctl)}""".stripMargin
+        override def text: Stream[String] =
+          (if (agent == "<ag1>") ag1Text else ag2Text).lines.toStream
+      }
+    }
+
+    val catcher = new PrintCatcher
+
+    val setup = command.action(List())(Setup(), catcher.println)
+    
+    setup.conns.size should equal (5)
+    
+    setup.ports should contain ("<ag1> one one")
+    setup.ports should contain ("<ag1>#1.2")
+    setup.ports should contain ("<ag1>#1.3")
+    setup.ports should contain ("<ag1>#1.4")
+    setup.ports should contain ("<ag1>#1.22")
+    
+    setup.ports should contain ("<ag2>#2.1")
+    setup.ports should contain ("<ag2> two two")
+    setup.ports should contain ("<ag2> two three")
+    setup.ports should contain ("<ag2>#2.4")
+    
+    setup.conns should contain (Connection("<ag1> one one", "<ag2>#2.1"))
+    setup.conns should contain (Connection("<ag1>#1.2", "<ag2> two two"))
+    setup.conns should contain (Connection("<ag1>#1.3", "<ag2> two three"))
+    setup.conns should contain (Connection("<ag1>#1.4", "<ag2>#2.4"))
+    setup.conns should contain (Connection("<ag2> two two", "<ag1>#1.22"))
   }
 
   test("Into - Can go into an empty rig") {

@@ -112,16 +112,26 @@ class SnapshotCommand extends Command {
   }
   
   def doSnapshot(setup: Setup, prln: PrintlnFn): Setup = {
+    type Agent = String
+    type Conns = Set[Connection]
+    type NameMap = Map[String, String]
+    
     val pos = setup.pos
     val index = pos.index
     val bls = this.bls(index)
     val agents = bls.agents
-    val allConnections = for {
+    
+    val bcats: List[(Agent, NameMap, Conns)] = for {
       agent <- agents
       bcat = this.bcat(agent.fqName(pos)) returnedAfter { bc => prln("Examining " + bc.agent) }
-      conn <- bcat.connections
-    } yield conn
-    setup.withConnsReplaced(setup.pos, allConnections.toSet)
+      nodeIDNames = bcat.nodeIDNames
+      conns = bcat.connections
+    } yield (agent, nodeIDNames, conns)
+    val cnames: Map[Agent, NameMap] = (bcats map { bc => (bc._1 -> bc._2) }) toMap
+    val allConnections: Conns = (bcats flatMap { _._3 }).toSet
+    //val deepSetup = setup.setupForPos(pos)
+    //val setupWithNames = new Setup(setup.cnames ++ cnames, setup.conns, setup.rigSetups, setup.pos)
+    setup.withConnsReplaced(pos, allConnections.toSet).withCNamesReplaced(pos, cnames)
   }
 }
 
