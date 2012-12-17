@@ -47,6 +47,28 @@ object Preamble {
   }
 
   implicit def String2AgentName(s: String): AgentName = new AgentName(s)
+  
+  /**
+   * A port ID, which consists of the agent name and either the
+   * node ID or the cname. Formats will be:
+   * `<name1>#12.34.45` or `<name1> beat bar input`. 
+   */
+  case class PortID(id: String) {
+    import PortID._
+    
+    /**
+     * Get the agent name, including the angle brackets.
+     * @throws IllegalArgumentException  If the agent cannot be extracted.
+     */
+    val agent: String = id match {
+      case AgentNameRE(agent) => agent
+      case _ => throw new IllegalArgumentException("No agent name in port ID '" + id + "'")
+    }
+  }
+  
+  object PortID {
+    private val AgentNameRE = """(<[^>]*>).*""".r
+  }
 
   /**
    * A position in a rig hierarchy in which we're currently

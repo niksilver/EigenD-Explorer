@@ -18,7 +18,7 @@ trait Command {
    * @param args   The arguments the user gave after the command
    * @param setup  The setup that the command has to act on.
    * @param prln   The println function to use
-   * @returns  The new setup, after the command has been executed.
+   * @return  The new setup, after the command has been executed.
    */
   def action(args: List[String])(setup: Setup, prln: PrintlnFn): Setup
   
