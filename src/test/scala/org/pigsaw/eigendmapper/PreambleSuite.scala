@@ -53,39 +53,51 @@ class PreambleSuite extends FunSuite with ShouldMatchers {
 
   test("PortID - Bad input") {
     // General bad format
-    intercept[IllegalArgumentException] { PortID("something") }
-    
+    intercept[MatchError] { PortID("something") }
+
     // No agent (1)
-    intercept[IllegalArgumentException] { PortID("one#3.2.4") }
-    
+    intercept[MatchError] { PortID("one#3.2.4") }
+
     // No agent (2)
-    intercept[IllegalArgumentException] { PortID("#3.2.4") }
-    
+    intercept[MatchError] { PortID("#3.2.4") }
+
     // No node label (1)
-    intercept[IllegalArgumentException] { PortID("<agent>#") }
-    
+    intercept[MatchError] { PortID("<agent>#") }
+
     // No node label (2)
-    intercept[IllegalArgumentException] { PortID("<agent>") }
-    
+    intercept[MatchError] { PortID("<agent>") }
+
     // No separator 
-    intercept[IllegalArgumentException] { PortID("<agent>3.4.5") }
+    intercept[MatchError] { PortID("<agent>3.4.5") }
   }
-  
+
   test("PortID - Extract agent name") {
     PortID("<agent1>#1.2.3").agent should equal("<agent1>")
     PortID("<main1.rig1:agent1/1>#1.2.3").agent should equal("<main1.rig1:agent1/1>")
   }
 
   test("PortID - Convert to format with unqualified agent name") {
-    PortID("<a>#1.1").unqualified should equal ("<a>#1.1")
-    PortID("<main:b>#1.2").unqualified should equal ("<b>#1.2")
-    PortID("<main.rig3:summer1>#1.2").unqualified should equal ("<summer1>#1.2")
-    PortID("<main.rig1:main.rig2:c>#1.2").unqualified should equal ("<c>#1.2")
+    PortID("<a>#1.1").unqualified should equal("<a>#1.1")
+    PortID("<main:b>#1.2").unqualified should equal("<b>#1.2")
+    PortID("<main.rig3:summer1>#1.2").unqualified should equal("<summer1>#1.2")
+    PortID("<main.rig1:main.rig2:c>#1.2").unqualified should equal("<c>#1.2")
   }
-  
-  ignore("PortID - Extract node ID") {}
-  ignore("PortID - Extract node cname") {}
-  ignore("PortID - Extract node label (ID or cname)") {}
-  ignore("PortID - Make it the best format, using cname if possible") {}
+
+  test("PortID - Extract node label (ID or cname)") {
+    PortID("<rig3> beat input").nodeLabel should equal("beat input")
+    PortID("<rig3>#4.5.6").nodeLabel should equal("4.5.6")
+  }
+
+  test("PortID - Make it the best format, using cname if possible") {
+    val map = Map(
+      "1" -> "one input",
+      "2.3" -> "two output")
+    
+    PortID("<cycler1>#1").bestForm(map) should equal ("<cycler1> one input")
+    PortID("<cycler1>#2.3").bestForm(map) should equal ("<cycler1> two output")
+
+    PortID("<cycler1>#1.1").bestForm(map) should equal ("<cycler1>#1.1")
+    PortID("<cycler1>#2").bestForm(map) should equal ("<cycler1>#2")
+  }
 
 }

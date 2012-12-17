@@ -52,18 +52,17 @@ object Preamble {
    * A port ID, which consists of the agent name and either the
    * node ID or the cname. Formats will be:
    * `<name1>#12.34.45` or `<name1> beat bar input`. 
+   * @throws IllegalArgumentException  If the agent and/or label cannot be extracted.
    */
   case class PortID(id: String) {
     import PortID._
     
+    private val PortIDRE(agent0, sep0, label0) = id
+    
     /**
      * Get the agent name, including the angle brackets.
-     * @throws IllegalArgumentException  If the agent cannot be extracted.
      */
-    val agent: String = id match {
-      case PortIDRE(agent, _, _) => agent
-      case _ => throw new IllegalArgumentException("Cannot parse PortID '" + id + "'")
-    }
+    val agent: String = agent0
 
     /**
      * Get the port ID with an unqualified version of the agent name, which means
@@ -72,6 +71,30 @@ object Preamble {
     def unqualified: String = id match {
       case PortIDRE(agent, sep, label) => agent.unqualified + sep + label
       case _ => throw new IllegalArgumentException("Cannot parse PortID '" + id + "'")
+    }
+    
+    /**
+     * Get the node label (the node ID or the node CName).
+     * E.g. in `"<cycler1>#4.56"` it is `"4.56"'
+     * and in `"<cycler1> beat input"` it is `"beat input"'
+     */
+    def nodeLabel: String = id match {
+      case PortIDRE(_, _, label) => label
+      case _ => throw new IllegalArgumentException("Cannot parse PortID '" + id + "'")
+    }
+    
+    /**
+     * Substitute the node ID for a cname if we have one. The # separator will
+     * be replaced by a space, too. E.g. `"<cycler1>#3.4"` will become
+     * `"<cycler1> beat input"` if we have a map from `"3.4"` to `"beat input"`.
+     * @param map  A map from node IDs to cnames.
+     */
+    def bestForm(m: Map[String, String]): String = {
+      val PortIDRE(agent, sep, label) = id
+      if (sep == "#" && m.get(label).nonEmpty)
+        agent + " " + m(label)
+      else
+        id
     }
   }
   
