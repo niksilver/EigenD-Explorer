@@ -9,13 +9,9 @@ import org.scalatest.matchers.ShouldMatchers
 class DeprecatedPortSuite extends FunSuite with ShouldMatchers {
 
   test("Unqualified - general") {
-    DeprecatedPort("<a>#1.1", None).unqualified should equal (DeprecatedPort("<a>#1.1", None))
-    DeprecatedPort("<main:b>#1.2", None).unqualified should equal (DeprecatedPort("<b>#1.2", None))
   }
 
   test("Unqualified - FQ agent names in rigs") {
-    DeprecatedPort("<main.rig3:summer1>#1.2", None).unqualified should equal (DeprecatedPort("<summer1>#1.2", None))
-    DeprecatedPort("<main.rig1:main.rig2:c>#1.2", None).unqualified should equal (DeprecatedPort("<c>#1.2", None))
   }
 
   test("Unqualified - object preservation") {

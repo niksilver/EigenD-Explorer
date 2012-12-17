@@ -52,9 +52,23 @@ class PreambleSuite extends FunSuite with ShouldMatchers {
   }
 
   test("PortID - Bad input") {
-    intercept[IllegalArgumentException] {
-      PortID("something").agent
-    }
+    // General bad format
+    intercept[IllegalArgumentException] { PortID("something") }
+    
+    // No agent (1)
+    intercept[IllegalArgumentException] { PortID("one#3.2.4") }
+    
+    // No agent (2)
+    intercept[IllegalArgumentException] { PortID("#3.2.4") }
+    
+    // No node label (1)
+    intercept[IllegalArgumentException] { PortID("<agent>#") }
+    
+    // No node label (2)
+    intercept[IllegalArgumentException] { PortID("<agent>") }
+    
+    // No separator 
+    intercept[IllegalArgumentException] { PortID("<agent>3.4.5") }
   }
   
   test("PortID - Extract agent name") {
@@ -62,7 +76,13 @@ class PreambleSuite extends FunSuite with ShouldMatchers {
     PortID("<main1.rig1:agent1/1>#1.2.3").agent should equal("<main1.rig1:agent1/1>")
   }
 
-  ignore("PortID - Unqualified agent name") {}
+  test("PortID - Convert to format with unqualified agent name") {
+    PortID("<a>#1.1").unqualified should equal ("<a>#1.1")
+    PortID("<main:b>#1.2").unqualified should equal ("<b>#1.2")
+    PortID("<main.rig3:summer1>#1.2").unqualified should equal ("<summer1>#1.2")
+    PortID("<main.rig1:main.rig2:c>#1.2").unqualified should equal ("<c>#1.2")
+  }
+  
   ignore("PortID - Extract node ID") {}
   ignore("PortID - Extract node cname") {}
   ignore("PortID - Extract node label (ID or cname)") {}

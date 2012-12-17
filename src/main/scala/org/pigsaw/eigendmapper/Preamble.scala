@@ -61,13 +61,22 @@ object Preamble {
      * @throws IllegalArgumentException  If the agent cannot be extracted.
      */
     val agent: String = id match {
-      case AgentNameRE(agent) => agent
-      case _ => throw new IllegalArgumentException("No agent name in port ID '" + id + "'")
+      case PortIDRE(agent, _, _) => agent
+      case _ => throw new IllegalArgumentException("Cannot parse PortID '" + id + "'")
+    }
+
+    /**
+     * Get the port ID with an unqualified version of the agent name, which means
+     * without all the rig position information.
+     */
+    def unqualified: String = id match {
+      case PortIDRE(agent, sep, label) => agent.unqualified + sep + label
+      case _ => throw new IllegalArgumentException("Cannot parse PortID '" + id + "'")
     }
   }
   
   object PortID {
-    private val AgentNameRE = """(<[^>]*>).*""".r
+    private val PortIDRE = """(<[^>]*>)([# ])(.+)""".r
   }
 
   /**
