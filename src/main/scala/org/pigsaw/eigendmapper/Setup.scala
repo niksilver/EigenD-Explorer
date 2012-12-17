@@ -41,7 +41,7 @@ class Setup(val conns0: Set[Connection],
   /**
    * Get all the ports named in the connections.
    */
-  lazy val ports: Set[Port] =
+  lazy val ports: Set[DeprecatedPort] =
     conns flatMap { c => List(c.master, c.slave) }
 
   /**
@@ -55,7 +55,7 @@ class Setup(val conns0: Set[Connection],
    * Get a map from each agent (a string including angle brackets)
    * to all its ports.
    */
-  lazy val agentPortConnections: Set[(String, Port)] =
+  lazy val agentPortConnections: Set[(String, DeprecatedPort)] =
     ports map { p => ((p.agent getOrElse "UNKNOWN") -> p) }
 
   /**
@@ -69,9 +69,9 @@ class Setup(val conns0: Set[Connection],
     val names: Map[String, String] = namingPorts map { p => (p.id -> p.name.get) } toMap
 
     // Produce an updated version of the port, with names filled in if available.
-    def updated(port: Port): Port = {
+    def updated(port: DeprecatedPort): DeprecatedPort = {
       if (port.name.nonEmpty) port
-      else Port(port.id, names.get(port.id))
+      else DeprecatedPort(port.id, names.get(port.id))
     }
 
     cos map (c => Connection(updated(c.master), updated(c.slave)))

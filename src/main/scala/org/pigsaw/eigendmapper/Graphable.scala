@@ -2,9 +2,9 @@ package org.pigsaw.eigendmapper
 
 object Graphable {
   implicit def string2GraphableString(s: String) = new GString(s)
-  implicit def port2GraphablePort(p: Port) = new GPort(p)
+  implicit def port2GraphablePort(p: DeprecatedPort) = new GPort(p)
   implicit def connection2GraphableConnection(c: Connection) = new GConnection(c)
-  implicit def agentPort2GraphableAgentPort(ap: (String, Port)) = new GAgentPort(ap)
+  implicit def agentPort2GraphableAgentPort(ap: (String, DeprecatedPort)) = new GAgentPort(ap)
   implicit def agentAgent2GraphableAgentAgent(aa: (String, String)) = new GAgentAgent(aa)
 
   val gexfHeader =
@@ -26,7 +26,7 @@ object Graphable {
     }
   }
 
-  class GPort(p: Port) {
+  class GPort(p: DeprecatedPort) {
     lazy val xmlId: String = p.id.xmlId
 
     lazy val nodeXML: String = {
@@ -44,7 +44,7 @@ object Graphable {
     }
   }
 
-  class GAgentPort(ap: (String, Port)) {
+  class GAgentPort(ap: (String, DeprecatedPort)) {
     lazy val xmlId: String = ap._1.xmlId + ap._2.xmlId
     
     lazy val edgeXML: String = {

@@ -23,7 +23,7 @@ class GraphableSuite extends FunSuite with ShouldMatchers {
   }
   
   test("Agent-port XML id") {
-    val agentPort = ("<alpha>" -> Port("<alpha>#4.5", None))
+    val agentPort = ("<alpha>" -> DeprecatedPort("<alpha>#4.5", None))
     agentPort.xmlId should equal ("_alpha__alpha__4.5")
   }
   
@@ -38,25 +38,25 @@ class GraphableSuite extends FunSuite with ShouldMatchers {
   }
   
   test("Agent-port edge XML") {
-    val agentPort = ("<alpha>" -> Port("<alpha>#4.5", None))
+    val agentPort = ("<alpha>" -> DeprecatedPort("<alpha>#4.5", None))
     agentPort.edgeXML should equal ("""<edge id="_alpha__alpha__4.5" source="_alpha_" target="_alpha__4.5" weight="5" />""")
   }
   
   test("Port XML id") {
-    Port("<alpha>#4.5", None).xmlId should equal ("_alpha__4.5")
+    DeprecatedPort("<alpha>#4.5", None).xmlId should equal ("_alpha__4.5")
   }
   
   test("Connection XML id") {
-    Connection(Port("<alpha>#4.5", None), Port("<b>#1.1", None)).xmlId should equal ("_alpha__4.5_b__1.1")
+    Connection(DeprecatedPort("<alpha>#4.5", None), DeprecatedPort("<b>#1.1", None)).xmlId should equal ("_alpha__4.5_b__1.1")
   }
   
   test("Port node XML") {
-    Port("<alpha>#4.5", None).nodeXML should equal ("""<node id="_alpha__4.5" label="&lt;alpha&gt;#4.5" />""")
-    Port("<alpha>#4.5", Some("light out")).nodeXML should equal ("""<node id="_alpha__4.5" label="light out" />""")
+    DeprecatedPort("<alpha>#4.5", None).nodeXML should equal ("""<node id="_alpha__4.5" label="&lt;alpha&gt;#4.5" />""")
+    DeprecatedPort("<alpha>#4.5", Some("light out")).nodeXML should equal ("""<node id="_alpha__4.5" label="light out" />""")
   }
   
   test("Connection edge XML") {
-    val conn = Connection(Port("<alpha>#4.5", None), Port("<b>#1.1", None))
+    val conn = Connection(DeprecatedPort("<alpha>#4.5", None), DeprecatedPort("<b>#1.1", None))
     conn.edgeXML should equal ("""<edge id="_alpha__4.5_b__1.1" source="_alpha__4.5" target="_b__1.1" weight="1" />""")
   }
 

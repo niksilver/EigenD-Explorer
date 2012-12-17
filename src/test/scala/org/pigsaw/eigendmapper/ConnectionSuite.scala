@@ -9,10 +9,10 @@ import org.scalatest.matchers.ShouldMatchers
 class ConnectionSuite extends FunSuite with ShouldMatchers {
 
   test("Unqualified - general") {
-    val a = Port("<a>#1.1", None)
-    val a_long = Port("<main:a>#1.1", None)
-    val b = Port("<b>#1.2", None)
-    val b_long = Port("<main:b>#1.2", None)
+    val a = DeprecatedPort("<a>#1.1", None)
+    val a_long = DeprecatedPort("<main:a>#1.1", None)
+    val b = DeprecatedPort("<b>#1.2", None)
+    val b_long = DeprecatedPort("<main:b>#1.2", None)
     
     Connection(a, b).unqualified should equal (Connection(a, b))
     Connection(a_long, b).unqualified should equal (Connection(a, b))
@@ -21,10 +21,10 @@ class ConnectionSuite extends FunSuite with ShouldMatchers {
   }
 
   test("Unqualified - object preservation") {
-    val a = Port("<a>#1.1", None)
-    val a_long = Port("<main:a>#1.1", None)
-    val b = Port("<b>#1.2", None)
-    val b_long = Port("<main:b>#1.2", None)
+    val a = DeprecatedPort("<a>#1.1", None)
+    val a_long = DeprecatedPort("<main:a>#1.1", None)
+    val b = DeprecatedPort("<b>#1.2", None)
+    val b_long = DeprecatedPort("<main:b>#1.2", None)
     
     val a_b = Connection(a, b)
 
@@ -32,9 +32,9 @@ class ConnectionSuite extends FunSuite with ShouldMatchers {
   }
   
   test("Agents") {
-    val a = Port("<a>#1.1", None)
-    val b = Port("<b>#1.2", None)
-    val c = Port("c>#1.3", None) // No parseable agent name
+    val a = DeprecatedPort("<a>#1.1", None)
+    val b = DeprecatedPort("<b>#1.2", None)
+    val c = DeprecatedPort("c>#1.3", None) // No parseable agent name
     
     Connection(a, b).agents should equal (Set("<a>", "<b>"))
     Connection(a, c).agents should equal (Set("<a>"))

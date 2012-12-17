@@ -8,16 +8,16 @@ import Preamble._
  *               e.g. "&lt;metronome1&gt#3.6;
  * @param name  The name of the port if known, e.g. "bar beat output"
  */
-case class Port(val id: String, val name: Option[String]) {
+case class DeprecatedPort(val id: String, val name: Option[String]) {
   /**
    * Generate an unqualified version of this port. I.e. If the id is of
    * the form &lt;<main:agentnameN&gt; then it's converted to &lt;agentnameN&gt;.
    */
-  def unqualified: Port = {
+  def unqualified: DeprecatedPort = {
     val FullyQualifiedID = """<(.*:)(\w*>.*)""".r
     id match {
-      case FullyQualifiedID(_, rest) => Port("<" + rest, name)
-      case _ => this
+      case FullyQualifiedID(_, rest) => DeprecatedPort("<" + rest, name)
+      case _ => DeprecatedPort.this
     }
   }
 
@@ -40,7 +40,7 @@ case class Port(val id: String, val name: Option[String]) {
     else (agent getOrElse "<UNKNOWN>") + " " + name.get
 }
 
-case class Connection(val master: Port, val slave: Port) {
+case class Connection(val master: DeprecatedPort, val slave: DeprecatedPort) {
   /**
    * Generate an unqualified version of this connection. I.e. If the id of either
    * the master or the slave is of the form &lt;<main:agentnameN&gt; then it's

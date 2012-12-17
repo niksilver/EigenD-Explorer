@@ -47,12 +47,12 @@ class BCatSuite extends FunSuite with ShouldMatchers {
 
     val connections = bcat.connections
     
-    val master_port_1_2 = Port("<clicker1>#1.2", Some("oner"))
-    val slave_port_1_2 = Port("<drummer1>#2.1", None)
+    val master_port_1_2 = DeprecatedPort("<clicker1>#1.2", Some("oner"))
+    val slave_port_1_2 = DeprecatedPort("<drummer1>#2.1", None)
     
-    val master_port_3_5 = Port("<clicker1>#3.5", Some("twoer"))
-    val slave_port_3_5_a = Port("<rig2>#4", None)
-    val slave_port_3_5_b = Port("<clarinet7>#8.8.8", None)
+    val master_port_3_5 = DeprecatedPort("<clicker1>#3.5", Some("twoer"))
+    val slave_port_3_5_a = DeprecatedPort("<rig2>#4", None)
+    val slave_port_3_5_b = DeprecatedPort("<clarinet7>#8.8.8", None)
     assert(connections.size === 3)
     assert(connections contains Connection(master_port_1_2, slave_port_1_2))
     assert(connections contains Connection(master_port_3_5, slave_port_3_5_a))
@@ -73,12 +73,12 @@ class BCatSuite extends FunSuite with ShouldMatchers {
 
     val connections = bcat.connections
     
-    val master_port_2_a = Port("<controller1>#4.1.4", None)
-    val master_port_2_b = Port("<interpreter1>#15.3", None)
-    val slave_port_2 = Port("<metronome1>#2", Some("tempo input"))
+    val master_port_2_a = DeprecatedPort("<controller1>#4.1.4", None)
+    val master_port_2_b = DeprecatedPort("<interpreter1>#15.3", None)
+    val slave_port_2 = DeprecatedPort("<metronome1>#2", Some("tempo input"))
     
-    val master_port_4_8 = Port("<interpreter1>#15.253.2", None)
-    val slave_port_4_8 = Port("<metronome1>#4.8", Some("beat input"))
+    val master_port_4_8 = DeprecatedPort("<interpreter1>#15.253.2", None)
+    val slave_port_4_8 = DeprecatedPort("<metronome1>#4.8", Some("beat input"))
 
     assert(connections.size === 3)
     assert(connections contains Connection(master_port_2_a, slave_port_2))
@@ -100,15 +100,15 @@ class BCatSuite extends FunSuite with ShouldMatchers {
 
     val connections = bcat.connections
     
-    val master_port_2_a = Port("<controller1>#4.1.4", None)
-    val master_port_2_b = Port("<interpreter1>#15.3", None)
-    val slave_port_2 = Port("<metronome1>#2", Some("tempo input"))
+    val master_port_2_a = DeprecatedPort("<controller1>#4.1.4", None)
+    val master_port_2_b = DeprecatedPort("<interpreter1>#15.3", None)
+    val slave_port_2 = DeprecatedPort("<metronome1>#2", Some("tempo input"))
     
-    val master_port_int_4_8 = Port("<interpreter1>#15.253.2", None)
-    val slave_port_int_4_8 = Port("<metronome1>#4.8", Some("beat input"))
+    val master_port_int_4_8 = DeprecatedPort("<interpreter1>#15.253.2", None)
+    val slave_port_int_4_8 = DeprecatedPort("<metronome1>#4.8", Some("beat input"))
     
-    val master_port_drum_4_8 = Port("<metronome1>#4.8", Some("beat input"))
-    val slave_port_drum_4_8 = Port("<drummer1>#2.1", None)
+    val master_port_drum_4_8 = DeprecatedPort("<metronome1>#4.8", Some("beat input"))
+    val slave_port_drum_4_8 = DeprecatedPort("<drummer1>#2.1", None)
 
     assert(connections.size === 4)
     assert(connections contains Connection(master_port_2_a, slave_port_2))
