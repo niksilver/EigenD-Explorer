@@ -11,15 +11,13 @@ import org.pigsaw.eigendmapper.Graphable._
 class SetupSuite extends FunSuite with ShouldMatchers {
 
   test("Agents") {
-    val a = DeprecatedPort("<a>#1.1", None)
-    val b = DeprecatedPort("<b>#1.2", Some("b12"))
-    val c = DeprecatedPort("<c>#1.3", None)
-    val d = DeprecatedPort("d#1.4", None) // No parseable agent name
+    val a = "<a>#1.1"
+    val b = "<b>#1.2"
+    val c = "<c>#1.3"
 
     val setup = new Setup(Set(
       Connection(a, b),
-      Connection(b, c),
-      Connection(c, d)))
+      Connection(b, c)))
 
     val agents = setup.agents
 
@@ -30,53 +28,47 @@ class SetupSuite extends FunSuite with ShouldMatchers {
   }
 
   test("Ports") {
-    val a = DeprecatedPort("<a>#1.1", None)
-    val b = DeprecatedPort("<b>#1.2", Some("b12"))
-    val c = DeprecatedPort("<c>#1.3", None)
-    val d = DeprecatedPort("d#1.4", None) // No parseable agent name
+    val a = "<a>#1.1"
+    val b = "<b>#1.2"
+    val c = "<c>#1.3"
 
     val setup = new Setup(Set(
       Connection(a, b),
-      Connection(b, c),
-      Connection(c, d)))
+      Connection(b, c)))
 
     val ports = setup.ports
 
-    ports.size should equal(4)
+    ports.size should equal(3)
     ports should contain(a)
     ports should contain(b)
     ports should contain(c)
-    ports should contain(d)
   }
 
   test("Agent-agent connections") {
-    val a = DeprecatedPort("<a>#1.1", None)
-    val b = DeprecatedPort("<b>#1.2", Some("b12"))
-    val c1 = DeprecatedPort("<c>#1.3", None)
-    val c2 = DeprecatedPort("<c>#2.3", None)
-    val d = DeprecatedPort("d#1.4", None) // No parseable agent name
+    val a = "<a>#1.1"
+    val b = "<b>#1.2"
+    val c1 = "<c>#1.3"
+    val c2 = "<c>#2.3"
 
     val setup = new Setup(Set(
       Connection(a, b),
       Connection(b, c1),
       Connection(c1, b),
-      Connection(c2, b),
-      Connection(c1, d)))
+      Connection(c2, b)))
 
     val agAgConns = setup.agentAgentConnections
 
-    agAgConns.size should equal(4)
+    agAgConns.size should equal(3)
     agAgConns should contain("<a>", "<b>")
     agAgConns should contain("<b>", "<c>")
     agAgConns should contain("<c>", "<b>")
-    agAgConns should contain("<c>", "UNKNOWN")
   }
 
   test("Agent-port connections") {
-    val a1 = DeprecatedPort("<a>#1.1", None)
-    val a2 = DeprecatedPort("<a>#1.2", Some("b12"))
-    val b1 = DeprecatedPort("<b>#1.1", None)
-    val b2 = DeprecatedPort("<b>#1.2", None)
+    val a1 = "<a>#1.1"
+    val a2 = "<a>#1.2"
+    val b1 = "<b>#1.1"
+    val b2 = "<b>#1.2"
 
     val setup = new Setup(Set(
       Connection(a1, b1),
@@ -91,7 +83,7 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     conns2 should contain("<b>" -> b2)
   }
 
-  test("Agent-port connections - with unparseable agent name") {
+  /*test("Agent-port connections - with unparseable agent name") {
     val a1 = DeprecatedPort("<a>#1.1", None)
     val a2 = DeprecatedPort("a#1.2", Some("b12"))
     val b1 = DeprecatedPort("b#1.1", None)
@@ -108,13 +100,15 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     conns2 should contain("UNKNOWN" -> a2)
     conns2 should contain("UNKNOWN" -> b1)
     conns2 should contain("UNKNOWN" -> b2)
-  }
+  }*/
 
   test("Unify - Add a slave name, expect a slave updated automatically") {
-    val port_a_unnamed = DeprecatedPort("<a>#1.1", None)
-    val port_b_named = DeprecatedPort("<b>#1.2", Some("b12"))
-    val port_b_unnamed = DeprecatedPort("<b>#1.2", None)
-    val port_c_unnamed = DeprecatedPort("<c>#1.3", None)
+    val port_a_unnamed = "<a>#1.1"
+    val port_b_named = "<b> b12"
+    val port_b_unnamed = "<b>#1.2"
+    val port_c_unnamed = "<c>#1.3"
+    
+    val portMap = Map("<b>" -> Map("1.2" -> "b12"))
 
     val conn_aubu = Connection(port_a_unnamed, port_b_unnamed)
 
@@ -126,7 +120,7 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     val conn_cubn = Connection(port_c_unnamed, port_b_named) // We'll add this
     val conn_aubn = Connection(port_a_unnamed, port_b_named) // This should get created
 
-    val connSet2 = new Setup(connSet1 + conn_cubn).conns
+    val connSet2 = new Setup(portMap, connSet1 + conn_cubn, Map(), List()).conns
 
     connSet2.size should equal(2)
     connSet2 should contain(conn_cubn)
@@ -135,10 +129,12 @@ class SetupSuite extends FunSuite with ShouldMatchers {
   }
 
   test("Unify - Add a slave name, expect a master updated automatically") {
-    val port_a_unnamed = DeprecatedPort("<a>#1.1", None)
-    val port_b_named = DeprecatedPort("<b>#1.2", Some("b12"))
-    val port_b_unnamed = DeprecatedPort("<b>#1.2", None)
-    val port_c_unnamed = DeprecatedPort("<c>#1.3", None)
+    val port_a_unnamed = "<a>#1.1"
+    val port_b_named = "<b> b12"
+    val port_b_unnamed = "<b>#1.2"
+    val port_c_unnamed = "<c>#1.3"
+    
+    val portMap = Map("<b>" -> Map("1.2" -> "b12"))
 
     val conn_buau = Connection(port_b_unnamed, port_a_unnamed)
 
@@ -150,7 +146,7 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     val conn_cubn = Connection(port_c_unnamed, port_b_named) // We'll add this
     val conn_bnau = Connection(port_b_named, port_a_unnamed) // This should get created
 
-    val connSet2 = new Setup(connSet1 + conn_cubn).conns
+    val connSet2 = new Setup(portMap, connSet1 + conn_cubn, Map(), List()).conns
 
     connSet2.size should equal(2)
     connSet2 should contain(conn_cubn)
@@ -159,10 +155,12 @@ class SetupSuite extends FunSuite with ShouldMatchers {
   }
 
   test("Unify - Add a master name, expect a slave updated automatically") {
-    val port_a_unnamed = DeprecatedPort("<a>#1.1", None)
-    val port_b_named = DeprecatedPort("<b>#1.2", Some("b12"))
-    val port_b_unnamed = DeprecatedPort("<b>#1.2", None)
-    val port_c_unnamed = DeprecatedPort("<c>#1.3", None)
+    val port_a_unnamed = "<a>#1.1"
+    val port_b_named = "<b> b12"
+    val port_b_unnamed = "<b>#1.2"
+    val port_c_unnamed = "<c>#1.3"
+    
+    val portMap = Map("<b>" -> Map("1.2" -> "b12"))
 
     val conn_aubu = Connection(port_a_unnamed, port_b_unnamed)
 
@@ -174,7 +172,7 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     val conn_bncu = Connection(port_b_named, port_c_unnamed) // We'll add this
     val conn_aubn = Connection(port_a_unnamed, port_b_named) // This should get created
 
-    val connSet2 = new Setup(connSet1 + conn_bncu).conns
+    val connSet2 = new Setup(portMap, connSet1 + conn_bncu, Map(), List()).conns
 
     connSet2.size should equal(2)
     connSet2 should contain(conn_bncu)
@@ -183,10 +181,12 @@ class SetupSuite extends FunSuite with ShouldMatchers {
   }
 
   test("Unify - Add a master name, expect a master updated automatically") {
-    val port_a_unnamed = DeprecatedPort("<a>#1.1", None)
-    val port_b_named = DeprecatedPort("<b>#1.2", Some("b12"))
-    val port_b_unnamed = DeprecatedPort("<b>#1.2", None)
-    val port_c_unnamed = DeprecatedPort("<c>#1.3", None)
+    val port_a_unnamed = "<a>#1.1"
+    val port_b_named = "<b> b12"
+    val port_b_unnamed = "<b>#1.2"
+    val port_c_unnamed = "<c>#1.3"
+    
+    val portMap = Map("<b>" -> Map("1.2" -> "b12"))
 
     val conn_buau = Connection(port_b_unnamed, port_a_unnamed)
 
@@ -198,7 +198,7 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     val conn_bncu = Connection(port_b_named, port_c_unnamed) // We'll add this
     val conn_bnau = Connection(port_b_named, port_a_unnamed) // This should get created
 
-    val connSet2 = new Setup(connSet1 + conn_bncu).conns
+    val connSet2 = new Setup(portMap, connSet1 + conn_bncu, Map(), List()).conns
 
     connSet2.size should equal(2)
     connSet2 should contain(conn_bncu)
@@ -207,12 +207,12 @@ class SetupSuite extends FunSuite with ShouldMatchers {
   }
 
   test("Unqualified port IDs automatically (cut the 'main:' in <main:agentname3>)") {
-    val a_short = DeprecatedPort("<a>#1.1", None)
-    val a_long = DeprecatedPort("<main:a>#1.1", None)
-    val b_short = DeprecatedPort("<b>#1.2", Some("b12"))
-    val b_long = DeprecatedPort("<main:b>#1.2", Some("b12"))
-    val c_short = DeprecatedPort("<c>#1.3", None)
-    val c_long = DeprecatedPort("<main:c>#1.3", None)
+    val a_short = "<a>#1.1"
+    val a_long = "<main:a>#1.1"
+    val b_short = "<b> b12"
+    val b_long = "<main:b> b12"
+    val c_short = "<c>#1.3"
+    val c_long = "<main:c>#1.3"
 
     val conns = Set(
       Connection(a_short, b_long),
@@ -230,21 +230,29 @@ class SetupSuite extends FunSuite with ShouldMatchers {
 
   }
 
-  test("Equals") {
+  test("Equals - Simple setups") {
+    Setup() should equal (Setup())
+
+    val conn1 = Connection("<rig3> three", "<fff> five")
+    
+    Setup(Set(conn1)) should equal (Setup(Set(conn1)))
+  }
+  
+  test("Equals - with a rig") {
     // One setup
-    val conn1 = Connection(DeprecatedPort("<rig3>#3.3", Some("three")), DeprecatedPort("<fff>#5.5", Some("five")))
+    val conn1 = Connection("<rig3> three", "<fff> five")
     val setup1 = Setup(Set(conn1))
 
-    val rigConn1 = Connection(DeprecatedPort("<sss>#7.7", None), DeprecatedPort("<other>#1.1", Some("other")))
+    val rigConn1 = Connection("<sss>#7.7", "<other> other")
     val rigSetup1 = Setup(Set(rigConn1))
 
     val setup1WithRig = setup1.withRig("<rig3>", rigSetup1)
 
     // Identical setup with different vals
-    val conn2 = Connection(DeprecatedPort("<rig3>#3.3", Some("three")), DeprecatedPort("<fff>#5.5", Some("five")))
+    val conn2 = Connection("<rig3> three", "<fff> five")
     val setup2 = Setup(Set(conn2))
 
-    val rigConn2 = Connection(DeprecatedPort("<sss>#7.7", None), DeprecatedPort("<other>#1.1", Some("other")))
+    val rigConn2 = Connection("<sss>#7.7", "<other> other")
     val rigSetup2 = Setup(Set(rigConn2))
 
     val setup2WithRig = setup2.withRig("<rig3>", rigSetup2)
@@ -255,8 +263,8 @@ class SetupSuite extends FunSuite with ShouldMatchers {
   test("Equals - with pos") {
     val setupBasic1 = new Setup(Set())
     val setupBasic2 = new Setup(Set())
-    val setupWithPos1 = new Setup(Set(), Map(), List("<rig1>"))
-    val setupWithPos2 = new Setup(Set(), Map(), List("<rig1>"))
+    val setupWithPos1 = new Setup(Map(), Set(), Map(), List("<rig1>"))
+    val setupWithPos2 = new Setup(Map(), Set(), Map(), List("<rig1>"))
     
     setupBasic1 should equal (setupBasic2)
     setupWithPos1 should equal (setupWithPos2)
@@ -271,12 +279,12 @@ class SetupSuite extends FunSuite with ShouldMatchers {
   }
 
   test("Apply - Make sure it unqualifies") {
-    val a_short = DeprecatedPort("<a>#1.1", None)
-    val a_long = DeprecatedPort("<main:a>#1.1", None)
-    val b_short = DeprecatedPort("<b>#1.2", Some("b12"))
-    val b_long = DeprecatedPort("<main:b>#1.2", Some("b12"))
-    val c_short = DeprecatedPort("<c>#1.3", None)
-    val c_long = DeprecatedPort("<main:c>#1.3", None)
+    val a_short = "<a>#1.1"
+    val a_long = "<main:a>#1.1"
+    val b_short = "<b> b12"
+    val b_long = "<main:b> b12"
+    val c_short = "<c>#1.3"
+    val c_long = "<main:c>#1.3"
 
     val conns = Set(
       Connection(a_short, b_long),
@@ -294,17 +302,19 @@ class SetupSuite extends FunSuite with ShouldMatchers {
 
   }
 
-  test("Apply - Make sure it unifies") {
-    val port_a_unnamed = DeprecatedPort("<a>#1.1", None)
-    val port_b_named = DeprecatedPort("<b>#1.2", Some("b12"))
-    val port_b_unnamed = DeprecatedPort("<b>#1.2", None)
-    val port_c_unnamed = DeprecatedPort("<c>#1.3", None)
+  test("Constructor - Make sure it unifies") {
+    val port_a_unnamed = "<a>#1.1"
+    val port_b_named = "<b> b12"
+    val port_b_unnamed = "<b>#1.2"
+    val port_c_unnamed = "<c>#1.3"
+    
+    val portMap = Map("<b>" -> Map("1.2" -> "b12"))
 
     val conn_buau = Connection(port_b_unnamed, port_a_unnamed)
     val conn_bncu = Connection(port_b_named, port_c_unnamed) // We'll add this
     val conn_bnau = Connection(port_b_named, port_a_unnamed) // This should get created
 
-    val conns = Setup(Set(conn_buau, conn_bncu)).conns
+    val conns = new Setup(portMap, Set(conn_buau, conn_bncu), Map(), List()).conns
 
     conns.size should equal(2)
     conns should contain(conn_bncu)
@@ -313,8 +323,8 @@ class SetupSuite extends FunSuite with ShouldMatchers {
   }
 
   test("Rigs - Detects rig names") {
-    val conn1 = Connection(DeprecatedPort("<rig3>#3.3", Some("three")), DeprecatedPort("<rig5>#5.5", Some("five")))
-    val conn2 = Connection(DeprecatedPort("<rig7>#7.7", None), DeprecatedPort("<other>#1.1", Some("other")))
+    val conn1 = Connection("<rig3> three", "<rig5> five")
+    val conn2 = Connection("<rig7>#7.7", "<other> other")
     val setup = Setup(Set(conn1, conn2))
 
     setup.rigs.size should equal(3)
@@ -331,10 +341,10 @@ class SetupSuite extends FunSuite with ShouldMatchers {
   }
 
   test("Rigs - Can add one rig") {
-    val conn = Connection(DeprecatedPort("<rig1>#3.3", Some("three")), DeprecatedPort("<fff>#5.5", Some("five")))
+    val conn = Connection("<rig1> three", "<fff> five")
     val setup = Setup(Set(conn))
 
-    val rigConn = Connection(DeprecatedPort("<sss>#7.7", None), DeprecatedPort("<other>#1.1", Some("other")))
+    val rigConn = Connection("<sss>#7.7", "<other> other")
     val rigSetup = Setup(Set(rigConn))
 
     val setup2 = setup.withRig("<rig1>", rigSetup)
@@ -344,14 +354,14 @@ class SetupSuite extends FunSuite with ShouldMatchers {
   }
 
   test("Rigs - Can add two rigs") {
-    val connA = Connection(DeprecatedPort("<rig1>#3.3", Some("three")), DeprecatedPort("<fff>#5.5", Some("five")))
-    val connB = Connection(DeprecatedPort("<fff>#5.5", Some("five")), DeprecatedPort("<rig2>#2.2", Some("two")))
+    val connA = Connection("<rig1> three", "<fff> five")
+    val connB = Connection("<fff> five", "<rig2> two")
     val setup = Setup(Set(connA, connB))
 
-    val rigConn1 = Connection(DeprecatedPort("<sss>#7.7", None), DeprecatedPort("<other>#1.1", Some("other")))
+    val rigConn1 = Connection("<sss>#7.7", "<other> other")
     val rigSetup1 = Setup(Set(rigConn1))
 
-    val rigConn2 = Connection(DeprecatedPort("<eee>#8.8", None), DeprecatedPort("<other>#2.2", Some("other")))
+    val rigConn2 = Connection("<eee>#8.8", "<other> other")
     val rigSetup2 = Setup(Set(rigConn2))
 
     val setup2 = setup.withRig("<rig1>", rigSetup1).withRig("<rig2>", rigSetup2)
@@ -362,10 +372,10 @@ class SetupSuite extends FunSuite with ShouldMatchers {
   }
   
   test("Rigs - Adding rig preserves position") {
-    val conn = Connection(DeprecatedPort("<rig1>#1.1", Some("one")), DeprecatedPort("<fff>#5.5", Some("five")))
-    val setup = new Setup(Set(conn), Map(), List("<rigX>"))
+    val conn = Connection("<rig1> one", "<fff> five")
+    val setup = new Setup(Map(), Set(conn), Map(), List("<rigX>"))
 
-    val rigConn = Connection(DeprecatedPort("<sss>#7.7", None), DeprecatedPort("<other>#1.1", Some("other")))
+    val rigConn = Connection("<sss>#7.7", "<other> other")
     val rigSetup = Setup(Set(rigConn))
 
     // This should be uncontroversial
@@ -378,7 +388,7 @@ class SetupSuite extends FunSuite with ShouldMatchers {
   }
   
   test("Position - Can update position") {
-    val conn = Connection(DeprecatedPort("<rig1>#1.1", Some("one")), DeprecatedPort("<fff>#5.5", Some("five")))
+    val conn = Connection("<rig1> one", "<fff> five")
     val setup = new Setup(Set(conn))
     
     setup.pos should equal (List())
@@ -390,10 +400,10 @@ class SetupSuite extends FunSuite with ShouldMatchers {
   }
   
   test("withConnsReplaced - No args") {
-    val conn = Connection(DeprecatedPort("<rig1>#1.1", Some("one")), DeprecatedPort("<fff>#5.5", Some("five")))
+    val conn = Connection("<rig1> one", "<fff> five")
     val setup = Setup(Set(conn))
 
-    val rigConn1 = Connection(DeprecatedPort("<sss>#7.7", None), DeprecatedPort("<other>#1.1", Some("other")))
+    val rigConn1 = Connection("<sss>#7.7", "<other> other")
     val rigSetup1 = Setup(Set(rigConn1))
 
     val setupV2 = setup.withRig("<rig1>", rigSetup1).withRig("<rig2>", rigSetup1)
@@ -405,7 +415,7 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     setupV2.rigs should equal (Set("<rig1>"))
     setupV2.rigSetups("<rig1>") should equal (rigSetup1)
     
-    val newConn = Connection(DeprecatedPort("<rig1>#1.2", Some("one")), DeprecatedPort("<ggg>#7.7", Some("seven")))
+    val newConn = Connection("<rig1> one", "<ggg> seven")
     val setupV3 = setupV2.withConnsReplaced(Set(newConn))
     
     setupV3.conns should equal (Set(newConn))
@@ -414,15 +424,15 @@ class SetupSuite extends FunSuite with ShouldMatchers {
   }
   
   test("withConnsReplaced - Replacing a specific rig's conns - bottom of hierarchy") {
-    val connsTop = Connection(DeprecatedPort("<rig1>#1.1", Some("one out")), DeprecatedPort("<top>#5.5", Some("top input")))
-    val connsMid = Connection(DeprecatedPort("<rig2>#2.2", Some("two out")), DeprecatedPort("<mid>#7.7", Some("mid input")))
-    val connsBottom = Connection(DeprecatedPort("<lower>#3.3", Some("three out")), DeprecatedPort("<bottom>#7.7", Some("bottom input")))
+    val connsTop = Connection("<rig1> one out", "<top> top input")
+    val connsMid = Connection("<rig2> two out", "<mid> mid input")
+    val connsBottom = Connection("<lower> three out", "<bottom> bottom input")
     
     val setupBottom = new Setup(Set(connsBottom))
-    val setupMid = new Setup(Set(connsMid), Map("<rig2>" -> setupBottom), List())
-    val setupTop = new Setup(Set(connsTop), Map("<rig1>" -> setupMid), List("<rig1>", "<rig2>"))
+    val setupMid = new Setup(Map(), Set(connsMid), Map("<rig2>" -> setupBottom), List())
+    val setupTop = new Setup(Map(), Set(connsTop), Map("<rig1>" -> setupMid), List("<rig1>", "<rig2>"))
 
-    val connsBottom2 = Connection(DeprecatedPort("<lower2>#32.32", Some("three out2")), DeprecatedPort("<bottom2>#72.72", Some("bottom input2")))
+    val connsBottom2 = Connection("<lower2> three out2", "<bottom2> bottom input2")
 
     val setupTop2 = setupTop.withConnsReplaced(List("<rig1>", "<rig2>"), Set(connsBottom2))
     
@@ -437,15 +447,15 @@ class SetupSuite extends FunSuite with ShouldMatchers {
   }
 
   test("withConnsReplaced - Replacing a specific rig's conns - middle of hierarchy") {
-    val connsTop = Connection(DeprecatedPort("<rig1>#1.1", Some("one out")), DeprecatedPort("<top>#5.5", Some("top input")))
-    val connsMid = Connection(DeprecatedPort("<rig2>#2.2", Some("two out")), DeprecatedPort("<mid>#7.7", Some("mid input")))
-    val connsBottom = Connection(DeprecatedPort("<lower>#3.3", Some("three out")), DeprecatedPort("<bottom>#7.7", Some("bottom input")))
+    val connsTop = Connection("<rig1> one out", "<top> top input")
+    val connsMid = Connection("<rig2>#2.2 two out", "<mid> mid input")
+    val connsBottom = Connection("<lower> three out", "<bottom> bottom input")
     
     val setupBottom = new Setup(Set(connsBottom))
-    val setupMid = new Setup(Set(connsMid), Map("<rig2>" -> setupBottom), List())
-    val setupTop = new Setup(Set(connsTop), Map("<rig1>" -> setupMid), List("<rig1>", "<rig2>"))
+    val setupMid = new Setup(Map(), Set(connsMid), Map("<rig2>" -> setupBottom), List())
+    val setupTop = new Setup(Map(), Set(connsTop), Map("<rig1>" -> setupMid), List("<rig1>", "<rig2>"))
 
-    val connsMid2 = Connection(DeprecatedPort("<rig2>#22.22", Some("two out2")), DeprecatedPort("<mid>#72.72", Some("mid input2")))
+    val connsMid2 = Connection("<rig2> two out2", "<mid> mid input2")
 
     val setupTop2 = setupTop.withConnsReplaced(List("<rig1>"), Set(connsMid2))
     
@@ -460,15 +470,15 @@ class SetupSuite extends FunSuite with ShouldMatchers {
   }
   
   test("withConnsReplaced - Replacing a specific rig's conns - top of hierarchy") {
-    val connsTop = Connection(DeprecatedPort("<rig1>#1.1", Some("one out")), DeprecatedPort("<top>#5.5", Some("top input")))
-    val connsMid = Connection(DeprecatedPort("<rig2>#2.2", Some("two out")), DeprecatedPort("<mid>#7.7", Some("mid input")))
-    val connsBottom = Connection(DeprecatedPort("<lower>#3.3", Some("three out")), DeprecatedPort("<bottom>#7.7", Some("bottom input")))
+    val connsTop = Connection("<rig1> one out", "<top> top input")
+    val connsMid = Connection("<rig2> two out", "<mid> mid input")
+    val connsBottom = Connection("<lower> three out", "<bottom> bottom input")
     
     val setupBottom = new Setup(Set(connsBottom))
-    val setupMid = new Setup(Set(connsMid), Map("<rig2>" -> setupBottom), List())
-    val setupTop = new Setup(Set(connsTop), Map("<rig1>" -> setupMid), List("<rig1>", "<rig2>"))
+    val setupMid = new Setup(Map(), Set(connsMid), Map("<rig2>" -> setupBottom), List())
+    val setupTop = new Setup(Map(), Set(connsTop), Map("<rig1>" -> setupMid), List("<rig1>", "<rig2>"))
 
-    val connsTop2 = Connection(DeprecatedPort("<rig1>#12.12", Some("one out2")), DeprecatedPort("<top>#52.52", Some("top input2")))
+    val connsTop2 = Connection("<rig1> one out2", "<top> top input2")
 
     val setupTop2 = setupTop.withConnsReplaced(List(), Set(connsTop2))
     
@@ -483,13 +493,13 @@ class SetupSuite extends FunSuite with ShouldMatchers {
   }
   
   test("withConnsReplaced - If rig disappears from connections, should disappear from rigSetups") {
-    val connsTop = Connection(DeprecatedPort("<rig1>#1.1", Some("one out")), DeprecatedPort("<top>#5.5", Some("top input")))
-    val connsRig = Connection(DeprecatedPort("<too>#2.2", Some("two out")), DeprecatedPort("<mid>#7.7", Some("mid input")))
+    val connsTop = Connection("<rig1> one out", "<top> top input")
+    val connsRig = Connection("<too> two out", "<mid> mid input")
     
-    val setupRig = new Setup(Set(connsRig), Map(), List())
-    val setupTop = new Setup(Set(connsTop), Map("<rig1>" -> setupRig), List("<rig1>"))
+    val setupRig = new Setup(Map(), Set(connsRig), Map(), List())
+    val setupTop = new Setup(Map(), Set(connsTop), Map("<rig1>" -> setupRig), List("<rig1>"))
     
-    val connsTop2 = Connection(DeprecatedPort("<wig1>#11.11", Some("one out")), DeprecatedPort("<top>#5.5", Some("top input")))
+    val connsTop2 = Connection("<wig1> one out", "<top> top input")
     
     val setupTop2 = setupTop.withConnsReplaced(List(), Set(connsTop2))
     
@@ -497,13 +507,13 @@ class SetupSuite extends FunSuite with ShouldMatchers {
   }
   
   test("withConnsReplaced - If rig appears in connections, should appear in rigSetups") {
-    val connsTop = Connection(DeprecatedPort("<rig1>#1.1", Some("one out")), DeprecatedPort("<top>#5.5", Some("top input")))
-    val connsRig = Connection(DeprecatedPort("<too>#2.2", Some("two out")), DeprecatedPort("<mid>#7.7", Some("mid input")))
+    val connsTop = Connection("<rig1> one out", "<top> top input")
+    val connsRig = Connection("<too> two out", "<mid> mid input")
     
-    val setupRig = new Setup(Set(connsRig), Map(), List())
-    val setupTop = new Setup(Set(connsTop), Map("<rig1>" -> setupRig), List("<rig1>"))
+    val setupRig = new Setup(Map(), Set(connsRig), Map(), List())
+    val setupTop = new Setup(Map(), Set(connsTop), Map("<rig1>" -> setupRig), List("<rig1>"))
 
-    val connsTopPlus = Connection(DeprecatedPort("<any>#1.1", Some("any out")), DeprecatedPort("<rig3>#3.3", Some("three input")))
+    val connsTopPlus = Connection("<any> any out", "<rig3> three input")
     
     val setupTopPlus = setupTop.withConnsReplaced(List(), Set(connsTop, connsTopPlus))
     
@@ -513,14 +523,14 @@ class SetupSuite extends FunSuite with ShouldMatchers {
   }
   
   test("withConnsReplaced - If rig remains in connections, should remain in rigSetups") {
-    val connsTop = Connection(DeprecatedPort("<rig1>#1.1", Some("one out")), DeprecatedPort("<top>#5.5", Some("top input")))
-    val connsRig = Connection(DeprecatedPort("<too>#2.2", Some("two out")), DeprecatedPort("<mid>#7.7", Some("mid input")))
+    val connsTop = Connection("<rig1> one out", "<top> top input")
+    val connsRig = Connection("<too> two out", "<mid> mid input")
     
-    val setupRig = new Setup(Set(connsRig), Map(), List())
-    val setupTop = new Setup(Set(connsTop), Map("<rig1>" -> setupRig), List("<rig1>"))
+    val setupRig = new Setup(Map(), Set(connsRig), Map(), List())
+    val setupTop = new Setup(Map(), Set(connsTop), Map("<rig1>" -> setupRig), List("<rig1>"))
     
     // <rig1> is still part of this new set of connections
-    val connsTop2 = Connection(DeprecatedPort("<back1>#11.11", Some("back out")), DeprecatedPort("<rig1>#9.9", Some("one input")))
+    val connsTop2 = Connection("<back1> back out", "<rig1> one input")
     
     val setupTop2 = setupTop.withConnsReplaced(List(), Set(connsTop2))
     
@@ -529,13 +539,13 @@ class SetupSuite extends FunSuite with ShouldMatchers {
   }
 
   test("setupForPos") {
-    val connsTop = Connection(DeprecatedPort("<rig1>#1.1", Some("one out")), DeprecatedPort("<top>#5.5", Some("top input")))
-    val connsMid = Connection(DeprecatedPort("<rig2>#2.2", Some("two out")), DeprecatedPort("<mid>#7.7", Some("mid input")))
-    val connsBottom = Connection(DeprecatedPort("<free>#3.3", Some("three out")), DeprecatedPort("<bottom>#7.7", Some("bottom input")))
+    val connsTop = Connection("<rig1> one out", "<top> top input")
+    val connsMid = Connection("<rig2> two out", "<mid> mid input")
+    val connsBottom = Connection("<free> three out", "<bottom> bottom input")
     
     val setupBottom = new Setup(Set(connsBottom))
-    val setupMid = new Setup(Set(connsMid), Map("<rig2>" -> setupBottom), List())
-    val setupTop = new Setup(Set(connsTop), Map("<rig1>" -> setupMid), List("<rig1>"))
+    val setupMid = new Setup(Map(), Set(connsMid), Map("<rig2>" -> setupBottom), List())
+    val setupTop = new Setup(Map(), Set(connsTop), Map("<rig1>" -> setupMid), List("<rig1>"))
     
     setupTop.setupForPos(List()) should equal (Some(setupTop))
     setupTop.setupForPos(List("<rig1>")) should equal (Some(setupMid))

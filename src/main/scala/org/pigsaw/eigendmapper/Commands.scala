@@ -84,11 +84,11 @@ class ShowCommand extends Command {
       conn <- setup.conns
       val master = conn.master
       val slave = conn.slave
-      if (master.agent == Some(agent) || slave.agent == Some(agent))
-      val link = if (master.agent == Some(agent))
-        ("", master.nonEmptyName, slave.nonEmptyFQName)
+      if (master.agent == agent || slave.agent == agent)
+      val link = if (master.agent == agent)
+        ("", master.nodeLabel, slave)
       else
-        (master.nonEmptyFQName, slave.nonEmptyName, "")
+        (master, slave.nodeLabel, "")
     } yield link
 
     if (links.size == 0)
@@ -159,11 +159,11 @@ class GraphCommand extends Command {
     out write "<nodes>\n"
 
     // Declare the agent nodes
-    localConns foreach { out write _._1.nodeXML + "\n" }
+    localConns foreach { out write _._1.stringNodeXML + "\n" }
 
     // Maybe declare the port nodes
     arg match {
-      case "ports"  => setup.ports foreach { out write _.nodeXML + "\n" }
+      case "ports"  => setup.ports foreach { out write _.portNodeXML + "\n" }
       case "agents" => ; // Do nothing
     }
 
@@ -175,11 +175,11 @@ class GraphCommand extends Command {
       // When graphing ports: Write port-port edges and agent-port edges
       case "ports" => {
         setup.conns foreach { out write _.edgeXML + "\n" }
-        localConns foreach { out write _.edgeXML + "\n" }
+        localConns foreach { out write GAgentPort(_).edgeXML + "\n" }
       }
       // When graphing agents: Write agent-agent-edges
       case "agents" => {
-        agentConns foreach { out write _.edgeXML + "\n" }
+        agentConns foreach { out write GAgentAgent(_).edgeXML + "\n" }
       }
     }
     out write "</edges>\n"

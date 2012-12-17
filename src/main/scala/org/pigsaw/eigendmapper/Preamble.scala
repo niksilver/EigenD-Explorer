@@ -47,18 +47,18 @@ object Preamble {
   }
 
   implicit def String2AgentName(s: String): AgentName = new AgentName(s)
-  
+
   /**
    * A port ID, which consists of the agent name and either the
    * node ID or the cname. Formats will be:
-   * `<name1>#12.34.45` or `<name1> beat bar input`. 
+   * `<name1>#12.34.45` or `<name1> beat bar input`.
    * @throws IllegalArgumentException  If the agent and/or label cannot be extracted.
    */
   case class PortID(id: String) {
     import PortID._
-    
+
     private val PortIDRE(agent0, sep0, label0) = id
-    
+
     /**
      * Get the agent name, including the angle brackets.
      */
@@ -68,16 +68,21 @@ object Preamble {
      * Get the port ID with an unqualified version of the agent name, which means
      * without all the rig position information.
      */
-    def unqualified: String =
-      AgentName(agent0).unqualified + sep0 + label0
-    
+    def unqualified: String = {
+      val agentUnqual = AgentName(agent0).unqualified
+      if (agent0 == agentUnqual)
+        id
+      else
+        agentUnqual + sep0 + label0
+    }
+
     /**
      * Get the node label (the node ID or the node CName).
      * E.g. in `"<cycler1>#4.56"` it is `"4.56"'
      * and in `"<cycler1> beat input"` it is `"beat input"'
      */
     def nodeLabel: String = label0
-    
+
     /**
      * Substitute the node ID for a cname if we have one. The # separator will
      * be replaced by a space, too. E.g. `"<cycler1>#3.4"` will become
@@ -91,13 +96,13 @@ object Preamble {
         id
     }
   }
-  
+
   object PortID {
     private val PortIDRE = """(<[^>]*>)([# ])(.+)""".r
   }
 
   implicit def string2PortID(id: String) = new PortID(id)
-  
+
   /**
    * A position in a rig hierarchy in which we're currently
    * interested. An empty list means the top level; List("&lt;rig3&gt")

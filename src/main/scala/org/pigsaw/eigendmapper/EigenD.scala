@@ -99,8 +99,8 @@ class BCat(val agent: String) {
     for {
       slave <- valueList
       slaveStripped = slave.stripPrefix("'").stripSuffix("'")
-      masterPort = DeprecatedPort(agent + "#" + stateNodeID, portCName)
-      slavePort = DeprecatedPort(slaveStripped, None)
+      masterPort = agent + "#" + stateNodeID
+      slavePort = slaveStripped
     } yield Connection(masterPort, slavePort)
   }
 
@@ -108,8 +108,8 @@ class BCat(val agent: String) {
     for {
       masterConn <- valueList
       master = masterConn.split(',')(2).stripPrefix("'").stripSuffix("'")
-      masterPort = DeprecatedPort(master, None)
-      slavePort = DeprecatedPort(agent + "#" + stateNodeID, portCName)
+      masterPort = master
+      slavePort = agent + "#" + stateNodeID
     } yield Connection(masterPort, slavePort)
   }
 
