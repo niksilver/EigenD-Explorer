@@ -6,7 +6,7 @@ import org.scalatest.junit.JUnitRunner
 import org.scalatest.matchers.ShouldMatchers
 
 @RunWith(classOf[JUnitRunner])
-class PortSuite extends FunSuite with ShouldMatchers {
+class DeprecatedPortSuite extends FunSuite with ShouldMatchers {
 
   test("Unqualified - general") {
     DeprecatedPort("<a>#1.1", None).unqualified should equal (DeprecatedPort("<a>#1.1", None))
