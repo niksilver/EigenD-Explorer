@@ -24,9 +24,9 @@ class PreambleSuite extends FunSuite with ShouldMatchers {
   }
 
   test("AgentName.unqualified") {
-    "<summer1>".unqualified should equal("<summer1>")
-    "<main.rig1:summer1>".unqualified should equal("<summer1>")
-    "<main.rig1:main.rig2:summer1>".unqualified should equal("<summer1>")
+    AgentName("<summer1>").unqualified should equal("<summer1>")
+    AgentName("<main.rig1:summer1>").unqualified should equal("<summer1>")
+    AgentName("<main.rig1:main.rig2:summer1>").unqualified should equal("<summer1>")
   }
 
   test("Pos.index") {

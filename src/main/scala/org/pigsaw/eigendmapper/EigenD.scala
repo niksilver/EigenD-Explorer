@@ -135,10 +135,8 @@ class BCat(val agent: String) {
       // from 1.2.3.254 to 1.2.3
       setNode = stateNodeID.dropRight(4)
       strValue <- stateValue.stringValue.seq
-      portID = nodeIDNames.get(setNode) match {
-        case Some(name) => agent.unqualified + " " + name
-        case None       => agent.unqualified + "#" + setNode
-      }
-    } yield (portID -> strValue)
+      portID = AgentName(agent).unqualified + "#" + setNode
+      portIDBestForm = portID.bestForm(nodeIDNames)
+    } yield (portIDBestForm -> strValue)
   }
 }

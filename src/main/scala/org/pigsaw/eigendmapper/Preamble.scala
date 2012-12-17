@@ -68,20 +68,15 @@ object Preamble {
      * Get the port ID with an unqualified version of the agent name, which means
      * without all the rig position information.
      */
-    def unqualified: String = id match {
-      case PortIDRE(agent, sep, label) => agent.unqualified + sep + label
-      case _ => throw new IllegalArgumentException("Cannot parse PortID '" + id + "'")
-    }
+    def unqualified: String =
+      AgentName(agent0).unqualified + sep0 + label0
     
     /**
      * Get the node label (the node ID or the node CName).
      * E.g. in `"<cycler1>#4.56"` it is `"4.56"'
      * and in `"<cycler1> beat input"` it is `"beat input"'
      */
-    def nodeLabel: String = id match {
-      case PortIDRE(_, _, label) => label
-      case _ => throw new IllegalArgumentException("Cannot parse PortID '" + id + "'")
-    }
+    def nodeLabel: String = label0
     
     /**
      * Substitute the node ID for a cname if we have one. The # separator will
@@ -89,10 +84,9 @@ object Preamble {
      * `"<cycler1> beat input"` if we have a map from `"3.4"` to `"beat input"`.
      * @param map  A map from node IDs to cnames.
      */
-    def bestForm(m: Map[String, String]): String = {
-      val PortIDRE(agent, sep, label) = id
-      if (sep == "#" && m.get(label).nonEmpty)
-        agent + " " + m(label)
+    def bestForm(map: Map[String, String]): String = {
+      if (sep0 == "#" && map.get(label0).nonEmpty)
+        agent + " " + map(label0)
       else
         id
     }
@@ -102,6 +96,8 @@ object Preamble {
     private val PortIDRE = """(<[^>]*>)([# ])(.+)""".r
   }
 
+  implicit def string2PortID(id: String) = new PortID(id)
+  
   /**
    * A position in a rig hierarchy in which we're currently
    * interested. An empty list means the top level; List("&lt;rig3&gt")
