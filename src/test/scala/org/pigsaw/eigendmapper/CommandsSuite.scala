@@ -40,8 +40,8 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
     val connTop = Connection("<rig1> one", "<fff> five")
     val connRig = Connection("<aaa> ayes", "<bbb> bees")
     
-    val setupRig = new Setup(Map(), Set(connRig), Map(), List())
-    val setupTop = new Setup(Map(), Set(connTop), Map("<rig1>" -> setupRig), List("<rig1>"))
+    val setupRig = Setup(Set(connRig))
+    val setupTop = Setup(Set(connTop)).withRig("<rig1>", setupRig).withPosUpdated(List("<rig1>"))
 
     val catcher = new PrintCatcher
 
@@ -123,13 +123,13 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
     }
 
     val connsRig = Connection("<too> two out", "<mid> mid input")
-    val setupRig = new Setup(Map(), Set(connsRig), Map(), List())
+    val setupRig = Setup(Set(connsRig))
 
     val connsTop = Connection("<rig1> three", "<fff> five")
 
     val catcher = new PrintCatcher
 
-    val setup = new Setup(Map(), Set(connsTop), Map("<rig1>" -> setupRig), List("<rig1>"))
+    val setup = Setup(Set(connsTop)).withRig("<rig1>", setupRig).withPosUpdated(List("<rig1>"))
     val setupV2 = command.action(List())(setup, catcher.println)
 
     command.capturedIndex should equal("<main.rig1:main>")
@@ -140,8 +140,8 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
     val connsTop = Connection("<rig1> one out", "<top> top input")
     val connsRig = Connection("<too> two out", "<mid> mid input")
 
-    val setupRig = new Setup(Map(), Set(connsRig), Map(), List())
-    val setupTop = new Setup(Map(), Set(connsTop), Map("<rig1>" -> setupRig), List("<rig1>"))
+    val setupRig = Setup(Set(connsRig))
+    val setupTop = Setup(Set(connsTop)).withRig("<rig1>", setupRig).withPosUpdated(List("<rig1>"))
 
     val connsRigV2 = Connection("<too> two out2", "<mid> mid input2")
 
@@ -233,8 +233,8 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
     val connsBottom = Connection("<rig3> three out", "<bottom> bottom input")
 
     val setupBottom = new Setup(Set(connsBottom))
-    val setupMid = new Setup(Map(), Set(connsMid), Map("<rig2>" -> setupBottom), List())
-    val setupTop = new Setup(Map(), Set(connsTop), Map("<rig1>" -> setupMid), List("<rig1>", "<rig2>"))
+    val setupMid = Setup(Set(connsMid)).withRig("<rig2>", setupBottom)
+    val setupTop = Setup(Set(connsTop)).withRig("<rig1>", setupMid).withPosUpdated(List("<rig1>", "<rig2>"))
 
     val command = new IntoCommand
     val catcher = new PrintCatcher
@@ -250,8 +250,8 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
     val connsBottom = Connection("<free> three out", "<bottom> bottom input")
 
     val setupBottom = new Setup(Set(connsBottom))
-    val setupMid = new Setup(Map(), Set(connsMid), Map("<rig2>" -> setupBottom), List())
-    val setupTop = new Setup(Map(), Set(connsTop), Map("<rig1>" -> setupMid), List("<rig1>"))
+    val setupMid = Setup(Set(connsMid)).withRig("<rig2>", setupBottom)
+    val setupTop = Setup(Set(connsTop)).withRig("<rig1>", setupMid).withPosUpdated(List("<rig1>"))
 
     val command = new IntoCommand
     val catcher = new PrintCatcher
@@ -267,8 +267,8 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
     val connsBottom = Connection("<free> three out", "<bottom> bottom input")
 
     val setupBottom = new Setup(Set(connsBottom))
-    val setupMid = new Setup(Map(), Set(connsMid), Map("<rig2>" -> setupBottom), List())
-    val setupTop = new Setup(Map(), Set(connsTop), Map("<rig1>" -> setupMid), List("<rig1>"))
+    val setupMid = Setup(Set(connsMid)).withRig("<rig2>", setupBottom)
+    val setupTop = Setup(Set(connsTop)).withRig("<rig1>", setupMid).withPosUpdated(List("<rig1>"))
 
     val command = new IntoCommand
     val catcher = new PrintCatcher
@@ -285,8 +285,8 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
     val connsBottom = Connection("<free> three out", "<bottom> bottom input")
 
     val setupBottom = new Setup(Set(connsBottom))
-    val setupMid = new Setup(Map(), Set(connsMid), Map("<rig2>" -> setupBottom), List())
-    val setupTop = new Setup(Map(), Set(connsTop), Map("<rig1>" -> setupMid), List())
+    val setupMid = Setup(Set(connsMid)).withRig("<rig2>", setupBottom)
+    val setupTop = Setup(Set(connsTop)).withRig("<rig1>", setupMid)
 
     val command = new IntoCommand
     val catcher = new PrintCatcher
@@ -299,7 +299,7 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
 
   test("Into - Handles bad arguments") {
     val connsTop = Connection("<rig1> one out", "<top> top input")
-    val setupTop = new Setup(Map(), Set(connsTop), Map(), List())
+    val setupTop = Setup(Set(connsTop))
 
     val command = new IntoCommand
 

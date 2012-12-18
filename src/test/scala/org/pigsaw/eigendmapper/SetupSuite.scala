@@ -108,7 +108,7 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     val port_b_unnamed = "<b>#1.2"
     val port_c_unnamed = "<c>#1.3"
     
-    val portMap = Map("<b>" -> Map("1.2" -> "b12"))
+    val portMap_for_b = Map("1.2" -> "b12")
 
     val conn_aubu = Connection(port_a_unnamed, port_b_unnamed)
 
@@ -120,7 +120,7 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     val conn_cubn = Connection(port_c_unnamed, port_b_named) // We'll add this
     val conn_aubn = Connection(port_a_unnamed, port_b_named) // This should get created
 
-    val connSet2 = new Setup(portMap, connSet1 + conn_cubn, Map(), List()).conns
+    val connSet2 = Setup(connSet1 + conn_cubn).withPortNames("<b>", portMap_for_b).conns
 
     connSet2.size should equal(2)
     connSet2 should contain(conn_cubn)
@@ -134,7 +134,7 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     val port_b_unnamed = "<b>#1.2"
     val port_c_unnamed = "<c>#1.3"
     
-    val portMap = Map("<b>" -> Map("1.2" -> "b12"))
+    val portMap_for_b = Map("1.2" -> "b12")
 
     val conn_buau = Connection(port_b_unnamed, port_a_unnamed)
 
@@ -146,7 +146,7 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     val conn_cubn = Connection(port_c_unnamed, port_b_named) // We'll add this
     val conn_bnau = Connection(port_b_named, port_a_unnamed) // This should get created
 
-    val connSet2 = new Setup(portMap, connSet1 + conn_cubn, Map(), List()).conns
+    val connSet2 = Setup(connSet1 + conn_cubn).withPortNames("<b>", portMap_for_b).conns
 
     connSet2.size should equal(2)
     connSet2 should contain(conn_cubn)
@@ -160,7 +160,7 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     val port_b_unnamed = "<b>#1.2"
     val port_c_unnamed = "<c>#1.3"
     
-    val portMap = Map("<b>" -> Map("1.2" -> "b12"))
+    val portMap_for_b = Map("1.2" -> "b12")
 
     val conn_aubu = Connection(port_a_unnamed, port_b_unnamed)
 
@@ -172,7 +172,7 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     val conn_bncu = Connection(port_b_named, port_c_unnamed) // We'll add this
     val conn_aubn = Connection(port_a_unnamed, port_b_named) // This should get created
 
-    val connSet2 = new Setup(portMap, connSet1 + conn_bncu, Map(), List()).conns
+    val connSet2 = Setup(connSet1 + conn_bncu).withPortNames("<b>", portMap_for_b).conns
 
     connSet2.size should equal(2)
     connSet2 should contain(conn_bncu)
@@ -186,7 +186,7 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     val port_b_unnamed = "<b>#1.2"
     val port_c_unnamed = "<c>#1.3"
     
-    val portMap = Map("<b>" -> Map("1.2" -> "b12"))
+    val portMap_for_b = Map("1.2" -> "b12")
 
     val conn_buau = Connection(port_b_unnamed, port_a_unnamed)
 
@@ -198,7 +198,7 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     val conn_bncu = Connection(port_b_named, port_c_unnamed) // We'll add this
     val conn_bnau = Connection(port_b_named, port_a_unnamed) // This should get created
 
-    val connSet2 = new Setup(portMap, connSet1 + conn_bncu, Map(), List()).conns
+    val connSet2 = Setup(connSet1 + conn_bncu).withPortNames("<b>", portMap_for_b).conns
 
     connSet2.size should equal(2)
     connSet2 should contain(conn_bncu)
@@ -263,8 +263,8 @@ class SetupSuite extends FunSuite with ShouldMatchers {
   test("Equals - with pos") {
     val setupBasic1 = new Setup(Set())
     val setupBasic2 = new Setup(Set())
-    val setupWithPos1 = new Setup(Map(), Set(), Map(), List("<rig1>"))
-    val setupWithPos2 = new Setup(Map(), Set(), Map(), List("<rig1>"))
+    val setupWithPos1 = Setup().withPosUpdated(List("<rig1>"))
+    val setupWithPos2 = Setup().withPosUpdated(List("<rig1>"))
     
     setupBasic1 should equal (setupBasic2)
     setupWithPos1 should equal (setupWithPos2)
@@ -308,13 +308,13 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     val port_b_unnamed = "<b>#1.2"
     val port_c_unnamed = "<c>#1.3"
     
-    val portMap = Map("<b>" -> Map("1.2" -> "b12"))
+    val portMap_for_b = Map("1.2" -> "b12")
 
     val conn_buau = Connection(port_b_unnamed, port_a_unnamed)
     val conn_bncu = Connection(port_b_named, port_c_unnamed) // We'll add this
     val conn_bnau = Connection(port_b_named, port_a_unnamed) // This should get created
 
-    val conns = new Setup(portMap, Set(conn_buau, conn_bncu), Map(), List()).conns
+    val conns = Setup(Set(conn_buau, conn_bncu)).withPortNames("<b>", portMap_for_b).conns
 
     conns.size should equal(2)
     conns should contain(conn_bncu)
@@ -373,7 +373,7 @@ class SetupSuite extends FunSuite with ShouldMatchers {
   
   test("Rigs - Adding rig preserves position") {
     val conn = Connection("<rig1> one", "<fff> five")
-    val setup = new Setup(Map(), Set(conn), Map(), List("<rigX>"))
+    val setup = Setup(Set(conn)).withPosUpdated(List("<rigX>"))
 
     val rigConn = Connection("<sss>#7.7", "<other> other")
     val rigSetup = Setup(Set(rigConn))
@@ -429,8 +429,8 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     val connsBottom = Connection("<lower> three out", "<bottom> bottom input")
     
     val setupBottom = new Setup(Set(connsBottom))
-    val setupMid = new Setup(Map(), Set(connsMid), Map("<rig2>" -> setupBottom), List())
-    val setupTop = new Setup(Map(), Set(connsTop), Map("<rig1>" -> setupMid), List("<rig1>", "<rig2>"))
+    val setupMid = Setup(Set(connsMid)).withRig("<rig2>", setupBottom)
+    val setupTop = Setup(Set(connsTop)).withRig("<rig1>", setupMid).withPosUpdated(List("<rig1>", "<rig2>"))
 
     val connsBottom2 = Connection("<lower2> three out2", "<bottom2> bottom input2")
 
@@ -452,8 +452,8 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     val connsBottom = Connection("<lower> three out", "<bottom> bottom input")
     
     val setupBottom = new Setup(Set(connsBottom))
-    val setupMid = new Setup(Map(), Set(connsMid), Map("<rig2>" -> setupBottom), List())
-    val setupTop = new Setup(Map(), Set(connsTop), Map("<rig1>" -> setupMid), List("<rig1>", "<rig2>"))
+    val setupMid = Setup(Set(connsMid)).withRig("<rig2>", setupBottom)
+    val setupTop = Setup(Set(connsTop)).withRig("<rig1>", setupMid).withPosUpdated(List("<rig1>", "<rig2>"))
 
     val connsMid2 = Connection("<rig2> two out2", "<mid> mid input2")
 
@@ -475,8 +475,8 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     val connsBottom = Connection("<lower> three out", "<bottom> bottom input")
     
     val setupBottom = new Setup(Set(connsBottom))
-    val setupMid = new Setup(Map(), Set(connsMid), Map("<rig2>" -> setupBottom), List())
-    val setupTop = new Setup(Map(), Set(connsTop), Map("<rig1>" -> setupMid), List("<rig1>", "<rig2>"))
+    val setupMid = Setup(Set(connsMid)).withRig("<rig2>", setupBottom)
+    val setupTop = Setup(Set(connsTop)).withRig("<rig1>", setupMid).withPosUpdated(List("<rig1>", "<rig2>"))
 
     val connsTop2 = Connection("<rig1> one out2", "<top> top input2")
 
@@ -496,8 +496,8 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     val connsTop = Connection("<rig1> one out", "<top> top input")
     val connsRig = Connection("<too> two out", "<mid> mid input")
     
-    val setupRig = new Setup(Map(), Set(connsRig), Map(), List())
-    val setupTop = new Setup(Map(), Set(connsTop), Map("<rig1>" -> setupRig), List("<rig1>"))
+    val setupRig = Setup(Set(connsRig))
+    val setupTop = Setup(Set(connsTop)).withRig("<rig1>", setupRig).withPosUpdated(List("<rig1>"))
     
     val connsTop2 = Connection("<wig1> one out", "<top> top input")
     
@@ -510,8 +510,8 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     val connsTop = Connection("<rig1> one out", "<top> top input")
     val connsRig = Connection("<too> two out", "<mid> mid input")
     
-    val setupRig = new Setup(Map(), Set(connsRig), Map(), List())
-    val setupTop = new Setup(Map(), Set(connsTop), Map("<rig1>" -> setupRig), List("<rig1>"))
+    val setupRig = Setup(Set(connsRig))
+    val setupTop = Setup(Set(connsTop)).withRig("<rig1>", setupRig).withPosUpdated(List("<rig1>"))
 
     val connsTopPlus = Connection("<any> any out", "<rig3> three input")
     
@@ -526,8 +526,8 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     val connsTop = Connection("<rig1> one out", "<top> top input")
     val connsRig = Connection("<too> two out", "<mid> mid input")
     
-    val setupRig = new Setup(Map(), Set(connsRig), Map(), List())
-    val setupTop = new Setup(Map(), Set(connsTop), Map("<rig1>" -> setupRig), List("<rig1>"))
+    val setupRig = Setup(Set(connsRig))
+    val setupTop = Setup(Set(connsTop)).withRig("<rig1>", setupRig).withPosUpdated(List("<rig1>"))
     
     // <rig1> is still part of this new set of connections
     val connsTop2 = Connection("<back1> back out", "<rig1> one input")
@@ -544,8 +544,8 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     val connsBottom = Connection("<free> three out", "<bottom> bottom input")
     
     val setupBottom = new Setup(Set(connsBottom))
-    val setupMid = new Setup(Map(), Set(connsMid), Map("<rig2>" -> setupBottom), List())
-    val setupTop = new Setup(Map(), Set(connsTop), Map("<rig1>" -> setupMid), List("<rig1>"))
+    val setupMid = Setup(Set(connsMid)).withRig("<rig2>", setupBottom)
+    val setupTop = Setup(Set(connsTop)).withRig("<rig1>", setupMid).withPosUpdated(List("<rig1>"))
     
     setupTop.setupForPos(List()) should equal (Some(setupTop))
     setupTop.setupForPos(List("<rig1>")) should equal (Some(setupMid))

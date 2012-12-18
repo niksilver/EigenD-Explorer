@@ -6,22 +6,28 @@ import Preamble._
 
 /**
  * A particular set of connections
- * @param cnames  A map from each agent name (unqualified)
+ * @param portNames0  A map from each agent name (unqualified)
  *     to a map from each node ID to its cname (if any).
  *     The we can map from `<cycler1>` to `3.4` to `beat input`.
  * @param conns0  The set of connections in this setup.
- * @param rigSetups  The rigs setups inside this one.
+ * @param rigSetups0  The rigs setups inside this one.
  *     Each one is mapped from its name, such as &lt;rig2&gt;.
  * @param pos  The position in the rig hierarchy in which we're currently
  *     interested. An empty list means the top level; List("&lt;rig3&gt")
  *     means rig3 within the top level, and so on.
  */
-class Setup(val cnames: Map[String, Map[String, String]],
-  val conns0: Set[Connection],
-  val rigSetups0: Map[String, Setup],
-  val pos: List[String]) {
+class Setup private(val portNames: Map[String, Map[String, String]],
+    conns0: Set[Connection],
+    rigSetups0: Map[String, Setup],
+    val pos: List[String]) {
 
-  lazy val conns: Set[Connection] = unified(unqualified(conns0))
+  
+  /**
+   * The connection in this setup, with agent names
+   * which are not qualified, and using the best names
+   * for ports
+   */
+  lazy val conns: Set[Connection] = bestNames(unqualified(conns0))
 
   lazy val rigSetups: Map[String, Setup] = {
     rigs map { name =>
@@ -69,11 +75,11 @@ class Setup(val cnames: Map[String, Map[String, String]],
    * carry a port name, then those names are applied wherever those
    * ports are used.
    */
-  private def unified(cos: Set[Connection]): Set[Connection] = {
-    def bestNames(agent: String): Map[String, String] =
-      cnames.getOrElse(agent, Map())
+  private def bestNames(cos: Set[Connection]): Set[Connection] = {
+    def bestNameMap(agent: String): Map[String, String] =
+      portNames.getOrElse(agent, Map())
     def bestForm(portID: String): String = {
-      val bestForms = bestNames(portID.agent)
+      val bestForms = bestNameMap(portID.agent)
       portID.bestForm(bestForms)
     }
     cos map { c => Connection(bestForm(c.master), bestForm(c.slave)) }
@@ -108,14 +114,24 @@ class Setup(val cnames: Map[String, Map[String, String]],
    * Create a setup just like this, but with a rig setup inside.
    */
   def withRig(rig: String, setup: Setup): Setup =
-    new Setup(cnames, conns, rigSetups + (rig -> setup), pos)
+    new Setup(portNames, conns, rigSetups + (rig -> setup), pos)
 
+  /**
+   * Create a setup just like this, but with an additional mapping of
+   * port names for an agent.
+   * @param agent  The agent whose port names we have.
+   * @param map  A mapping from each node ID in the agent (e.g. `"15.6.5"`)
+   *     to its port name (e.g. `"beat bar input"`).
+   */
+  def withPortNames(agent: String, map: Map[String, String]): Setup =
+    new Setup(portNames ++ Map(agent -> map), conns, rigSetups, pos)
+  
   /**
    * Create a setup just like this, but the with connections replaced.
    * @param conns2  The new connections.
    */
   def withConnsReplaced(conns2: Set[Connection]): Setup =
-    new Setup(cnames, conns2, rigSetups, List())
+    new Setup(portNames, conns2, rigSetups, List())
 
   /**
    *  Get a setup with a given pos. Throw an exception
@@ -138,7 +154,7 @@ class Setup(val cnames: Map[String, Map[String, String]],
       val nextSetup = s.rigSetups(p1)
       val updatedSetup = replaceInRigsMaps(tail, newSetup, nextSetup)
       val updatedMap = s.rigSetups.updated(p1, updatedSetup)
-      new Setup(s.cnames, s.conns, updatedMap, s.pos)
+      new Setup(s.portNames, s.conns, updatedMap, s.pos)
     }
   }
 
@@ -150,7 +166,7 @@ class Setup(val cnames: Map[String, Map[String, String]],
    */
   def withConnsReplaced(pos2: List[String], conns2: Set[Connection]): Setup = {
     val oldSetup = getSetup(pos2, this)
-    val newSetup = new Setup(oldSetup.cnames, conns2, oldSetup.rigSetups, oldSetup.pos)
+    val newSetup = new Setup(oldSetup.portNames, conns2, oldSetup.rigSetups, oldSetup.pos)
     replaceInRigsMaps(pos2, newSetup, this)
   }
 
@@ -170,14 +186,14 @@ class Setup(val cnames: Map[String, Map[String, String]],
    * Create a new setup just like this, but with the pos updated.
    */
   def withPosUpdated(posNow: List[String]) =
-    new Setup(cnames, conns, rigSetups, posNow)
+    new Setup(portNames, conns, rigSetups, posNow)
 
   def canEqual(other: Any): Boolean = (other.isInstanceOf[Setup])
 
   override def equals(other: Any): Boolean =
     other match {
       case that: Setup => (that canEqual this) &&
-        this.cnames == that.cnames &&
+        this.portNames == that.portNames &&
         this.conns == that.conns &&
         this.rigSetups == that.rigSetups &&
         this.pos == that.pos
