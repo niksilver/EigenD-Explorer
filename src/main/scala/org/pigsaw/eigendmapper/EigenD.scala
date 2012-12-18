@@ -72,10 +72,14 @@ class BCat(val agent: String) {
     } yield (stateNodeID -> dict)
 
   /**
-   * Get the (optional) cname from a state dictionary value
+   * Get the (optional) name or cname from a state dictionary value
    */
-  private def cname(dict: Dict): Option[String] =
-    dict.get("cname") map { _.mkString }
+  private def name(dict: Dict): Option[String] =
+    dict.get("name") match {
+      case Some(name) => Some(name.mkString)
+      case None => dict.get("cname") map { _.mkString }
+    }
+    //dict.getOrElse("name", dict.get("cname")) map { _.mkString }
     
   /**
    * The set of all master/slave connections that involve this agent
@@ -84,18 +88,17 @@ class BCat(val agent: String) {
   lazy val connections: Set[Connection] = {
     val conns = for {
       (stateNodeID, dict) <- nodeIDDicts
-      optPortCName = cname(dict)
       (key, valueList) <- dict
       conn <- key match {
-        case "slave" => slaveConnections(optPortCName, stateNodeID, valueList)
-        case "master" => masterConnections(optPortCName, stateNodeID, valueList)
+        case "slave" => slaveConnections(stateNodeID, valueList)
+        case "master" => masterConnections(stateNodeID, valueList)
         case _ => List()
       }
     } yield conn
     conns.toSet
   }
 
-  def slaveConnections(portCName: Option[String], stateNodeID: String, valueList: List[String]): List[Connection] = {
+  def slaveConnections(stateNodeID: String, valueList: List[String]): List[Connection] = {
     for {
       slave <- valueList
       slaveStripped = slave.stripPrefix("'").stripSuffix("'")
@@ -104,7 +107,7 @@ class BCat(val agent: String) {
     } yield Connection(masterPort, slavePort)
   }
 
-  def masterConnections(portCName: Option[String], stateNodeID: String, valueList: List[String]): List[Connection] = {
+  def masterConnections(stateNodeID: String, valueList: List[String]): List[Connection] = {
     for {
       masterConn <- valueList
       master = masterConn.split(',')(2).stripPrefix("'").stripSuffix("'")
@@ -120,8 +123,8 @@ class BCat(val agent: String) {
   lazy val nodeIDNames: Map[String, String] =
     for {
       (stateNodeID, dict) <- nodeIDDicts
-      portCName <- cname(dict).seq
-    } yield (stateNodeID -> portCName)
+      portName <- name(dict).seq
+    } yield (stateNodeID -> portName)
 
   /**
    * Get the settings in this agent. Each key value pair is the port ID

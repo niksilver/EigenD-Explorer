@@ -33,7 +33,7 @@ class BCatSuite extends FunSuite with ShouldMatchers {
       "1" -> DictValue(Map("cname" -> List("outputs"), "protocols" -> List())),
       "1.1" -> StringValue("one point one")))
   }
-  
+
   test("Connections - slaves") {
     val output = """"log:using portbase 5555
       |. {cname:clicker,slave:}
@@ -46,10 +46,10 @@ class BCatSuite extends FunSuite with ShouldMatchers {
     }
 
     val connections = bcat.connections
-    
+
     val master_port_1_2 = "<clicker1>#1.2"
     val slave_port_1_2 = "<drummer1>#2.1"
-    
+
     val master_port_3_5 = "<clicker1>#3.5"
     val slave_port_3_5_a = "<rig2>#4"
     val slave_port_3_5_b = "<clarinet7>#8.8.8"
@@ -58,7 +58,7 @@ class BCatSuite extends FunSuite with ShouldMatchers {
     assert(connections contains Connection(master_port_3_5, slave_port_3_5_a))
     assert(connections contains Connection(master_port_3_5, slave_port_3_5_b))
   }
-  
+
   test("Connections - masters") {
     val output = """"log:using portbase 5555
       |. {cname:metronome}
@@ -72,11 +72,11 @@ class BCatSuite extends FunSuite with ShouldMatchers {
     }
 
     val connections = bcat.connections
-    
+
     val master_port_2_a = "<controller1>#4.1.4"
     val master_port_2_b = "<interpreter1>#15.3"
     val slave_port_2 = "<metronome1>#2"
-    
+
     val master_port_4_8 = "<interpreter1>#15.253.2"
     val slave_port_4_8 = "<metronome1>#4.8"
 
@@ -85,7 +85,7 @@ class BCatSuite extends FunSuite with ShouldMatchers {
     assert(connections contains Connection(master_port_2_b, slave_port_2))
     assert(connections contains Connection(master_port_4_8, slave_port_4_8))
   }
-  
+
   test("Connections - masters and slaves together") {
     val output = """"log:using portbase 5555
       |. {cname:metronome}
@@ -99,14 +99,14 @@ class BCatSuite extends FunSuite with ShouldMatchers {
     }
 
     val connections = bcat.connections
-    
+
     val master_port_2_a = "<controller1>#4.1.4"
     val master_port_2_b = "<interpreter1>#15.3"
     val slave_port_2 = "<metronome1>#2"
-    
+
     val master_port_int_4_8 = "<interpreter1>#15.253.2"
     val slave_port_int_4_8 = "<metronome1>#4.8"
-    
+
     val master_port_drum_4_8 = "<metronome1>#4.8"
     val slave_port_drum_4_8 = "<drummer1>#2.1"
 
@@ -117,11 +117,33 @@ class BCatSuite extends FunSuite with ShouldMatchers {
     assert(connections contains Connection(master_port_drum_4_8, slave_port_drum_4_8))
   }
 
+  test("Connections - Reads names") {
+    val output = """3.1 {cordinal:1,protocols:input remove,ordinal:0,name:bar beat,master:conn(None,None,'<metronome1>#1.1',None,None),domain:bfloat(0,100,0,[])}""".
+      stripMargin
+
+    val bcat = new BCat("<rig3>") {
+      override def text: Stream[String] = output.lines.toStream
+    }
+  
+    bcat.nodeIDNames should contain (("3.1" -> "bar beat"))
+  }
+
+  test("Connections - Names should trump cnames") {
+    val output = """3.1 {cordinal:1,name:bar beat,cname:bor boot}""".
+      stripMargin
+
+    val bcat = new BCat("<rig3>") {
+      override def text: Stream[String] = output.lines.toStream
+    }
+  
+    bcat.nodeIDNames should contain (("3.1" -> "bar beat"))
+  }
+
   /*test("Real bcat output") {
     val bcat = new BCat("<metronome1>")
     bcat.state.toList map println
   }*/
-  
+
   test("Settings - Will recognise unnamed settings") {
     val output = """"log:using portbase 5555
       |. {cname:metronome}
@@ -136,15 +158,15 @@ class BCatSuite extends FunSuite with ShouldMatchers {
     val bcat = new BCat("<metronome1>") {
       override def text: Stream[String] = output.lines.toStream
     }
-    
+
     val settings = bcat.settings
-    
-    settings.size should equal (3)
-    settings should contain (("<metronome1>#3.3" -> "0.0"))
-    settings should contain (("<metronome1>#4" -> "some value with spaces"))
-    settings should contain (("<metronome1>#5.6.7" -> "y"))
+
+    settings.size should equal(3)
+    settings should contain(("<metronome1>#3.3" -> "0.0"))
+    settings should contain(("<metronome1>#4" -> "some value with spaces"))
+    settings should contain(("<metronome1>#5.6.7" -> "y"))
   }
-  
+
   test("Settings - Names node IDs correctly even if in a rig") {
     val output = """"log:using portbase 5555
       |. {cname:metronome}
@@ -153,13 +175,13 @@ class BCatSuite extends FunSuite with ShouldMatchers {
     val bcat = new BCat("<main.rig3:metronome1>") {
       override def text: Stream[String] = output.lines.toStream
     }
-    
+
     val settings = bcat.settings
-    
-    settings.size should equal (1)
-    settings should contain (("<metronome1>#3.3" -> "0.0"))
+
+    settings.size should equal(1)
+    settings should contain(("<metronome1>#3.3" -> "0.0"))
   }
-  
+
   test("Settings - Will recognise named settings") {
     val output = """"log:using portbase 5555
       |. {cname:metronome}
@@ -175,13 +197,13 @@ class BCatSuite extends FunSuite with ShouldMatchers {
     val bcat = new BCat("<metronome1>") {
       override def text: Stream[String] = output.lines.toStream
     }
-    
+
     val settings = bcat.settings
-    
-    settings.size should equal (3)
-    settings should contain (("<metronome1> tempo input" -> "0.0"))
-    settings should contain (("<metronome1> arbitrary thing" -> "some value with spaces"))
-    settings should contain (("<metronome1> open" -> "y"))
+
+    settings.size should equal(3)
+    settings should contain(("<metronome1> tempo input" -> "0.0"))
+    settings should contain(("<metronome1> arbitrary thing" -> "some value with spaces"))
+    settings should contain(("<metronome1> open" -> "y"))
   }
 
 }
