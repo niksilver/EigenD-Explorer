@@ -3,10 +3,10 @@ package org.pigsaw.eigendmapper
 import Preamble._
 
 object Graphable {
+
   implicit def string2Graphable(s: String) = new Graphable(s)
-  //implicit def string2GraphableString(s: String) = new GString(s)
-  //implicit def port2GraphablePort(p: DeprecatedPort) = new GPort(p)
   implicit def connection2GraphableConnection(c: Connection) = new GConnection(c)
+
   def GAgentPort(ap: (String, String)) = new GAgentPort(ap)
   def GAgentAgent(aa: (String, String)) = new GAgentAgent(aa)
 
