@@ -112,26 +112,25 @@ class SnapshotCommand extends Command {
   }
   
   def doSnapshot(setup: Setup, prln: PrintlnFn): Setup = {
-    type Agent = String
-    type Conns = Set[Connection]
-    type NameMap = Map[String, String]
-    
     val pos = setup.pos
-    val index = pos.index
-    val bls = this.bls(index)
+    val bls = this.bls(pos.index)
     val agents = bls.agents
     
-    val bcats: List[(Agent, NameMap, Conns)] = for {
-      agent <- agents
-      bcat = this.bcat(agent.fqName(pos)) returnedAfter { bc => prln("Examining " + bc.agent) }
-      nodeIDNames = bcat.nodeIDNames
-      conns = bcat.connections
-    } yield (agent, nodeIDNames, conns)
-    val cnames: Map[Agent, NameMap] = (bcats map { bc => (bc._1 -> bc._2) }) toMap
-    val allConnections: Conns = (bcats flatMap { _._3 }).toSet
-    //val deepSetup = setup.setupForPos(pos)
-    //val setupWithNames = new Setup(setup.cnames ++ cnames, setup.conns, setup.rigSetups, setup.pos)
-    setup.withConnsReplaced(pos, allConnections.toSet).withCNamesReplaced(pos, cnames)
+    // Update a setup with the results of bcat on a single agent
+    def updateWithBCat(ag: String, s: Setup): Setup = {
+      val bcat = this.bcat(ag.fqName(pos)) returnedAfter { bc => prln("Examining " + bc.agent) }
+      s.withPortNames(pos, ag, bcat.nodeIDNames).
+        withConns(pos, bcat.connections)
+    }
+    
+    // Update a setup for a bcat on all agents
+    def updateForAgents(ags: List[String], s: Setup): Setup = ags match {
+      case Nil => s
+      case ag :: tail => updateForAgents(tail, updateWithBCat(ag, s))
+    }
+    
+    val baseSetup = setup.withPortNamesReplaced(pos, Map()).withConnsReplaced(pos, Set())
+    updateForAgents(agents, baseSetup)
   }
 }
 

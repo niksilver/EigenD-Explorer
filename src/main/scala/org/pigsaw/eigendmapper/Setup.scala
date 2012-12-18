@@ -125,13 +125,32 @@ class Setup private(val portNames: Map[String, Map[String, String]],
    */
   def withPortNames(agent: String, map: Map[String, String]): Setup =
     new Setup(portNames ++ Map(agent -> map), conns, rigSetups, pos)
-  
+
   /**
-   * Create a setup just like this, but the with connections replaced.
-   * @param conns2  The new connections.
+   * Create a setup just like this, but the with the agent/nodeID/port name
+   * map replaced at some point in the rig hierarchy
+   * @param pos2  The position of the rig to replace
+   * @param portNames2  The new mapping
    */
-  def withConnsReplaced(conns2: Set[Connection]): Setup =
-    new Setup(portNames, conns2, rigSetups, List())
+  def withPortNamesReplaced(pos2: List[String], portNames2: Map[String, Map[String, String]]): Setup = {
+    val oldSetup = getSetup(pos2, this)
+    val newSetup = new Setup(portNames2, oldSetup.conns, oldSetup.rigSetups, oldSetup.pos)
+    replaceInRigsMaps(pos2, newSetup, this)
+  }
+
+  /**
+   * Create a setup just like this, but  at some point in the rig hierarchy
+   * with additional port node IDs for a particular agent.
+   * @param pos2  The position of the rig to replace
+   * @param agent  The agent name whose node IDs we have names for
+   * @param map  The map from node IDs to port names for the agent
+   */
+  def withPortNames(pos2: List[String], agent: String, map: Map[String, String]): Setup = {
+    val oldSetup = getSetup(pos2, this)
+    val curMap = oldSetup.portNames
+    val newSetup = new Setup(curMap ++ Map(agent -> map), oldSetup.conns, oldSetup.rigSetups, oldSetup.pos)
+    replaceInRigsMaps(pos2, newSetup, this)
+  }
 
   /**
    *  Get a setup with a given pos. Throw an exception
@@ -169,16 +188,24 @@ class Setup private(val portNames: Map[String, Map[String, String]],
     val newSetup = new Setup(oldSetup.portNames, conns2, oldSetup.rigSetups, oldSetup.pos)
     replaceInRigsMaps(pos2, newSetup, this)
   }
+  
+  /**
+   * Create a setup just like this, but the with connections replaced.
+   * @param conns2  The new connections.
+   */
+  def withConnsReplaced(conns2: Set[Connection]): Setup =
+    new Setup(portNames, conns2, rigSetups, List())
 
   /**
-   * Create a setup just like this, but the cnames replaced at some
+   * Create a setup just like this, but with additional connections at some
    * point in the rig hierarchy
    * @param pos2  The position of the rig to replace
-   * @param cnames2  The new cnames.
+   * @param conns2  The extra connections.
    */
-  def withCNamesReplaced(pos2: List[String], cnames2: Map[String, Map[String, String]]): Setup = {
+  def withConns(pos2: List[String], conns2: Set[Connection]): Setup = {
     val oldSetup = getSetup(pos2, this)
-    val newSetup = new Setup(cnames2, oldSetup.conns, oldSetup.rigSetups, oldSetup.pos)
+    val newConns = oldSetup.conns ++ conns2
+    val newSetup = new Setup(oldSetup.portNames, newConns, oldSetup.rigSetups, oldSetup.pos)
     replaceInRigsMaps(pos2, newSetup, this)
   }
 
