@@ -8,7 +8,7 @@ import Preamble._
  * A particular set of connections
  * @param cnames  A map from each agent name (unqualified)
  *     to a map from each node ID to its cname (if any).
- *     The we can map from `<cycler1>` to `3.4` to `beat input`. 
+ *     The we can map from `<cycler1>` to `3.4` to `beat input`.
  * @param conns0  The set of connections in this setup.
  * @param rigSetups  The rigs setups inside this one.
  *     Each one is mapped from its name, such as &lt;rig2&gt;.
@@ -16,10 +16,10 @@ import Preamble._
  *     interested. An empty list means the top level; List("&lt;rig3&gt")
  *     means rig3 within the top level, and so on.
  */
-class Setup(val cnames: Map[String, Map[String,String]],
-    val conns0: Set[Connection],
-    val rigSetups0: Map[String, Setup],
-    val pos: List[String]) {
+class Setup(val cnames: Map[String, Map[String, String]],
+  val conns0: Set[Connection],
+  val rigSetups0: Map[String, Setup],
+  val pos: List[String]) {
 
   lazy val conns: Set[Connection] = unified(unqualified(conns0))
 
@@ -27,7 +27,7 @@ class Setup(val cnames: Map[String, Map[String,String]],
     rigs map { name =>
       rigSetups0.get(name) match {
         case Some(setup) => (name -> setup)
-        case None        => (name -> Setup())
+        case None => (name -> Setup())
       }
     } toMap
   }
@@ -99,11 +99,11 @@ class Setup(val cnames: Map[String, Map[String,String]],
   def setupForPos(pos: List[String]): Option[Setup] = pos match {
     case Nil => Some(this)
     case rig :: tail => rigSetups.get(rig) match {
-      case None    => None
+      case None => None
       case Some(s) => s.setupForPos(tail)
     }
   }
-  
+
   /**
    * Create a setup just like this, but with a rig setup inside.
    */
@@ -118,30 +118,40 @@ class Setup(val cnames: Map[String, Map[String,String]],
     new Setup(cnames, conns2, rigSetups, List())
 
   /**
+   *  Get a setup with a given pos. Throw an exception
+   *  if a bad post is given
+   */
+  private def getSetup(p: List[String], s: Setup): Setup = p match {
+    case Nil => s
+    case p1 :: tail => getSetup(tail, s.rigSetups(p1))
+  }
+
+  /**
+   *  Replace a rig in the hierarchy of rig maps
+   *  @param p  Pos of setup to be replaced
+   *  @param newSetup  The new setup
+   *  @param s  Current setup
+   */
+  private def replaceInRigsMaps(p: List[String], newSetup: Setup, s: Setup): Setup = p match {
+    case Nil => newSetup
+    case p1 :: tail => {
+      val nextSetup = s.rigSetups(p1)
+      val updatedSetup = replaceInRigsMaps(tail, newSetup, nextSetup)
+      val updatedMap = s.rigSetups.updated(p1, updatedSetup)
+      new Setup(s.cnames, s.conns, updatedMap, s.pos)
+    }
+  }
+
+  /**
    * Create a setup just like this, but the connections replaced at some
    * point in the rig hierarchy
    * @param pos2  The position of the rig to replace
    * @param conns2  The new connections.
    */
   def withConnsReplaced(pos2: List[String], conns2: Set[Connection]): Setup = {
-    // Get a setup with a given pos
-    def getSetup(p: List[String], s: Setup): Setup = p match {
-      case Nil => s
-      case p1 :: tail => getSetup(tail, s.rigSetups(p1))
-    }
     val oldSetup = getSetup(pos2, this)
     val newSetup = new Setup(oldSetup.cnames, conns2, oldSetup.rigSetups, oldSetup.pos)
-    // Replace a rig in the hierarchy of rig maps
-    def replaceInRigsMaps(p: List[String], s: Setup): Setup = p match {
-      case Nil => newSetup
-      case p1 :: tail => {
-        val nextSetup = s.rigSetups(p1)
-        val updatedSetup = replaceInRigsMaps(tail, nextSetup)
-        val updatedMap = s.rigSetups.updated(p1, updatedSetup)
-        new Setup(s.cnames, s.conns, updatedMap, s.pos)
-      }
-    }
-    replaceInRigsMaps(pos2, this)
+    replaceInRigsMaps(pos2, newSetup, this)
   }
 
   /**
@@ -150,25 +160,10 @@ class Setup(val cnames: Map[String, Map[String,String]],
    * @param pos2  The position of the rig to replace
    * @param cnames2  The new cnames.
    */
-  def withCNamesReplaced(pos2: List[String], cnames2: Map[String, Map[String,String]]): Setup = {
-    // Get a setup with a given pos
-    def getSetup(p: List[String], s: Setup): Setup = p match {
-      case Nil => s
-      case p1 :: tail => getSetup(tail, s.rigSetups(p1))
-    }
+  def withCNamesReplaced(pos2: List[String], cnames2: Map[String, Map[String, String]]): Setup = {
     val oldSetup = getSetup(pos2, this)
     val newSetup = new Setup(cnames2, oldSetup.conns, oldSetup.rigSetups, oldSetup.pos)
-    // Replace a rig in the hierarchy of rig maps
-    def replaceInRigsMaps(p: List[String], s: Setup): Setup = p match {
-      case Nil => newSetup
-      case p1 :: tail => {
-        val nextSetup = s.rigSetups(p1)
-        val updatedSetup = replaceInRigsMaps(tail, nextSetup)
-        val updatedMap = s.rigSetups.updated(p1, updatedSetup)
-        new Setup(s.cnames, s.conns, updatedMap, s.pos)
-      }
-    }
-    replaceInRigsMaps(pos2, this)
+    replaceInRigsMaps(pos2, newSetup, this)
   }
 
   /**
