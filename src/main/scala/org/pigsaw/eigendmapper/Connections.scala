@@ -15,8 +15,8 @@ case class Connection(val master: String, val slave: String) {
    * converted to &lt;agentnameN&gt;.
    */
   def unqualified: Connection = {
-    val unqualMaster = PortID(master).unqualified
-    val unqualSlave = PortID(slave).unqualified
+    val unqualMaster = master.unqualified
+    val unqualSlave = slave.unqualified
     if ((unqualMaster eq master) && (unqualSlave eq slave)) this
     else Connection(unqualMaster, unqualSlave)
   }

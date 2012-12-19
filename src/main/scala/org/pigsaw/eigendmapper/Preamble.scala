@@ -11,6 +11,50 @@ object Preamble {
   implicit def Any2ReturnableAfter[A](a: A) = new ReturnableAfter(a)
 
   /**
+   * A wrapper for methods appropriate to both agents and port IDs.
+   */
+  case class AgentOrPortID(str: String) {
+    import AgentOrPortID._
+
+    lazy private val AgentOrPortIDRE(agent, qualOrNull, baseName, nodePart) = str
+    
+    lazy val qualifier: String =
+      if (qualOrNull == null) "" else qualOrNull
+
+    /**
+     * Get the fully qualified name of this agent or port at the given position.
+     * {{{
+     * "<ag1>" + List()                   => <ag1>
+     * "<ag1>" + List("<rig1>")           => <main.rig1:ag1>
+     * "<ag1>" + List("<rig1>", "<rig2>") => <main.rig1:main.rig2:ag1>
+     * }}}
+     */
+    def qualified(pos: List[String]): String = {
+      val mains = pos map { "main." + AgentName(_).withoutBrackets + ":" }
+      "<" + mains.mkString + baseName + ">" + nodePart
+    }
+    /**
+     * Get the agent or port ID with an unqualified version of the agent name, which means
+     * without all the rig position information.
+     */
+    def unqualified: String =
+      if (qualifier == "") str
+      else "<" + baseName + ">" + nodePart
+
+  }
+
+  object AgentOrPortID {
+    // Groups are:
+    //   full agent name with angle brackets,
+    //   qualifier with colon (or null),
+    //   base name
+    //   node part including separator (or empty), e.g. "#34.2" or " beat input" 
+    private val AgentOrPortIDRE = """(<([^>]*:)?([^>]*)>)(.*)""".r
+  }
+
+  implicit def String2AgentOrPortID(s: String): AgentOrPortID = new AgentOrPortID(s)
+
+  /**
    * The name of an agent, including the angle brackets.
    */
   case class AgentName(name: String) {
@@ -20,29 +64,6 @@ object Preamble {
     def withoutBrackets: String = {
       val strip1 = name.dropWhile(_ == '<')
       if (strip1.endsWith(">")) strip1.init else strip1
-    }
-
-    /**
-     * Get the fully qualified name of this agent at the given position.
-     * "<ag1>" + List()                   => <ag1>
-     * "<ag1>" + List("<rig1>")           => <main.rig1:ag1>
-     * "<ag1>" + List("<rig1>", "<rig2>") => <main.rig1:main.rig2:ag1>
-     */
-    def qualified(pos: List[String]): String = {
-      val mains = pos map { "main." + _.withoutBrackets + ":" }
-      "<" + mains.mkString + name.withoutBrackets + ">"
-    }
-
-    /**
-     * Get the unqualified version of the agent name, which means
-     * without all the rig position information.
-     */
-    def unqualified: String = {
-      val FullyQualifiedName = """<.*:(.*)>""".r
-      name match {
-        case FullyQualifiedName(shortName) => "<" + shortName + ">"
-        case _ => name
-      }
     }
   }
 
@@ -63,18 +84,6 @@ object Preamble {
      * Get the agent name, including the angle brackets.
      */
     val agent: String = agent0
-
-    /**
-     * Get the port ID with an unqualified version of the agent name, which means
-     * without all the rig position information.
-     */
-    def unqualified: String = {
-      val agentUnqual = AgentName(agent0).unqualified
-      if (agent0 == agentUnqual)
-        id
-      else
-        agentUnqual + sep0 + label0
-    }
 
     /**
      * Get the node label (the node ID or the node CName).

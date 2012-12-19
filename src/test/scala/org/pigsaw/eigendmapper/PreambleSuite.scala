@@ -9,6 +9,20 @@ import org.scalatest.matchers.ShouldMatchers
 
 @RunWith(classOf[JUnitRunner])
 class PreambleSuite extends FunSuite with ShouldMatchers {
+  
+  test("AgentOrPortID - constructor") {
+    // These should simply not throw MatchErrors
+    AgentOrPortID("<rig1>").unqualified
+    AgentOrPortID("<main:rig1>").unqualified
+    AgentOrPortID("<main.rig3:cycler1>").unqualified
+    AgentOrPortID("<main.rig3:main.rig4:cycler1>#34.5").unqualified
+  }
+  
+  test("AgentOrPortID - object preservation") {
+    val port = "<rig1>#3.2"
+
+    assert(port.unqualified eq port)
+  }
 
   test("AgentName.withoutBrackets") {
     AgentName("<one>").withoutBrackets should equal("one")
@@ -17,16 +31,16 @@ class PreambleSuite extends FunSuite with ShouldMatchers {
     AgentName("one").withoutBrackets should equal("one")
   }
 
-  test("AgentName.fqName") {
+  test("AgentName.qualified") {
     "<summer1>".qualified(List()) should equal("<summer1>")
     "<summer1>".qualified(List("<rig1>")) should equal("<main.rig1:summer1>")
     "<summer1>".qualified(List("<rig1>", "<rig2>")) should equal("<main.rig1:main.rig2:summer1>")
   }
 
   test("AgentName.unqualified") {
-    AgentName("<summer1>").unqualified should equal("<summer1>")
-    AgentName("<main.rig1:summer1>").unqualified should equal("<summer1>")
-    AgentName("<main.rig1:main.rig2:summer1>").unqualified should equal("<summer1>")
+    "<summer1>".unqualified should equal("<summer1>")
+    "<main.rig1:summer1>".unqualified should equal("<summer1>")
+    "<main.rig1:main.rig2:summer1>".unqualified should equal("<summer1>")
   }
 
   test("Pos.index") {
@@ -77,10 +91,10 @@ class PreambleSuite extends FunSuite with ShouldMatchers {
   }
 
   test("PortID - Convert to format with unqualified agent name") {
-    PortID("<a>#1.1").unqualified should equal("<a>#1.1")
-    PortID("<main:b>#1.2").unqualified should equal("<b>#1.2")
-    PortID("<main.rig3:summer1>#1.2").unqualified should equal("<summer1>#1.2")
-    PortID("<main.rig1:main.rig2:c>#1.2").unqualified should equal("<c>#1.2")
+    "<a>#1.1".unqualified should equal("<a>#1.1")
+    "<main:b>#1.2".unqualified should equal("<b>#1.2")
+    "<main.rig3:summer1>#1.2".unqualified should equal("<summer1>#1.2")
+    "<main.rig1:main.rig2:c>#1.2".unqualified should equal("<c>#1.2")
   }
 
   test("PortID - Extract node label (ID or cname)") {
