@@ -27,7 +27,8 @@ class Setup private(val portNames: Map[String, Map[String, String]],
    * which are not qualified, and using the best names
    * for ports
    */
-  lazy val conns: Set[Connection] = bestNames(unqualified(conns0))
+  lazy val conns: Set[Connection] =
+    bestNames(unqualified(conns0)) filter { _.hasPos(List())}
 
   lazy val rigSetups: Map[String, Setup] = {
     rigs map { name =>

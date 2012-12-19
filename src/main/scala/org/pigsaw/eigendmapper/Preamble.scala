@@ -48,7 +48,8 @@ object Preamble {
     /**
      * If this agent or port ID is at the given pos.
      */
-    def hasPos(p: List[String]) = (qualifier == p.qualifier)
+    def hasPos(p: List[String]): Boolean =
+      (qualifier == p.qualifier)
   }
 
   object AgentOrPortID {
