@@ -314,5 +314,4 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
     catcher2.output.lines.toList(1) should equal("Position: Top level")
   }
 
-  ignore("Agents command") {}
 }

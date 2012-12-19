@@ -25,4 +25,10 @@ case class Connection(val master: String, val slave: String) {
    * Get the agent names embedded in the master and slave port ids.
    */
   def agents: Set[String] = Set() + master.agent + slave.agent
+  
+  /**
+   * See if one port in this connection has the given position
+   */
+  def hasPos(p: List[String]): Boolean =
+    (master.hasPos(p)) || (slave.hasPos(p))
 }
