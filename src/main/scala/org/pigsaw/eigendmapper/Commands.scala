@@ -118,7 +118,7 @@ class SnapshotCommand extends Command {
     
     // Update a setup with the results of bcat on a single agent
     def updateWithBCat(ag: String, s: Setup): Setup = {
-      val bcat = this.bcat(ag.fqName(pos)) returnedAfter { bc => prln("Examining " + bc.agent) }
+      val bcat = this.bcat(ag.qualified(pos)) returnedAfter { bc => prln("Examining " + bc.agent) }
       s.withPortNames(pos, ag, bcat.nodeIDNames).
         withConns(pos, bcat.connections)
     }

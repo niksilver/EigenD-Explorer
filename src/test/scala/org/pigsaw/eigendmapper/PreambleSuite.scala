@@ -18,9 +18,9 @@ class PreambleSuite extends FunSuite with ShouldMatchers {
   }
 
   test("AgentName.fqName") {
-    "<summer1>".fqName(List()) should equal("<summer1>")
-    "<summer1>".fqName(List("<rig1>")) should equal("<main.rig1:summer1>")
-    "<summer1>".fqName(List("<rig1>", "<rig2>")) should equal("<main.rig1:main.rig2:summer1>")
+    "<summer1>".qualified(List()) should equal("<summer1>")
+    "<summer1>".qualified(List("<rig1>")) should equal("<main.rig1:summer1>")
+    "<summer1>".qualified(List("<rig1>", "<rig2>")) should equal("<main.rig1:main.rig2:summer1>")
   }
 
   test("AgentName.unqualified") {

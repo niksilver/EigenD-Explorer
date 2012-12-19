@@ -28,7 +28,7 @@ object Preamble {
      * "<ag1>" + List("<rig1>")           => <main.rig1:ag1>
      * "<ag1>" + List("<rig1>", "<rig2>") => <main.rig1:main.rig2:ag1>
      */
-    def fqName(pos: List[String]): String = {
+    def qualified(pos: List[String]): String = {
       val mains = pos map { "main." + _.withoutBrackets + ":" }
       "<" + mains.mkString + name.withoutBrackets + ">"
     }
