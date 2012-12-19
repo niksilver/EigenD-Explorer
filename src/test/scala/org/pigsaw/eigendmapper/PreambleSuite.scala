@@ -23,6 +23,13 @@ class PreambleSuite extends FunSuite with ShouldMatchers {
 
     assert(port.unqualified eq port)
   }
+  
+  test("AgentOrPortID.hasPos") {
+    "<delay1>".hasPos(List()) should equal (true)
+    "<delay1>".hasPos(List("<rig1>")) should equal (false)
+    "<main.rig1:delay1>".hasPos(List()) should equal (false)
+    "<main.rig1:delay1>".hasPos(List("<rig1>")) should equal (true)
+  }
 
   test("AgentName.withoutBrackets") {
     AgentName("<one>").withoutBrackets should equal("one")
@@ -112,6 +119,12 @@ class PreambleSuite extends FunSuite with ShouldMatchers {
 
     PortID("<cycler1>#1.1").bestForm(map) should equal ("<cycler1>#1.1")
     PortID("<cycler1>#2").bestForm(map) should equal ("<cycler1>#2")
+  }
+  
+  test("Pos.qualifier") {
+    List().qualifier should equal ("")
+    List("<rig1>").qualifier should equal ("main.rig1:")
+    List("<rig1>", "<rig2>").qualifier should equal ("main.rig1:main.rig2:")
   }
 
 }
