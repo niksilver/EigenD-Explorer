@@ -20,6 +20,16 @@ case class Connection(val master: String, val slave: String) {
     if ((unqualMaster eq master) && (unqualSlave eq slave)) this
     else Connection(unqualMaster, unqualSlave)
   }
+  
+  /**
+   * Default the qualifier, in both the master and the slave, to be the given
+   * pos if there is no explicit qualifier already
+   */
+  def defaultQualifier(p: List[String]) =
+    if (master.qualifier != "" && slave.qualifier != "")
+      this
+    else
+      Connection(master.defaultQualifier(p), slave.defaultQualifier(p))
 
   /**
    * Get the agent names embedded in the master and slave port ids.

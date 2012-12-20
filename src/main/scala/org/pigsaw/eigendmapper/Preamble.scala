@@ -19,7 +19,7 @@ object Preamble {
     import AgentOrPortID._
 
     lazy private val AgentOrPortIDRE(agent, qualOrNull, baseName, nodePart) = str
-    
+
     /**
      * The qualifier string in this.
      * E.g. in `"<main.rig1:ahdsr1>"` it will be the string `"main.rig1:"`
@@ -29,15 +29,25 @@ object Preamble {
       if (qualOrNull == null) "" else qualOrNull
 
     /**
-     * Get the fully qualified name of this agent or port at the given position.
+     * Force the fully qualified name of this agent or port to be the given position.
      * {{{
-     * "<ag1>" + List()                   => <ag1>
+     * "<ag1>" + List()                   => <main:ag1>
      * "<ag1>" + List("<rig1>")           => <main.rig1:ag1>
      * "<ag1>" + List("<rig1>", "<rig2>") => <main.rig1:main.rig2:ag1>
      * }}}
      */
     def qualified(pos: List[String]): String =
       "<" + pos.qualifier + baseName + ">" + nodePart
+
+    /**
+     * If this agent or port ID has no explicit qualifier then default it
+     * to the one given.
+     */
+    def defaultQualifier(pos: List[String]): String =
+      if (qualifier == "")
+        "<" + pos.qualifier + baseName + ">" + nodePart
+      else
+        str
 
     /**
      * Get the agent or port ID with an unqualified version of the agent name, which means
@@ -49,17 +59,19 @@ object Preamble {
 
     /**
      * If this agent or port ID is at the given pos.
+     * An unqualified agent will have pos `List()`.
      */
     def hasPos(p: List[String]): Boolean =
-      (qualifier == p.qualifier)
-    
+      (qualifier == "" && p.isEmpty) ||
+        (qualifier == p.qualifier)
+
     /**
      * The pos of this agent or port ID
      */
     def pos: List[String] =
       qualifier match {
         case "" => List()
-        case q  => q split ":" map { "<" + _.drop(5) + ">" } toList
+        case q => q split ":" map { "<" + _.drop(5) + ">" } toList
       }
   }
 
@@ -85,7 +97,7 @@ object Preamble {
       val strip1 = name.dropWhile(_ == '<')
       if (strip1.endsWith(">")) strip1.init else strip1
     }
-    
+
     /**
      * True if this agent is a rig
      */
@@ -155,13 +167,17 @@ object Preamble {
       def insertMains(s: String) = "." + s.withoutBrackets + ":main"
       "<main" + (p map insertMains).mkString + ">"
     }
-    
+
     /**
      * The qualifier needed in an agent for this pos.
      * E.g. `List("<rig1>")` yields `"main.rig1:"`
+     * and `List()` yields `"main:"`
      */
     def qualifier: String =
-      (p map { "main." + AgentName(_).withoutBrackets + ":" }) mkString
+      if (p.isEmpty)
+        "main:"
+      else
+        (p map { "main." + AgentName(_).withoutBrackets + ":" }) mkString
 
     def displayString: String =
       if (p.isEmpty) "Top level"

@@ -26,7 +26,11 @@ class PreambleSuite extends FunSuite with ShouldMatchers {
 
   test("AgentOrPortID.hasPos") {
     "<delay1>".hasPos(List()) should equal(true)
+    "<main:delay1>".hasPos(List()) should equal(true)
+    
     "<delay1>".hasPos(List("<rig1>")) should equal(false)
+    "<main:delay1>".hasPos(List("<rig1>")) should equal(false)
+
     "<main.rig1:delay1>".hasPos(List()) should equal(false)
     "<main.rig1:delay1>".hasPos(List("<rig1>")) should equal(true)
 
@@ -58,9 +62,18 @@ class PreambleSuite extends FunSuite with ShouldMatchers {
   }
 
   test("AgentName.qualified") {
-    "<summer1>".qualified(List()) should equal("<summer1>")
+    "<summer1>".qualified(List()) should equal("<main:summer1>")
     "<summer1>".qualified(List("<rig1>")) should equal("<main.rig1:summer1>")
     "<summer1>".qualified(List("<rig1>", "<rig2>")) should equal("<main.rig1:main.rig2:summer1>")
+  }
+
+  test("AgentName.defaultQualifier") {
+    "<summer1>".defaultQualifier(List()) should equal("<main:summer1>")
+    "<summer1>".defaultQualifier(List("<rig1>")) should equal("<main.rig1:summer1>")
+    "<summer1>".defaultQualifier(List("<rig1>", "<rig2>")) should equal("<main.rig1:main.rig2:summer1>")
+
+    "<main.rig1:summer1>".defaultQualifier(List()) should equal("<main.rig1:summer1>")
+    "<main:summer1>".defaultQualifier(List("<rig1>")) should equal("<main:summer1>")
   }
 
   test("AgentName.unqualified") {
@@ -141,7 +154,7 @@ class PreambleSuite extends FunSuite with ShouldMatchers {
   }
 
   test("Pos.qualifier") {
-    List().qualifier should equal("")
+    List().qualifier should equal("main:")
     List("<rig1>").qualifier should equal("main.rig1:")
     List("<rig1>", "<rig2>").qualifier should equal("main.rig1:main.rig2:")
   }

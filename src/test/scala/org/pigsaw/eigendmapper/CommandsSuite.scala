@@ -195,7 +195,7 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
           |2.3 {cname:two three,master:conn(None,None,'<ag1>#1.3',None,ctl)}
           |2.4 {master:conn(None,None,'<ag1>#1.4',None,ctl)}""".stripMargin
         override def text: Stream[String] =
-          (if (agent == "<ag1>") ag1Text else ag2Text).lines.toStream
+          (if (agent == "<main:ag1>") ag1Text else ag2Text).lines.toStream
       }
     }
 
@@ -203,24 +203,24 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
 
     val setup = command.action(List())(Setup(), catcher.println)
     
-    setup.conns.size should equal (5)
+    setup.connsQualified.size should equal (5)
     
-    setup.ports should contain ("<ag1> one one")
-    setup.ports should contain ("<ag1>#1.2")
-    setup.ports should contain ("<ag1>#1.3")
-    setup.ports should contain ("<ag1>#1.4")
-    setup.ports should contain ("<ag1>#1.22")
+    setup.portsQualified should contain ("<main:ag1> one one")
+    setup.portsQualified should contain ("<main:ag1>#1.2")
+    setup.portsQualified should contain ("<main:ag1>#1.3")
+    setup.portsQualified should contain ("<main:ag1>#1.4")
+    setup.portsQualified should contain ("<main:ag1>#1.22")
     
-    setup.ports should contain ("<ag2>#2.1")
-    setup.ports should contain ("<ag2> two two")
-    setup.ports should contain ("<ag2> two three")
-    setup.ports should contain ("<ag2>#2.4")
+    setup.portsQualified should contain ("<main:ag2>#2.1")
+    setup.portsQualified should contain ("<main:ag2> two two")
+    setup.portsQualified should contain ("<main:ag2> two three")
+    setup.portsQualified should contain ("<main:ag2>#2.4")
     
-    setup.conns should contain (Connection("<ag1> one one", "<ag2>#2.1"))
-    setup.conns should contain (Connection("<ag1>#1.2", "<ag2> two two"))
-    setup.conns should contain (Connection("<ag1>#1.3", "<ag2> two three"))
-    setup.conns should contain (Connection("<ag1>#1.4", "<ag2>#2.4"))
-    setup.conns should contain (Connection("<ag2> two two", "<ag1>#1.22"))
+    setup.connsQualified should contain (Connection("<main:ag1> one one", "<main:ag2>#2.1"))
+    setup.connsQualified should contain (Connection("<main:ag1>#1.2", "<main:ag2> two two"))
+    setup.connsQualified should contain (Connection("<main:ag1>#1.3", "<main:ag2> two three"))
+    setup.connsQualified should contain (Connection("<main:ag1>#1.4", "<main:ag2>#2.4"))
+    setup.connsQualified should contain (Connection("<main:ag2> two two", "<main:ag1>#1.22"))
   }
 
   test("Into - Can go into an empty rig") {

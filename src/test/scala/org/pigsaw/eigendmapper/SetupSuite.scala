@@ -102,7 +102,7 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     conns2 should contain("<b>" -> b2)
   }
 
-  test("Unify - Add a slave name, expect a slave updated automatically") {
+  test("Best names - Add a slave name, expect a slave updated automatically") {
     val port_a_unnamed = "<a>#1.1"
     val port_b_named = "<b> b12"
     val port_b_unnamed = "<b>#1.2"
@@ -120,15 +120,15 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     val conn_cubn = Connection(port_c_unnamed, port_b_named) // We'll add this
     val conn_aubn = Connection(port_a_unnamed, port_b_named) // This should get created
 
-    val connSet2 = Setup(connSet1 + conn_cubn).withPortNames("<b>", portMap_for_b).conns
+    val connSet2 = Setup(connSet1 + conn_cubn).withPortNames("<b>", portMap_for_b).connsQualified
 
     connSet2.size should equal(2)
-    connSet2 should contain(conn_cubn)
-    connSet2 should not contain (conn_aubu)
-    connSet2 should contain(conn_aubn)
+    connSet2 should contain(conn_cubn.defaultQualifier(List()))
+    connSet2 should not contain (conn_aubu.defaultQualifier(List()))
+    connSet2 should contain(conn_aubn.defaultQualifier(List()))
   }
 
-  test("Unify - Add a slave name, expect a master updated automatically") {
+  test("Best names - Add a slave name, expect a master updated automatically") {
     val port_a_unnamed = "<a>#1.1"
     val port_b_named = "<b> b12"
     val port_b_unnamed = "<b>#1.2"
@@ -146,15 +146,15 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     val conn_cubn = Connection(port_c_unnamed, port_b_named) // We'll add this
     val conn_bnau = Connection(port_b_named, port_a_unnamed) // This should get created
 
-    val connSet2 = Setup(connSet1 + conn_cubn).withPortNames("<b>", portMap_for_b).conns
+    val connSet2 = Setup(connSet1 + conn_cubn).withPortNames("<b>", portMap_for_b).connsQualified
 
     connSet2.size should equal(2)
-    connSet2 should contain(conn_cubn)
-    connSet2 should not contain (conn_buau)
-    connSet2 should contain(conn_bnau)
+    connSet2 should contain(conn_cubn.defaultQualifier(List()))
+    connSet2 should not contain (conn_buau.defaultQualifier(List()))
+    connSet2 should contain(conn_bnau.defaultQualifier(List()))
   }
 
-  test("Unify - Add a master name, expect a slave updated automatically") {
+  test("Best names - Add a master name, expect a slave updated automatically") {
     val port_a_unnamed = "<a>#1.1"
     val port_b_named = "<b> b12"
     val port_b_unnamed = "<b>#1.2"
@@ -172,12 +172,12 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     val conn_bncu = Connection(port_b_named, port_c_unnamed) // We'll add this
     val conn_aubn = Connection(port_a_unnamed, port_b_named) // This should get created
 
-    val connSet2 = Setup(connSet1 + conn_bncu).withPortNames("<b>", portMap_for_b).conns
+    val connSet2 = Setup(connSet1 + conn_bncu).withPortNames("<b>", portMap_for_b).connsQualified
 
     connSet2.size should equal(2)
-    connSet2 should contain(conn_bncu)
-    connSet2 should not contain (conn_aubu)
-    connSet2 should contain(conn_aubn)
+    connSet2 should contain(conn_bncu.defaultQualifier(List()))
+    connSet2 should not contain (conn_aubu.defaultQualifier(List()))
+    connSet2 should contain(conn_aubn.defaultQualifier(List()))
   }
 
   test("Unify - Add a master name, expect a master updated automatically") {
@@ -198,12 +198,12 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     val conn_bncu = Connection(port_b_named, port_c_unnamed) // We'll add this
     val conn_bnau = Connection(port_b_named, port_a_unnamed) // This should get created
 
-    val connSet2 = Setup(connSet1 + conn_bncu).withPortNames("<b>", portMap_for_b).conns
+    val connSet2 = Setup(connSet1 + conn_bncu).withPortNames("<b>", portMap_for_b).connsQualified
 
     connSet2.size should equal(2)
-    connSet2 should contain(conn_bncu)
-    connSet2 should not contain (conn_buau)
-    connSet2 should contain(conn_bnau)
+    connSet2 should contain(conn_bncu.defaultQualifier(List()))
+    connSet2 should not contain (conn_buau.defaultQualifier(List()))
+    connSet2 should contain(conn_bnau.defaultQualifier(List()))
   }
 
   test("Unqualified port IDs automatically (cut the 'main:' in <main:agentname3>)") {
@@ -308,12 +308,12 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     val conn_bncu = Connection(port_b_named, port_c_unnamed) // We'll add this
     val conn_bnau = Connection(port_b_named, port_a_unnamed) // This should get created
 
-    val conns = Setup(Set(conn_buau, conn_bncu)).withPortNames("<b>", portMap_for_b).conns
+    val conns = Setup(Set(conn_buau, conn_bncu)).withPortNames("<b>", portMap_for_b).connsQualified
 
     conns.size should equal(2)
-    conns should contain(conn_bncu)
-    conns should not contain (conn_buau)
-    conns should contain(conn_bnau)
+    conns should contain(conn_bncu.defaultQualifier(List()))
+    conns should not contain (conn_buau.defaultQualifier(List()))
+    conns should contain(conn_bnau.defaultQualifier(List()))
   }
 
   test("Rigs - Detects rig names") {

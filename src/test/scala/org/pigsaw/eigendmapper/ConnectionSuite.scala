@@ -29,6 +29,19 @@ class ConnectionSuite extends FunSuite with ShouldMatchers {
     assert(a_b.unqualified eq a_b)
   }
   
+  test("Default qualifier") {
+    val conn1Unqual = Connection("<a>#3.2", "<b>#4.5")
+    val conn1Qual = Connection("<main:a>#3.2", "<main:b>#4.5")
+    conn1Unqual.defaultQualifier(List()) should equal (conn1Qual)
+    
+    val conn2Qual = Connection("<main.rig1:a>#3.2", "<main.rig1:b>#4.5")
+    conn2Qual.defaultQualifier(List()) should equal (conn2Qual)
+    
+    val conn3SemiQual = Connection("<a>#3.2", "<main.rig1:b>#4.5")
+    val conn3Qual = Connection("<main:a>#3.2", "<main.rig1:b>#4.5")
+    conn3SemiQual.defaultQualifier(List()) should equal (conn3Qual)
+  }
+  
   test("Agents") {
     val a = "<a>#1.1"
     val b = "<b>#1.2"

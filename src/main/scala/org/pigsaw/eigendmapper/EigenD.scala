@@ -45,7 +45,7 @@ class BLs(index: String) {
  */
 class BCat(val agent: String) {
   type Dict = Map[String, List[String]]
-
+  
   /**
    * The text output of the bcat command, line by line.
    */
@@ -79,7 +79,6 @@ class BCat(val agent: String) {
       case Some(name) => Some(name.mkString)
       case None => dict.get("cname") map { _.mkString }
     }
-    //dict.getOrElse("name", dict.get("cname")) map { _.mkString }
     
   /**
    * The set of all master/slave connections that involve this agent
