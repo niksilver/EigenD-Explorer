@@ -141,6 +141,8 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
 
     val connsRigV2 = Connection("<main.rig1:too> two out2", "<main.rig1:mid> mid input2")
 
+    val connsRigV2Unqual = Connection("<too> two out2", "<mid> mid input2")
+
     val command = new SnapshotCommand {
       override def bls(index: String): BLs = new BLs(index) {
         override def agents: List[String] = List("<rig1>")
@@ -158,7 +160,7 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
     setupTop2.rigs should equal(Set("<rig1>"))
     setupTop2.pos should equal(List("<rig1>"))
 
-    setupTop2.conns(List("<rig1>")) should equal(Set(connsRigV2))
+    setupTop2.conns(List("<rig1>")) should equal(Set(connsRigV2Unqual))
   }
 
   test("Snapshot - Captures port cnames") {
