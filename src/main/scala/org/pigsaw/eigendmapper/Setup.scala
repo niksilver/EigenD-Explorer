@@ -44,16 +44,6 @@ class Setup private(private val portNames0: Map[String, Map[String, String]],
    */
   lazy val conns: Set[Connection] = conns(List())
 
-  // NOT DONE!
-//  lazy val rigSetupsXX: Map[String, Setup] = {
-//    rigs map { name =>
-//      rigSetups0.get(name) match {
-//        case Some(setup) => (name -> setup)
-//        case None => (name -> Setup())
-//      }
-//    } toMap
-//  }
-
   /**
    * A setup with no internal rig setups
    */
@@ -131,25 +121,6 @@ class Setup private(private val portNames0: Map[String, Map[String, String]],
     }
 
   /**
-   * Get the setup in the hierarchy given by the given position.
-   */
-  // NOT DONE
-//  def setupForPosXX(pos: List[String]): Option[Setup] = pos match {
-//    case Nil => Some(this)
-//    case rig :: tail => rigSetups.get(rig) match {
-//      case None => None
-//      case Some(s) => s.setupForPos(tail)
-//    }
-//  }
-
-  /**
-   * Create a setup just like this, but with a rig setup inside.
-   */
-  // NOT DONE!!
-//  def withRigXX(rig: String, setup: Setup): Setup =
-//    new Setup(portNames, conns, rigSetups + (rig -> setup), pos)
-
-  /**
    * Create a setup just like this, but the with the agent/nodeID/port name
    * map replaced at some point in the rig hierarchy
    * @param pos2  The position of the rig to replace
@@ -180,33 +151,6 @@ class Setup private(private val portNames0: Map[String, Map[String, String]],
    */
   def withPortNames(agent: String, map: Map[String, String]): Setup =
     withPortNames(List(), agent, map)
-
-  /**
-   *  Get a setup with a given pos. Throw an exception
-   *  if a bad post is given
-   */
-  // NOT DONE
-//  private def getSetupXX(p: List[String], s: Setup): Setup = p match {
-//    case Nil => s
-//    case p1 :: tail => getSetup(tail, s.rigSetups(p1))
-//  }
-
-  /**
-   *  Replace a rig in the hierarchy of rig maps
-   *  @param p  Pos of setup to be replaced
-   *  @param newSetup  The new setup
-   *  @param s  Current setup
-   */
-  // NOT DONE
-//  private def replaceInRigsMapsXX(p: List[String], newSetup: Setup, s: Setup): Setup = p match {
-//    case Nil => newSetup
-//    case p1 :: tail => {
-//      val nextSetup = s.rigSetups(p1)
-//      val updatedSetup = replaceInRigsMaps(tail, newSetup, nextSetup)
-//      val updatedMap = s.rigSetups.updated(p1, updatedSetup)
-//      new Setup(s.portNames, s.conns, updatedMap, s.pos)
-//    }
-//  }
 
   /**
    * Create a setup just like this, but the connections replaced at some

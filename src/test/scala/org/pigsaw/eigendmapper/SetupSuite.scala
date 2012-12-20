@@ -102,25 +102,6 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     conns2 should contain("<b>" -> b2)
   }
 
-  /*test("Agent-port connections - with unparseable agent name") {
-    val a1 = DeprecatedPort("<a>#1.1", None)
-    val a2 = DeprecatedPort("a#1.2", Some("b12"))
-    val b1 = DeprecatedPort("b#1.1", None)
-    val b2 = DeprecatedPort("b#1.2", None)
-
-    val setup = new Setup(Set(
-      Connection(a1, b1),
-      Connection(a2, b2)))
-
-    val conns2 = setup.agentPortConnections
-
-    conns2.size should equal(4)
-    conns2 should contain("<a>" -> a1)
-    conns2 should contain("UNKNOWN" -> a2)
-    conns2 should contain("UNKNOWN" -> b1)
-    conns2 should contain("UNKNOWN" -> b2)
-  }*/
-
   test("Unify - Add a slave name, expect a slave updated automatically") {
     val port_a_unnamed = "<a>#1.1"
     val port_b_named = "<b> b12"
