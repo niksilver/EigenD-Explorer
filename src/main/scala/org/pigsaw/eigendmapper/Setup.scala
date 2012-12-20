@@ -117,18 +117,7 @@ class Setup private(private val portNames0: Map[String, Map[String, String]],
   /**
    * The rigs in this setup at the top level. E.g. `"<rig2>"`.
    */
-  def rigs: Set[String] =
-    conns0 flatMap { c =>
-      val masterPos = c.master.pos
-      val slavePos = c.slave.pos
-      val masterAgent = c.master.agent
-      val slaveAgent = c.slave.agent
-      Set() ++
-        (if (masterPos.length == 1) Set(masterPos.head) else Set()) ++
-        (if (slavePos.length == 1)  Set(slavePos.head) else Set()) ++
-        (if (masterPos.length == 0 && masterAgent.isRig) Set(masterAgent.unqualified) else Set()) ++
-        (if (slavePos.length == 0 && slaveAgent.isRig) Set(slaveAgent.unqualified) else Set())
-      }
+  def rigs: Set[String] = rigs(List())
 
   /**
    * The rigs in this setup at the given pos.
