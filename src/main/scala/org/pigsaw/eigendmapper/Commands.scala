@@ -81,8 +81,8 @@ class ShowCommand extends Command {
       conn <- conns
       val master = conn.master
       val slave = conn.slave
-      if (master.agent == agent || slave.agent == agent)
-      val link = if (master.agent == agent)
+      if (master.agent.unqualified == agent || slave.agent.unqualified == agent)
+      val link = if (master.agent.unqualified == agent)
         ("", master.nodeLabel, slave)
       else
         (master, slave.nodeLabel, "")

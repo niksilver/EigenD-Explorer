@@ -38,7 +38,7 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
 
   test("Show - Handles being in a rig") {
     val connTop = Connection("<rig1> one", "<fff> five")
-    val connRig = Connection("<main,rig1:aaa> ayes", "<main,rig1:bbb> bees")
+    val connRig = Connection("<main.rig1:aaa> ayes", "<main.rig1:bbb> bees")
     
     val setupTop = Setup(Set(connTop, connRig)).withPosUpdated(List("<rig1>"))
 
