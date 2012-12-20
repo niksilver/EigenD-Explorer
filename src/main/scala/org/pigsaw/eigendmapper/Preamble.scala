@@ -1,5 +1,7 @@
 package org.pigsaw.eigendmapper
 
+import java.util.regex.Pattern
+
 object Preamble {
 
   /**
@@ -74,6 +76,11 @@ object Preamble {
       val strip1 = name.dropWhile(_ == '<')
       if (strip1.endsWith(">")) strip1.init else strip1
     }
+    
+    /**
+     * True if this agent is a rig
+     */
+    def isRig: Boolean = Pattern.matches("<rig\\d+>", name.unqualified)
   }
 
   implicit def String2AgentName(s: String): AgentName = new AgentName(s)

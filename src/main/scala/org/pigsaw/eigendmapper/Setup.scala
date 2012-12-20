@@ -10,34 +10,49 @@ import Preamble._
  *     to a map from each node ID to its cname (if any).
  *     The we can map from `<cycler1>` to `3.4` to `beat input`.
  * @param conns0  The set of connections in this setup.
- * @param rigSetups0  The rigs setups inside this one.
- *     Each one is mapped from its name, such as &lt;rig2&gt;.
  * @param pos  The position in the rig hierarchy in which we're currently
  *     interested. An empty list means the top level; List("&lt;rig3&gt")
  *     means rig3 within the top level, and so on.
  */
-class Setup private(val portNames: Map[String, Map[String, String]],
-    conns0: Set[Connection],
+class Setup private(private val portNames0: Map[String, Map[String, String]],
+    private val conns0: Set[Connection],
     rigSetups0: Map[String, Setup],
     val pos: List[String]) {
-
   
   /**
-   * The connection in this setup, with agent names
+   * The port names at a given position,
+   * including their qualifiers
+   */
+  def portNames(p: List[String]): Map[String, Map[String, String]] =
+    portNames0 filter { _._1 hasPos p }
+  
+  /**
+   * The port names at the top level
+   */
+  def portNames: Map[String, Map[String, String]] = portNames(List())
+
+  /**
+   * The connections at a given pos, including their qualifiers.
+   */
+  def conns(p: List[String]): Set[Connection] =
+    bestNames(unqualified(conns0)) filter { _ hasPos p }
+  
+  /**
+   * The connections in this setup, with agent names
    * which are not qualified, and using the best names
    * for ports
    */
-  lazy val conns: Set[Connection] =
-    bestNames(unqualified(conns0)) filter { _.hasPos(List())}
+  lazy val conns: Set[Connection] = conns(List())
 
-  lazy val rigSetups: Map[String, Setup] = {
-    rigs map { name =>
-      rigSetups0.get(name) match {
-        case Some(setup) => (name -> setup)
-        case None => (name -> Setup())
-      }
-    } toMap
-  }
+  // NOT DONE!
+//  lazy val rigSetupsXX: Map[String, Setup] = {
+//    rigs map { name =>
+//      rigSetups0.get(name) match {
+//        case Some(setup) => (name -> setup)
+//        case None => (name -> Setup())
+//      }
+//    } toMap
+//  }
 
   /**
    * A setup with no internal rig setups
@@ -45,11 +60,16 @@ class Setup private(val portNames: Map[String, Map[String, String]],
   def this(conns: Set[Connection]) = this(Map(), conns, Map(), List())
 
   /**
-   * Get all the agent names mentioned in the set of connections,
+   * Get all the agents at a particular position.
+   */
+  def agents(p: List[String]): Set[String] =
+    conns(p) flatMap { _.agents }
+  
+  /**
+   * Get all the agent mentioned in the top level set of connections,
    * including the angle brackets.
    */
-  lazy val agents: Set[String] =
-    conns flatMap { _.agents }
+  lazy val agents: Set[String] = agents(List())
 
   /**
    * Get all the ports named in the connections.
@@ -95,7 +115,7 @@ class Setup private(val portNames: Map[String, Map[String, String]],
     c map { _.unqualified }
 
   /**
-   * The rigs in this setup. E.g. <code>"&lt;rig2;&gt"</code>.
+   * The rigs in this setup. E.g. `"<rig2>"`.
    */
   def rigs: Set[String] =
     agents filter { Pattern.matches("<rig\\d+>", _) }
@@ -103,19 +123,21 @@ class Setup private(val portNames: Map[String, Map[String, String]],
   /**
    * Get the setup in the hierarchy given by the given position.
    */
-  def setupForPos(pos: List[String]): Option[Setup] = pos match {
-    case Nil => Some(this)
-    case rig :: tail => rigSetups.get(rig) match {
-      case None => None
-      case Some(s) => s.setupForPos(tail)
-    }
-  }
+  // NOT DONE
+//  def setupForPosXX(pos: List[String]): Option[Setup] = pos match {
+//    case Nil => Some(this)
+//    case rig :: tail => rigSetups.get(rig) match {
+//      case None => None
+//      case Some(s) => s.setupForPos(tail)
+//    }
+//  }
 
   /**
    * Create a setup just like this, but with a rig setup inside.
    */
-  def withRig(rig: String, setup: Setup): Setup =
-    new Setup(portNames, conns, rigSetups + (rig -> setup), pos)
+  // NOT DONE!!
+//  def withRigXX(rig: String, setup: Setup): Setup =
+//    new Setup(portNames, conns, rigSetups + (rig -> setup), pos)
 
   /**
    * Create a setup just like this, but the with the agent/nodeID/port name
@@ -124,9 +146,8 @@ class Setup private(val portNames: Map[String, Map[String, String]],
    * @param portNames2  The new mapping
    */
   def withPortNamesReplaced(pos2: List[String], portNames2: Map[String, Map[String, String]]): Setup = {
-    val oldSetup = getSetup(pos2, this)
-    val newSetup = new Setup(portNames2, oldSetup.conns, oldSetup.rigSetups, oldSetup.pos)
-    replaceInRigsMaps(pos2, newSetup, this)
+    val portNamesCleaned = portNames0 filterNot { _._1.hasPos(pos2) }
+    new Setup(portNamesCleaned ++ portNames2, this.conns0, Map(), this.pos)
   }
 
   /**
@@ -137,9 +158,7 @@ class Setup private(val portNames: Map[String, Map[String, String]],
    * @param map  The map from node IDs to port names for the agent
    */
   def withPortNames(pos2: List[String], agent: String, map: Map[String, String]): Setup = {
-    val oldSetup = getSetup(pos2, this)
-    val newPortNames = oldSetup.portNames ++ Map(agent -> map)
-    withPortNamesReplaced(pos2, newPortNames)
+    new Setup(portNames0 ++ Map(agent.qualified(pos2) -> map), this.conns0, Map(), this.pos)
   }
 
   /**
@@ -150,16 +169,17 @@ class Setup private(val portNames: Map[String, Map[String, String]],
    *     to its port name (e.g. `"beat bar input"`).
    */
   def withPortNames(agent: String, map: Map[String, String]): Setup =
-    new Setup(portNames ++ Map(agent -> map), conns, rigSetups, pos)
+    withPortNames(List(), agent, map)
 
   /**
    *  Get a setup with a given pos. Throw an exception
    *  if a bad post is given
    */
-  private def getSetup(p: List[String], s: Setup): Setup = p match {
-    case Nil => s
-    case p1 :: tail => getSetup(tail, s.rigSetups(p1))
-  }
+  // NOT DONE
+//  private def getSetupXX(p: List[String], s: Setup): Setup = p match {
+//    case Nil => s
+//    case p1 :: tail => getSetup(tail, s.rigSetups(p1))
+//  }
 
   /**
    *  Replace a rig in the hierarchy of rig maps
@@ -167,15 +187,16 @@ class Setup private(val portNames: Map[String, Map[String, String]],
    *  @param newSetup  The new setup
    *  @param s  Current setup
    */
-  private def replaceInRigsMaps(p: List[String], newSetup: Setup, s: Setup): Setup = p match {
-    case Nil => newSetup
-    case p1 :: tail => {
-      val nextSetup = s.rigSetups(p1)
-      val updatedSetup = replaceInRigsMaps(tail, newSetup, nextSetup)
-      val updatedMap = s.rigSetups.updated(p1, updatedSetup)
-      new Setup(s.portNames, s.conns, updatedMap, s.pos)
-    }
-  }
+  // NOT DONE
+//  private def replaceInRigsMapsXX(p: List[String], newSetup: Setup, s: Setup): Setup = p match {
+//    case Nil => newSetup
+//    case p1 :: tail => {
+//      val nextSetup = s.rigSetups(p1)
+//      val updatedSetup = replaceInRigsMaps(tail, newSetup, nextSetup)
+//      val updatedMap = s.rigSetups.updated(p1, updatedSetup)
+//      new Setup(s.portNames, s.conns, updatedMap, s.pos)
+//    }
+//  }
 
   /**
    * Create a setup just like this, but the connections replaced at some
@@ -184,21 +205,19 @@ class Setup private(val portNames: Map[String, Map[String, String]],
    * @param conns2  The new connections.
    */
   def withConnsReplaced(pos2: List[String], conns2: Set[Connection]): Setup = {
-    val oldSetup = getSetup(pos2, this)
-    val newSetup = new Setup(oldSetup.portNames, conns2, oldSetup.rigSetups, oldSetup.pos)
-    replaceInRigsMaps(pos2, newSetup, this)
+    val connsCleaned = conns0 filterNot { _.hasPos(pos2) }
+    new Setup(portNames0, connsCleaned ++ conns2, Map(), pos)
   }
 
   /**
    * Create a setup just like this, but with additional connections at some
    * point in the rig hierarchy
+   * NB: Currently not clear if the conns2 are qualified.
    * @param pos2  The position of the rig to replace
    * @param conns2  The extra connections.
    */
   def withConns(pos2: List[String], conns2: Set[Connection]): Setup = {
-    val oldSetup = getSetup(pos2, this)
-    val newConns = oldSetup.conns ++ conns2
-    withConnsReplaced(pos2, newConns)
+    new Setup(portNames0, conns0 ++ conns2, Map(), pos)
   }
   
   /**
@@ -212,22 +231,21 @@ class Setup private(val portNames: Map[String, Map[String, String]],
    * Create a new setup just like this, but with the pos updated.
    */
   def withPosUpdated(posNow: List[String]) =
-    new Setup(portNames, conns, rigSetups, posNow)
+    new Setup(portNames0, conns0, Map(), posNow)
 
   def canEqual(other: Any): Boolean = (other.isInstanceOf[Setup])
 
   override def equals(other: Any): Boolean =
     other match {
       case that: Setup => (that canEqual this) &&
-        this.portNames == that.portNames &&
-        this.conns == that.conns &&
-        this.rigSetups == that.rigSetups &&
+        this.portNames0 == that.portNames0 &&
+        this.conns0 == that.conns0 &&
         this.pos == that.pos
       case _ => false
     }
 
   override def hashCode: Int =
-    41 * (41 + conns.hashCode) + rigSetups.hashCode
+    41 * (41 * (41 + portNames0.hashCode) + conns0.hashCode) + pos.hashCode
 
 }
 

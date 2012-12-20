@@ -38,10 +38,9 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
 
   test("Show - Handles being in a rig") {
     val connTop = Connection("<rig1> one", "<fff> five")
-    val connRig = Connection("<aaa> ayes", "<bbb> bees")
+    val connRig = Connection("<main,rig1:aaa> ayes", "<main,rig1:bbb> bees")
     
-    val setupRig = Setup(Set(connRig))
-    val setupTop = Setup(Set(connTop)).withRig("<rig1>", setupRig).withPosUpdated(List("<rig1>"))
+    val setupTop = Setup(Set(connTop, connRig)).withPosUpdated(List("<rig1>"))
 
     val catcher = new PrintCatcher
 
@@ -122,14 +121,12 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
       }
     }
 
-    val connsRig = Connection("<too> two out", "<mid> mid input")
-    val setupRig = Setup(Set(connsRig))
-
     val connsTop = Connection("<rig1> three", "<fff> five")
+    val connsRig = Connection("<main.rig1:too> two out", "<main.rig1:mid> mid input")
 
     val catcher = new PrintCatcher
 
-    val setup = Setup(Set(connsTop)).withRig("<rig1>", setupRig).withPosUpdated(List("<rig1>"))
+    val setup = Setup(Set(connsTop, connsRig)).withPosUpdated(List("<rig1>"))
     val setupV2 = command.action(List())(setup, catcher.println)
 
     command.capturedIndex should equal("<main.rig1:main>")
@@ -138,12 +135,11 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
 
   test("Snapshot - Preserves other setup data") {
     val connsTop = Connection("<rig1> one out", "<top> top input")
-    val connsRig = Connection("<too> two out", "<mid> mid input")
+    val connsRig = Connection("<main.rig1:too> two out", "<main.rig1:mid> mid input")
 
-    val setupRig = Setup(Set(connsRig))
-    val setupTop = Setup(Set(connsTop)).withRig("<rig1>", setupRig).withPosUpdated(List("<rig1>"))
+    val setupTop = Setup(Set(connsTop, connsRig)).withPosUpdated(List("<rig1>"))
 
-    val connsRigV2 = Connection("<too> two out2", "<mid> mid input2")
+    val connsRigV2 = Connection("<main.rig1:too> two out2", "<main.rig1:mid> mid input2")
 
     val command = new SnapshotCommand {
       override def bls(index: String): BLs = new BLs(index) {
@@ -159,12 +155,10 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
     val setupTop2 = command.action(List())(setupTop, catcher.println)
 
     setupTop2.conns should equal(Set(connsTop))
-    setupTop2.rigSetups.keySet should equal(Set("<rig1>"))
+    setupTop2.rigs should equal(Set("<rig1>"))
     setupTop2.pos should equal(List("<rig1>"))
 
-    setupTop2.rigSetups("<rig1>").conns should equal(Set(connsRigV2))
-    setupTop2.rigSetups("<rig1>").rigSetups.keys should equal(Set())
-    setupTop2.rigSetups("<rig1>").pos should equal(List())
+    setupTop2.conns(List("<rig1>")) should equal(Set(connsRigV2))
   }
 
   test("Snapshot - Captures port cnames") {
@@ -229,12 +223,10 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
 
   test("Into - Can go into an empty rig") {
     val connsTop = Connection("<rig1> one out", "<top> top input")
-    val connsMid = Connection("<rig2> two out", "<mid> mid input")
-    val connsBottom = Connection("<rig3> three out", "<bottom> bottom input")
+    val connsMid = Connection("<main.rig1:rig2> two out", "<main.rig1:mid> mid input")
+    val connsBottom = Connection("<main.rig1:main.rig2:rig3> three out", "<main.rig1:main.rig2:bottom> bottom input")
 
-    val setupBottom = new Setup(Set(connsBottom))
-    val setupMid = Setup(Set(connsMid)).withRig("<rig2>", setupBottom)
-    val setupTop = Setup(Set(connsTop)).withRig("<rig1>", setupMid).withPosUpdated(List("<rig1>", "<rig2>"))
+    val setupTop = Setup(Set(connsTop, connsMid, connsBottom)).withPosUpdated(List("<rig1>", "<rig2>"))
 
     val command = new IntoCommand
     val catcher = new PrintCatcher
@@ -246,12 +238,10 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
 
   test("Into - Can go into an already-present rig") {
     val connsTop = Connection("<rig1> one out", "<top> top input")
-    val connsMid = Connection("<rig2> two out", "<mid> mid input")
-    val connsBottom = Connection("<free> three out", "<bottom> bottom input")
+    val connsMid = Connection("<main.rig1:rig2> two out", "<main.rig1:mid> mid input")
+    val connsBottom = Connection("<main.rig1:main.rig2:free> three out", "<main.rig1:main.rig2:bottom> bottom input")
 
-    val setupBottom = new Setup(Set(connsBottom))
-    val setupMid = Setup(Set(connsMid)).withRig("<rig2>", setupBottom)
-    val setupTop = Setup(Set(connsTop)).withRig("<rig1>", setupMid).withPosUpdated(List("<rig1>"))
+    val setupTop = Setup(Set(connsTop, connsMid, connsBottom)).withPosUpdated(List("<rig1>"))
 
     val command = new IntoCommand
     val catcher = new PrintCatcher
@@ -263,12 +253,10 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
 
   test("Into - Can't go into a non-existent rig") {
     val connsTop = Connection("<rig1> one out", "<top> top input")
-    val connsMid = Connection("<rig2> two out", "<mid> mid input")
-    val connsBottom = Connection("<free> three out", "<bottom> bottom input")
+    val connsMid = Connection("<main.rig1:rig2> two out", "<main.rig1:mid> mid input")
+    val connsBottom = Connection("<main.rig1:main.rig2:free> three out", "<main.rig1:main.rig2:bottom> bottom input")
 
-    val setupBottom = new Setup(Set(connsBottom))
-    val setupMid = Setup(Set(connsMid)).withRig("<rig2>", setupBottom)
-    val setupTop = Setup(Set(connsTop)).withRig("<rig1>", setupMid).withPosUpdated(List("<rig1>"))
+    val setupTop = Setup(Set(connsTop, connsMid, connsBottom)).withPosUpdated(List("<rig1>"))
 
     val command = new IntoCommand
     val catcher = new PrintCatcher
@@ -281,12 +269,10 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
 
   test("Into - Can't go into non-existent rig at top level ") {
     val connsTop = Connection("<rig1> one out", "<top> top input")
-    val connsMid = Connection("<rig2> two out", "<mid> mid input")
-    val connsBottom = Connection("<free> three out", "<bottom> bottom input")
+    val connsMid = Connection("<main.rig1:rig2> two out", "<main.rig1:mid> mid input")
+    val connsBottom = Connection("<main.rig1:main.rig2:free> three out", "<main.rig1:main.rig2:bottom> bottom input")
 
-    val setupBottom = new Setup(Set(connsBottom))
-    val setupMid = Setup(Set(connsMid)).withRig("<rig2>", setupBottom)
-    val setupTop = Setup(Set(connsTop)).withRig("<rig1>", setupMid)
+    val setupTop = Setup(Set(connsTop, connsMid, connsBottom))
 
     val command = new IntoCommand
     val catcher = new PrintCatcher

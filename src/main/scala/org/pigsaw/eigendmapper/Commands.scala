@@ -73,15 +73,12 @@ class ShowCommand extends Command {
   }
 
   def doShow(agent: String, setup: Setup, prln: PrintlnFn) {
-    setup.setupForPos(setup.pos) match {
-      case Some(s) => showLinks(agent, s, prln)
-      case None    => prln("Could not find setup " + setup.pos.displayString)
-    }
+    showLinks(agent, setup.conns(setup.pos), prln)
   }
     
-  private def showLinks(agent: String, setup: Setup, prln: PrintlnFn) {
+  private def showLinks(agent: String, conns: Set[Connection], prln: PrintlnFn) {
     val links: Set[(String, String, String)] = for {
-      conn <- setup.conns
+      conn <- conns
       val master = conn.master
       val slave = conn.slave
       if (master.agent == agent || slave.agent == agent)
@@ -220,11 +217,10 @@ class IntoCommand extends Command {
 
   def doInto(rig: String, setup: Setup, prln: PrintlnFn): Setup = {
     val targetPos = setup.pos :+ rig
-    val optSetup = setup.setupForPos(targetPos)
-    optSetup match {
-      case None    => prln("No such rig: " + rig); setup
-      case Some(_) => setup.withPosUpdated(targetPos)
-    }
+    if (setup.agents(setup.pos) contains rig)
+      setup.withPosUpdated(targetPos)
+    else
+      { prln("No such rig: " + rig); setup }
   }
 
 }
