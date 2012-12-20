@@ -9,6 +9,25 @@ import org.pigsaw.eigendmapper.Graphable._
 
 @RunWith(classOf[JUnitRunner])
 class SetupSuite extends FunSuite with ShouldMatchers {
+  
+  test("conns - Just gets top level if at top level") {
+    val connTop = Connection("<rig1>#1.1", "<ag1>#1.1")
+    val connRig = Connection("<main.rig1:ag22>#2.2", "<main.rig1:ag23>#2.3")
+    
+    val setup = Setup(Set(connTop, connRig))
+    
+    setup.conns should equal (Set(connTop))
+  }
+  
+  test("conns - Just gets lower level unqualified at lower pos") {
+    val connTop = Connection("<rig1>#1.1", "<ag1>#1.1")
+    val connRig = Connection("<main.rig1:ag22>#2.2", "<main.rig1:ag23>#2.3")
+    val connRigUnqual = Connection("<ag22>#2.2", "<ag23>#2.3")
+    
+    val setup = Setup(Set(connTop, connRig))
+    
+    setup.conns(List("<rig1>")) should equal (Set(connRigUnqual))
+  }
 
   test("Agents") {
     val a = "<a>#1.1"
@@ -366,10 +385,13 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     val connsTop = Connection("<rig1> one out", "<top> top input")
     val connsMid = Connection("<main.rig1:rig2> two out", "<main.rig1:mid> mid input")
     val connsBottom = Connection("<main.rig1:main.rig2:lower> three out", "<main.rig1:main.rig2:bottom> bottom input")
-    
+
+    val connsMidUnqual = Connection("<rig2> two out", "<mid> mid input")
+
     val setupTop = Setup(Set(connsTop, connsMid, connsBottom)).withPosUpdated(List("<rig1>", "<rig2>"))
 
     val connsBottom2 = Connection("<main.rig1:main.rig2:lower2> three out2", "<main.rig1:main.rig2:bottom2> bottom input2")
+    val connsBottom2Unqual = Connection("<lower2> three out2", "<bottom2> bottom input2")
 
     val setupTop2 = setupTop.withConnsReplaced(List("<rig1>", "<rig2>"), Set(connsBottom2))
     
@@ -377,8 +399,8 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     setupTop2.rigs should equal (Set("<rig1>"))
     setupTop2.pos should equal (List("<rig1>", "<rig2>"))
     
-    setupTop2.conns(List("<rig1>")) should equal (Set(connsMid))
-    setupTop2.conns(List("<rig1>", "<rig2>")) should equal (Set(connsBottom2))
+    setupTop2.conns(List("<rig1>")) should equal (Set(connsMidUnqual))
+    setupTop2.conns(List("<rig1>", "<rig2>")) should equal (Set(connsBottom2Unqual))
   }
 
   test("withConnsReplaced - Replacing a specific rig's conns - middle of hierarchy") {

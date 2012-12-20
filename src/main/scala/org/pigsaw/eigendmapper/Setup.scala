@@ -35,10 +35,10 @@ class Setup private(private val portNames0: Map[String, Map[String, String]],
    * The connections at a given pos, including their qualifiers.
    */
   def conns(p: List[String]): Set[Connection] =
-    bestNames(unqualified(conns0)) filter { _ hasPos p }
-  
+    bestNames(unqualified( conns0 filter { _ hasPos p } ))
+
   /**
-   * The connections in this setup, with agent names
+   * The connections in this setup at the top level, with agent names
    * which are not qualified, and using the best names
    * for ports
    */

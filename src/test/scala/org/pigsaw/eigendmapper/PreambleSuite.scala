@@ -9,7 +9,7 @@ import org.scalatest.matchers.ShouldMatchers
 
 @RunWith(classOf[JUnitRunner])
 class PreambleSuite extends FunSuite with ShouldMatchers {
-  
+
   test("AgentOrPortID - constructor") {
     // These should simply not throw MatchErrors
     AgentOrPortID("<rig1>").unqualified
@@ -17,25 +17,25 @@ class PreambleSuite extends FunSuite with ShouldMatchers {
     AgentOrPortID("<main.rig3:cycler1>").unqualified
     AgentOrPortID("<main.rig3:main.rig4:cycler1>#34.5").unqualified
   }
-  
+
   test("AgentOrPortID - object preservation") {
     val port = "<rig1>#3.2"
 
     assert(port.unqualified eq port)
   }
-  
+
   test("AgentOrPortID.hasPos") {
-    "<delay1>".hasPos(List()) should equal (true)
-    "<delay1>".hasPos(List("<rig1>")) should equal (false)
-    "<main.rig1:delay1>".hasPos(List()) should equal (false)
-    "<main.rig1:delay1>".hasPos(List("<rig1>")) should equal (true)
+    "<delay1>".hasPos(List()) should equal(true)
+    "<delay1>".hasPos(List("<rig1>")) should equal(false)
+    "<main.rig1:delay1>".hasPos(List()) should equal(false)
+    "<main.rig1:delay1>".hasPos(List("<rig1>")) should equal(true)
 
     // And the same with ports...
-    
-    "<delay1>#3.2".hasPos(List()) should equal (true)
-    "<delay1>#3.2".hasPos(List("<rig1>")) should equal (false)
-    "<main.rig1:delay1>#3.2".hasPos(List()) should equal (false)
-    "<main.rig1:delay1>#3.2".hasPos(List("<rig1>")) should equal (true)
+
+    "<delay1>#3.2".hasPos(List()) should equal(true)
+    "<delay1>#3.2".hasPos(List("<rig1>")) should equal(false)
+    "<main.rig1:delay1>#3.2".hasPos(List()) should equal(false)
+    "<main.rig1:delay1>#3.2".hasPos(List("<rig1>")) should equal(true)
   }
 
   test("AgentName.withoutBrackets") {
@@ -120,18 +120,36 @@ class PreambleSuite extends FunSuite with ShouldMatchers {
     val map = Map(
       "1" -> "one input",
       "2.3" -> "two output")
-    
-    PortID("<cycler1>#1").bestForm(map) should equal ("<cycler1> one input")
-    PortID("<cycler1>#2.3").bestForm(map) should equal ("<cycler1> two output")
 
-    PortID("<cycler1>#1.1").bestForm(map) should equal ("<cycler1>#1.1")
-    PortID("<cycler1>#2").bestForm(map) should equal ("<cycler1>#2")
+    PortID("<cycler1>#1").bestForm(map) should equal("<cycler1> one input")
+    PortID("<cycler1>#2.3").bestForm(map) should equal("<cycler1> two output")
+
+    PortID("<cycler1>#1.1").bestForm(map) should equal("<cycler1>#1.1")
+    PortID("<cycler1>#2").bestForm(map) should equal("<cycler1>#2")
   }
-  
+
   test("Pos.qualifier") {
-    List().qualifier should equal ("")
-    List("<rig1>").qualifier should equal ("main.rig1:")
-    List("<rig1>", "<rig2>").qualifier should equal ("main.rig1:main.rig2:")
+    List().qualifier should equal("")
+    List("<rig1>").qualifier should equal("main.rig1:")
+    List("<rig1>", "<rig2>").qualifier should equal("main.rig1:main.rig2:")
+  }
+
+  test("Pos.hasPos") {
+    val portTop = "<rig1>#1.1"
+    val portRigA = "<main.rig1:ag22>#2.2"
+    val portRigB = "<main.rig1:main.rig2:ag33>#3.3"
+
+    portTop.hasPos(List()) should be (true)
+    portTop.hasPos(List("<rig1>")) should be (false)
+    portTop.hasPos(List("<rig1>", "<rig2>")) should be (false)
+
+    portRigA.hasPos(List()) should be (false)
+    portRigA.hasPos(List("<rig1>")) should be (true)
+    portRigA.hasPos(List("<rig1>", "<rig2>")) should be (false)
+
+    portRigB.hasPos(List()) should be (false)
+    portRigB.hasPos(List("<rig1>")) should be (false)
+    portRigB.hasPos(List("<rig1>", "<rig2>")) should be (true)    
   }
 
 }
