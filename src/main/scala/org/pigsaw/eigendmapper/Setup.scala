@@ -134,17 +134,12 @@ class Setup private(private val portNames0: Map[String, Map[String, String]],
    * The rigs in this setup at the given pos.
    */
   def rigs(p: List[String]): Set[String] =
-    conns0 flatMap { c =>
-      val masterPos = c.master.pos
-      val slavePos = c.slave.pos
-      val masterAgent = c.master.agent
-      val slaveAgent = c.slave.agent
+    conns0 flatMap { _.agents } flatMap { ag =>
       Set() ++
-        (if (masterPos.length >= 1 && masterPos.init == p && masterPos.last.isRig) Set(masterPos.last) else Set()) ++
-        (if (slavePos.length >= 1 && slavePos.init == p && slavePos.last.isRig)  Set(slavePos.last) else Set()) ++
-        (if (masterPos == p && masterAgent.isRig) Set(masterAgent.unqualified) else Set()) ++
-        (if (slavePos == p && slaveAgent.isRig) Set(slaveAgent.unqualified) else Set())
-      }
+        (if (ag.pos == p && ag.isRig) Set(ag.unqualified) else Set()) ++
+        (if (ag.pos.length >= 1 && ag.pos.init == p) Set(ag.pos.last) else Set())
+      
+    }
 
   /**
    * Get the setup in the hierarchy given by the given position.
