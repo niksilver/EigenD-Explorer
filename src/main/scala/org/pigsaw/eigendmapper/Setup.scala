@@ -16,7 +16,6 @@ import Preamble._
  */
 class Setup private(private val portNames0: Map[String, Map[String, String]],
     private val conns0: Set[Connection],
-    rigSetups0: Map[String, Setup],
     val pos: List[String]) {
   
   /**
@@ -47,7 +46,7 @@ class Setup private(private val portNames0: Map[String, Map[String, String]],
   /**
    * A setup with no internal rig setups
    */
-  def this(conns: Set[Connection]) = this(Map(), conns, Map(), List())
+  def this(conns: Set[Connection]) = this(Map(), conns, List())
 
   /**
    * Get all the agents at a particular position.
@@ -128,7 +127,7 @@ class Setup private(private val portNames0: Map[String, Map[String, String]],
    */
   def withPortNamesReplaced(pos2: List[String], portNames2: Map[String, Map[String, String]]): Setup = {
     val portNamesCleaned = portNames0 filterNot { _._1.hasPos(pos2) }
-    new Setup(portNamesCleaned ++ portNames2, this.conns0, Map(), this.pos)
+    new Setup(portNamesCleaned ++ portNames2, this.conns0, this.pos)
   }
 
   /**
@@ -139,7 +138,7 @@ class Setup private(private val portNames0: Map[String, Map[String, String]],
    * @param map  The map from node IDs to port names for the agent
    */
   def withPortNames(pos2: List[String], agent: String, map: Map[String, String]): Setup = {
-    new Setup(portNames0 ++ Map(agent.qualified(pos2) -> map), this.conns0, Map(), this.pos)
+    new Setup(portNames0 ++ Map(agent.qualified(pos2) -> map), this.conns0, this.pos)
   }
 
   /**
@@ -160,7 +159,7 @@ class Setup private(private val portNames0: Map[String, Map[String, String]],
    */
   def withConnsReplaced(pos2: List[String], conns2: Set[Connection]): Setup = {
     val connsCleaned = conns0 filterNot { _.hasPos(pos2) }
-    new Setup(portNames0, connsCleaned ++ conns2, Map(), pos)
+    new Setup(portNames0, connsCleaned ++ conns2, pos)
   }
 
   /**
@@ -171,7 +170,7 @@ class Setup private(private val portNames0: Map[String, Map[String, String]],
    * @param conns2  The extra connections.
    */
   def withConns(pos2: List[String], conns2: Set[Connection]): Setup = {
-    new Setup(portNames0, conns0 ++ conns2, Map(), pos)
+    new Setup(portNames0, conns0 ++ conns2, pos)
   }
   
   /**
@@ -186,7 +185,7 @@ class Setup private(private val portNames0: Map[String, Map[String, String]],
    * Create a new setup just like this, but with the pos updated.
    */
   def withPosUpdated(posNow: List[String]) =
-    new Setup(portNames0, conns0, Map(), posNow)
+    new Setup(portNames0, conns0, posNow)
 
   def canEqual(other: Any): Boolean = (other.isInstanceOf[Setup])
 
