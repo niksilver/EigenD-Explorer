@@ -52,6 +52,15 @@ object Preamble {
      */
     def hasPos(p: List[String]): Boolean =
       (qualifier == p.qualifier)
+    
+    /**
+     * The pos of this agent or port ID
+     */
+    def pos: List[String] =
+      qualifier match {
+        case "" => List()
+        case q  => q split ":" map { "<" + _.drop(5) + ">" } toList
+      }
   }
 
   object AgentOrPortID {

@@ -115,10 +115,36 @@ class Setup private(private val portNames0: Map[String, Map[String, String]],
     c map { _.unqualified }
 
   /**
-   * The rigs in this setup. E.g. `"<rig2>"`.
+   * The rigs in this setup at the top level. E.g. `"<rig2>"`.
    */
   def rigs: Set[String] =
-    agents filter { Pattern.matches("<rig\\d+>", _) }
+    conns0 flatMap { c =>
+      val masterPos = c.master.pos
+      val slavePos = c.slave.pos
+      val masterAgent = c.master.agent
+      val slaveAgent = c.slave.agent
+      Set() ++
+        (if (masterPos.length == 1) Set(masterPos.head) else Set()) ++
+        (if (slavePos.length == 1)  Set(slavePos.head) else Set()) ++
+        (if (masterPos.length == 0 && masterAgent.isRig) Set(masterAgent.unqualified) else Set()) ++
+        (if (slavePos.length == 0 && slaveAgent.isRig) Set(slaveAgent.unqualified) else Set())
+      }
+
+  /**
+   * The rigs in this setup at the given pos.
+   */
+  def rigs(p: List[String]): Set[String] =
+    conns0 flatMap { c =>
+      val masterPos = c.master.pos
+      val slavePos = c.slave.pos
+      val masterAgent = c.master.agent
+      val slaveAgent = c.slave.agent
+      Set() ++
+        (if (masterPos.length >= 1 && masterPos.init == p && masterPos.last.isRig) Set(masterPos.last) else Set()) ++
+        (if (slavePos.length >= 1 && slavePos.init == p && slavePos.last.isRig)  Set(slavePos.last) else Set()) ++
+        (if (masterPos == p && masterAgent.isRig) Set(masterAgent.unqualified) else Set()) ++
+        (if (slavePos == p && slaveAgent.isRig) Set(slaveAgent.unqualified) else Set())
+      }
 
   /**
    * Get the setup in the hierarchy given by the given position.
@@ -221,7 +247,8 @@ class Setup private(private val portNames0: Map[String, Map[String, String]],
   }
   
   /**
-   * Create a setup just like this, but the with connections replaced.
+   * Create a setup just like this, but the with connections replaced at the
+   * top level.
    * @param conns2  The new connections.
    */
   def withConnsReplaced(conns2: Set[Connection]): Setup =

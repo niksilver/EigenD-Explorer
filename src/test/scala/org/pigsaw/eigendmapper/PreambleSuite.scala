@@ -37,6 +37,18 @@ class PreambleSuite extends FunSuite with ShouldMatchers {
     "<main.rig1:delay1>#3.2".hasPos(List()) should equal(false)
     "<main.rig1:delay1>#3.2".hasPos(List("<rig1>")) should equal(true)
   }
+  
+  test("AgentOrPortID.pos") {
+    "<delay1>".pos should equal (List())
+    "<main.rig1:delay1>".pos should equal (List("<rig1>"))
+    "<main.rig1:main.rig2:delay1>".pos should equal (List("<rig1>", "<rig2>"))
+
+    // And the same with ports...
+
+    "<delay1>#3.2".pos should equal (List())
+    "<main.rig1:delay1>#3.2".pos should equal (List("<rig1>"))
+    "<main.rig1:main.rig2:delay1>#3.2".pos should equal (List("<rig1>", "<rig2>"))
+  }
 
   test("AgentName.withoutBrackets") {
     AgentName("<one>").withoutBrackets should equal("one")
