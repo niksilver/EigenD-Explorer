@@ -385,25 +385,22 @@ class SetupSuite extends FunSuite with ShouldMatchers {
   }
   
   test("withConnsReplaced - Replacing a specific rig's conns - top of hierarchy") {
-    val connsTop = Connection("<rig1> one out", "<top> top input")
+    val connsTop = Connection("<main:rig1> one out", "<main:top> top input")
     val connsMid = Connection("<main.rig1:rig2> two out", "<main.rig1:mid> mid input")
     val connsBottom = Connection("<main.rig1:main.rig2:lower> three out", "<main.rig1:main.rig2:bottom> bottom input")
 
-    val connsMidUnqual = Connection("<rig2> two out", "<mid> mid input")
-    val connsBottomUnqual = Connection("<lower> three out", "<bottom> bottom input")
-
     val setupTop = Setup(Set(connsTop, connsMid, connsBottom)).withPosUpdated(List("<rig1>", "<rig2>"))
 
-    val connsTop2 = Connection("<rig1> one out2", "<top> top input2")
+    val connsTop2 = Connection("<main:rig1> one out2", "<main:top> top input2")
 
     val setupTop2 = setupTop.withConnsReplaced(List(), Set(connsTop2))
     
-    setupTop2.conns should equal (Set(connsTop2))
+    setupTop2.connsQualified should equal (Set(connsTop2))
     setupTop2.rigs should equal (Set("<rig1>"))
     setupTop2.pos should equal (List("<rig1>", "<rig2>"))
     
-    setupTop2.conns(List("<rig1>")) should equal (Set(connsMidUnqual))
-    setupTop2.conns(List("<rig1>", "<rig2>")) should equal (Set(connsBottomUnqual))
+    setupTop2.connsQualified(List("<rig1>")) should equal (Set(connsMidl))
+    setupTop2.connsQualified(List("<rig1>", "<rig2>")) should equal (Set(connsBottom))
   }
   
   test("withConnsReplaced - If becomes disconnected from higher level, it should remain") {
