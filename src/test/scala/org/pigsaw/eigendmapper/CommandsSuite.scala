@@ -52,6 +52,23 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
 
   }
 
+  test("Show - Doesn't show different agent with same name in other rig") {
+    val connTop = Connection("<rig1> one", "<aaa> top aye")
+    val connRig = Connection("<main.rig1:aaa> ayes", "<main.rig1:bbb> bees")
+    
+    val setupTop = Setup(Set(connTop, connRig)).withPosUpdated(List("<rig1>"))
+
+    val catcher = new PrintCatcher
+
+    (new ShowCommand).action(List("<aaa>"))(setupTop, catcher.println)
+
+    catcher.output should not include ("Unknown")
+    catcher.output should not include ("No agent called")
+    catcher.output should include("ayes --> <bbb> bees")
+    catcher.output should not include ("top aye")
+
+  }
+
   test("Graph - handles no arguments") {
     val setup = Setup()
 
