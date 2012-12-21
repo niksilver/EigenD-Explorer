@@ -270,30 +270,6 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     setup.agents.size should be(0)
   }
 
-  test("Apply - Make sure it unqualifies") {
-    val a_short = "<a>#1.1"
-    val a_long = "<main:a>#1.1"
-    val b_short = "<b> b12"
-    val b_long = "<main:b> b12"
-    val c_short = "<c>#1.3"
-    val c_long = "<main:c>#1.3"
-
-    val conns = Set(
-      Connection(a_short, b_long),
-      Connection(b_long, c_long),
-      Connection(b_short, c_long))
-
-    val conns2 = Setup(conns).conns
-
-    conns2.size should equal(2)
-    conns2 should not contain (Connection(a_short, b_long))
-    conns2 should not contain (Connection(b_long, c_long))
-    conns2 should not contain (Connection(b_short, c_long))
-    conns2 should contain(Connection(a_short, b_short))
-    conns2 should contain(Connection(b_short, c_short))
-
-  }
-
   test("Constructor - Make sure it unifies") {
     val port_a_unnamed = "<a>#1.1"
     val port_b_named = "<b> b12"
@@ -336,7 +312,7 @@ class SetupSuite extends FunSuite with ShouldMatchers {
   }
   
   test("Position - Can update position") {
-    val conn = Connection("<rig1> one", "<fff> five")
+    val conn = Connection("<main:rig1> one", "<main:fff> five")
     val setup = new Setup(Set(conn))
     
     setup.pos should equal (List())
@@ -344,7 +320,7 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     val setupV2 = setup.withPosUpdated(List("<rig1>"))
     
     setupV2.pos should equal (List("<rig1>"))
-    setupV2.conns should equal (Set(conn))
+    setupV2.connsQualified should equal (Set(conn))
   }
   
   test("withConnsReplaced - No args") {
