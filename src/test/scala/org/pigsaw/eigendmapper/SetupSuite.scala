@@ -324,28 +324,26 @@ class SetupSuite extends FunSuite with ShouldMatchers {
   }
   
   test("withConnsReplaced - No args") {
-    val conn = Connection("<rig1> one", "<rig2> two")
+    val conn = Connection("<main:rig1> one", "<main:rig2> two")
     val setup = Setup(Set(conn))
 
     val rigConn1 = Connection("<main.rig1:sss>#7.7", "<main.rig1:other> other")
     val rigConn2 = Connection("<main.rig2:sss>#7.7", "<main.rig2:other> other")
     val setup1 = Setup(Set(conn, rigConn1, rigConn2))
 
-    val rigConn1Unqual = Connection("<sss>#7.7", "<other> other")
-
     // Just checking some basics are right before we call the
     // method under test
     
-    setup1.conns should equal (Set(conn))
+    setup1.connsQualified should equal (Set(conn))
     setup1.rigs should equal (Set("<rig1>", "<rig2>"))
-    setup1.conns(List("<rig1>")) should equal (Set(rigConn1Unqual))
+    setup1.connsQualified(List("<rig1>")) should equal (Set(rigConn1))
     
-    val newConn = Connection("<rig1> one A", "<ggg> seven")
+    val newConn = Connection("<main:rig1> one A", "<main:ggg> seven")
     val setupV2 = setup1.withConnsReplaced(Set(newConn))
     
-    setupV2.conns should equal (Set(newConn))
+    setupV2.connsQualified should equal (Set(newConn))
     setupV2.rigs should equal (Set("<rig1>", "<rig2>"))
-    setupV2.conns(List("<rig1>")) should equal (Set(rigConn1Unqual))
+    setupV2.connsQualified(List("<rig1>")) should equal (Set(rigConn1))
   }
   
   test("withConnsReplaced - Replacing a specific rig's conns - bottom of hierarchy") {
