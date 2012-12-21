@@ -399,7 +399,7 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     setupTop2.rigs should equal (Set("<rig1>"))
     setupTop2.pos should equal (List("<rig1>", "<rig2>"))
     
-    setupTop2.connsQualified(List("<rig1>")) should equal (Set(connsMidl))
+    setupTop2.connsQualified(List("<rig1>")) should equal (Set(connsMid))
     setupTop2.connsQualified(List("<rig1>", "<rig2>")) should equal (Set(connsBottom))
   }
   
