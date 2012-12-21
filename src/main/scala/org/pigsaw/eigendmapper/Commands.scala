@@ -223,8 +223,10 @@ class IntoCommand extends Command {
   }
 
   def doInto(rig: String, setup: Setup, prln: PrintlnFn): Setup = {
-    val targetPos = setup.pos :+ rig
-    if (setup.agents(setup.pos) contains rig)
+    val pos = setup.pos
+    val targetPos = pos :+ rig
+    val rigQual = rig.qualified(pos)
+    if (setup.agents(pos) contains rigQual)
       setup.withPosUpdated(targetPos)
     else
       { prln("No such rig: " + rig); setup }

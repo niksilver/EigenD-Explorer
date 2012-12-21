@@ -55,7 +55,7 @@ class Setup private(private val portNames0: Map[String, Map[String, String]],
    * Get all the agents at a particular position.
    */
   def agents(p: List[String]): Set[String] =
-    conns(p) flatMap { _.agents }
+    connsQualified(p) flatMap { _.agents }
   
   /**
    * Get all the agent mentioned in the top level set of connections,

@@ -40,9 +40,9 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     val agents = setup.agents
 
     agents.size should equal(3)
-    agents should contain("<a>")
-    agents should contain("<b>")
-    agents should contain("<c>")
+    agents should contain("<main:a>")
+    agents should contain("<main:b>")
+    agents should contain("<main:c>")
   }
 
   test("Ports") {
