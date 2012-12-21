@@ -67,7 +67,7 @@ class Setup private(private val portNames0: Map[String, Map[String, String]],
    * Get all the ports named in the connections.
    */
   lazy val ports: Set[String] =
-    conns flatMap { c => List(c.master, c.slave) }
+    connsQualified flatMap { c => List(c.master, c.slave) }
   lazy val portsQualified: Set[String] =
     connsQualified flatMap { c => List(c.master, c.slave) }
 

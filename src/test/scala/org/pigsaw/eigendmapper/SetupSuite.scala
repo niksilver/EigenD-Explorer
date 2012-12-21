@@ -46,9 +46,9 @@ class SetupSuite extends FunSuite with ShouldMatchers {
   }
 
   test("Ports") {
-    val a = "<a>#1.1"
-    val b = "<b>#1.2"
-    val c = "<c>#1.3"
+    val a = "<main:a>#1.1"
+    val b = "<main:b>#1.2"
+    val c = "<main:c>#1.3"
 
     val setup = new Setup(Set(
       Connection(a, b),
@@ -83,10 +83,10 @@ class SetupSuite extends FunSuite with ShouldMatchers {
   }
 
   test("Agent-port connections") {
-    val a1 = "<a>#1.1"
-    val a2 = "<a>#1.2"
-    val b1 = "<b>#1.1"
-    val b2 = "<b>#1.2"
+    val a1 = "<main:a>#1.1"
+    val a2 = "<main:a>#1.2"
+    val b1 = "<main:b>#1.1"
+    val b2 = "<main:b>#1.2"
 
     val setup = new Setup(Set(
       Connection(a1, b1),
@@ -95,10 +95,10 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     val conns2 = setup.agentPortConnections
 
     conns2.size should equal(4)
-    conns2 should contain("<a>" -> a1)
-    conns2 should contain("<a>" -> a2)
-    conns2 should contain("<b>" -> b1)
-    conns2 should contain("<b>" -> b2)
+    conns2 should contain("<main:a>" -> a1)
+    conns2 should contain("<main:a>" -> a2)
+    conns2 should contain("<main:b>" -> b1)
+    conns2 should contain("<main:b>" -> b2)
   }
 
   test("Best names - Add a slave name, expect a slave updated automatically") {
