@@ -222,16 +222,16 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
     
     setup.conns.size should equal (5)
     
-    setup.portsQualified should contain ("<main:ag1> one one")
-    setup.portsQualified should contain ("<main:ag1>#1.2")
-    setup.portsQualified should contain ("<main:ag1>#1.3")
-    setup.portsQualified should contain ("<main:ag1>#1.4")
-    setup.portsQualified should contain ("<main:ag1>#1.22")
+    setup.ports should contain ("<main:ag1> one one")
+    setup.ports should contain ("<main:ag1>#1.2")
+    setup.ports should contain ("<main:ag1>#1.3")
+    setup.ports should contain ("<main:ag1>#1.4")
+    setup.ports should contain ("<main:ag1>#1.22")
     
-    setup.portsQualified should contain ("<main:ag2>#2.1")
-    setup.portsQualified should contain ("<main:ag2> two two")
-    setup.portsQualified should contain ("<main:ag2> two three")
-    setup.portsQualified should contain ("<main:ag2>#2.4")
+    setup.ports should contain ("<main:ag2>#2.1")
+    setup.ports should contain ("<main:ag2> two two")
+    setup.ports should contain ("<main:ag2> two three")
+    setup.ports should contain ("<main:ag2>#2.4")
     
     setup.conns should contain (Connection("<main:ag1> one one", "<main:ag2>#2.1"))
     setup.conns should contain (Connection("<main:ag1>#1.2", "<main:ag2> two two"))

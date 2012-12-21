@@ -72,8 +72,6 @@ class Setup private(private val portNames0: Map[String, Map[String, String]],
    */
   lazy val ports: Set[String] =
     conns flatMap { c => List(c.master, c.slave) }
-  lazy val portsQualified: Set[String] =
-    conns flatMap { c => List(c.master, c.slave) }
 
   /**
    * Get a map from each agent to each agent (strings, including
