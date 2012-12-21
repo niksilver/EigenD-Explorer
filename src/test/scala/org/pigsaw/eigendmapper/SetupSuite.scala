@@ -77,9 +77,9 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     val agAgConns = setup.agentAgentConnections
 
     agAgConns.size should equal(3)
-    agAgConns should contain("<a>", "<b>")
-    agAgConns should contain("<b>", "<c>")
-    agAgConns should contain("<c>", "<b>")
+    agAgConns should contain("<main:a>", "<main:b>")
+    agAgConns should contain("<main:b>", "<main:c>")
+    agAgConns should contain("<main:c>", "<main:b>")
   }
 
   test("Agent-port connections") {

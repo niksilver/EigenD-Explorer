@@ -76,7 +76,7 @@ class Setup private(private val portNames0: Map[String, Map[String, String]],
    * angle brackets.)
    */
   lazy val agentAgentConnections: Set[(String, String)] =
-    conns map { c => (c.master.agent, c.slave.agent) }
+    connsQualified map { c => (c.master.agent, c.slave.agent) }
 
   /**
    * Get a map from each agent (a string including angle brackets)
