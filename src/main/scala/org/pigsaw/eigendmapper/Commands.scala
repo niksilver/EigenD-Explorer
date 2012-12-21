@@ -74,7 +74,7 @@ class ShowCommand extends Command {
 
   def doShow(agent: String, setup: Setup, prln: PrintlnFn) {
     val pos = setup.pos
-    val conns = setup.connsQualified(setup.pos)
+    val conns = setup.conns(setup.pos)
     val agentQual = agent.qualified(pos)
     
     // If a port ID is in this rig then it doesn't need to
@@ -187,7 +187,7 @@ class GraphCommand extends Command {
     command match {
       // When graphing ports: Write port-port edges and agent-port edges
       case "ports" => {
-        setup.connsQualified foreach { out write _.edgeXML + "\n" }
+        setup.conns foreach { out write _.edgeXML + "\n" }
         localConns foreach { out write GAgentPort(_).edgeXML + "\n" }
       }
       // When graphing agents: Write agent-agent-edges

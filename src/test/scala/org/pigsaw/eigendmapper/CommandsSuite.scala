@@ -173,11 +173,11 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
     val catcher = new PrintCatcher
     val setupTop2 = command.action(List())(setupTop, catcher.println)
 
-    setupTop2.connsQualified should equal(Set(connsTop))
+    setupTop2.conns should equal(Set(connsTop))
     setupTop2.rigs should equal(Set("<rig1>"))
     setupTop2.pos should equal(List("<rig1>"))
 
-    setupTop2.connsQualified(List("<rig1>")) should equal(Set(connsRigV2))
+    setupTop2.conns(List("<rig1>")) should equal(Set(connsRigV2))
   }
 
   test("Snapshot - Captures port cnames") {
@@ -220,7 +220,7 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
 
     val setup = command.action(List())(Setup(), catcher.println)
     
-    setup.connsQualified.size should equal (5)
+    setup.conns.size should equal (5)
     
     setup.portsQualified should contain ("<main:ag1> one one")
     setup.portsQualified should contain ("<main:ag1>#1.2")
@@ -233,11 +233,11 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
     setup.portsQualified should contain ("<main:ag2> two three")
     setup.portsQualified should contain ("<main:ag2>#2.4")
     
-    setup.connsQualified should contain (Connection("<main:ag1> one one", "<main:ag2>#2.1"))
-    setup.connsQualified should contain (Connection("<main:ag1>#1.2", "<main:ag2> two two"))
-    setup.connsQualified should contain (Connection("<main:ag1>#1.3", "<main:ag2> two three"))
-    setup.connsQualified should contain (Connection("<main:ag1>#1.4", "<main:ag2>#2.4"))
-    setup.connsQualified should contain (Connection("<main:ag2> two two", "<main:ag1>#1.22"))
+    setup.conns should contain (Connection("<main:ag1> one one", "<main:ag2>#2.1"))
+    setup.conns should contain (Connection("<main:ag1>#1.2", "<main:ag2> two two"))
+    setup.conns should contain (Connection("<main:ag1>#1.3", "<main:ag2> two three"))
+    setup.conns should contain (Connection("<main:ag1>#1.4", "<main:ag2>#2.4"))
+    setup.conns should contain (Connection("<main:ag2> two two", "<main:ag1>#1.22"))
   }
 
   test("Into - Can go into an empty rig") {

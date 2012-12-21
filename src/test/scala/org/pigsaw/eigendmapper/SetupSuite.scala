@@ -16,7 +16,7 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     
     val setup = Setup(Set(connTop, connRig))
     
-    setup.connsQualified should equal (Set(connTop))
+    setup.conns should equal (Set(connTop))
   }
   
   test("conns - Just gets lower level unqualified at lower pos") {
@@ -25,7 +25,7 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     
     val setup = Setup(Set(connTop, connRig))
     
-    setup.connsQualified(List("<rig1>")) should equal (Set(connRig))
+    setup.conns(List("<rig1>")) should equal (Set(connRig))
   }
 
   test("Agents") {
@@ -119,7 +119,7 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     val conn_cubn = Connection(port_c_unnamed, port_b_named) // We'll add this
     val conn_aubn = Connection(port_a_unnamed, port_b_named) // This should get created
 
-    val connSet2 = Setup(connSet1 + conn_cubn).withPortNames("<b>", portMap_for_b).connsQualified
+    val connSet2 = Setup(connSet1 + conn_cubn).withPortNames("<b>", portMap_for_b).conns
 
     connSet2.size should equal(2)
     connSet2 should contain(conn_cubn.defaultQualifier(List()))
@@ -145,7 +145,7 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     val conn_cubn = Connection(port_c_unnamed, port_b_named) // We'll add this
     val conn_bnau = Connection(port_b_named, port_a_unnamed) // This should get created
 
-    val connSet2 = Setup(connSet1 + conn_cubn).withPortNames("<b>", portMap_for_b).connsQualified
+    val connSet2 = Setup(connSet1 + conn_cubn).withPortNames("<b>", portMap_for_b).conns
 
     connSet2.size should equal(2)
     connSet2 should contain(conn_cubn.defaultQualifier(List()))
@@ -171,7 +171,7 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     val conn_bncu = Connection(port_b_named, port_c_unnamed) // We'll add this
     val conn_aubn = Connection(port_a_unnamed, port_b_named) // This should get created
 
-    val connSet2 = Setup(connSet1 + conn_bncu).withPortNames("<b>", portMap_for_b).connsQualified
+    val connSet2 = Setup(connSet1 + conn_bncu).withPortNames("<b>", portMap_for_b).conns
 
     connSet2.size should equal(2)
     connSet2 should contain(conn_bncu.defaultQualifier(List()))
@@ -197,7 +197,7 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     val conn_bncu = Connection(port_b_named, port_c_unnamed) // We'll add this
     val conn_bnau = Connection(port_b_named, port_a_unnamed) // This should get created
 
-    val connSet2 = Setup(connSet1 + conn_bncu).withPortNames("<b>", portMap_for_b).connsQualified
+    val connSet2 = Setup(connSet1 + conn_bncu).withPortNames("<b>", portMap_for_b).conns
 
     connSet2.size should equal(2)
     connSet2 should contain(conn_bncu.defaultQualifier(List()))
@@ -218,7 +218,7 @@ class SetupSuite extends FunSuite with ShouldMatchers {
       Connection(bQual, cQual),
       Connection(bUnqual, cQual))
 
-    val conns2 = new Setup(conns).connsQualified
+    val conns2 = new Setup(conns).conns
 
     conns2.size should equal(2)
     conns2 should not contain (Connection(aUnqual, bQual))
@@ -282,7 +282,7 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     val conn_bncu = Connection(port_b_named, port_c_unnamed) // We'll add this
     val conn_bnau = Connection(port_b_named, port_a_unnamed) // This should get created
 
-    val conns = Setup(Set(conn_buau, conn_bncu)).withPortNames("<b>", portMap_for_b).connsQualified
+    val conns = Setup(Set(conn_buau, conn_bncu)).withPortNames("<b>", portMap_for_b).conns
 
     conns.size should equal(2)
     conns should contain(conn_bncu.defaultQualifier(List()))
@@ -320,7 +320,7 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     val setupV2 = setup.withPosUpdated(List("<rig1>"))
     
     setupV2.pos should equal (List("<rig1>"))
-    setupV2.connsQualified should equal (Set(conn))
+    setupV2.conns should equal (Set(conn))
   }
   
   test("withConnsReplaced - No args") {
@@ -334,16 +334,16 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     // Just checking some basics are right before we call the
     // method under test
     
-    setup1.connsQualified should equal (Set(conn))
+    setup1.conns should equal (Set(conn))
     setup1.rigs should equal (Set("<rig1>", "<rig2>"))
-    setup1.connsQualified(List("<rig1>")) should equal (Set(rigConn1))
+    setup1.conns(List("<rig1>")) should equal (Set(rigConn1))
     
     val newConn = Connection("<main:rig1> one A", "<main:ggg> seven")
     val setupV2 = setup1.withConnsReplaced(Set(newConn))
     
-    setupV2.connsQualified should equal (Set(newConn))
+    setupV2.conns should equal (Set(newConn))
     setupV2.rigs should equal (Set("<rig1>", "<rig2>"))
-    setupV2.connsQualified(List("<rig1>")) should equal (Set(rigConn1))
+    setupV2.conns(List("<rig1>")) should equal (Set(rigConn1))
   }
   
   test("withConnsReplaced - Replacing a specific rig's conns - bottom of hierarchy") {
@@ -357,12 +357,12 @@ class SetupSuite extends FunSuite with ShouldMatchers {
 
     val setupTop2 = setupTop.withConnsReplaced(List("<rig1>", "<rig2>"), Set(connsBottom2))
     
-    setupTop2.connsQualified should equal (Set(connsTop))
+    setupTop2.conns should equal (Set(connsTop))
     setupTop2.rigs should equal (Set("<rig1>"))
     setupTop2.pos should equal (List("<rig1>", "<rig2>"))
     
-    setupTop2.connsQualified(List("<rig1>")) should equal (Set(connsMid))
-    setupTop2.connsQualified(List("<rig1>", "<rig2>")) should equal (Set(connsBottom2))
+    setupTop2.conns(List("<rig1>")) should equal (Set(connsMid))
+    setupTop2.conns(List("<rig1>", "<rig2>")) should equal (Set(connsBottom2))
   }
 
   test("withConnsReplaced - Replacing a specific rig's conns - middle of hierarchy") {
@@ -376,12 +376,12 @@ class SetupSuite extends FunSuite with ShouldMatchers {
 
     val setupTop2 = setupTop.withConnsReplaced(List("<rig1>"), Set(connsMid2))
     
-    setupTop2.connsQualified should equal (Set(connsTop))
+    setupTop2.conns should equal (Set(connsTop))
     setupTop2.rigs should equal (Set("<rig1>"))
     setupTop2.pos should equal (List("<rig1>", "<rig2>"))
     
-    setupTop2.connsQualified(List("<rig1>")) should equal (Set(connsMid2))
-    setupTop2.connsQualified(List("<rig1>", "<rig2>")) should equal (Set(connsBottom))
+    setupTop2.conns(List("<rig1>")) should equal (Set(connsMid2))
+    setupTop2.conns(List("<rig1>", "<rig2>")) should equal (Set(connsBottom))
   }
   
   test("withConnsReplaced - Replacing a specific rig's conns - top of hierarchy") {
@@ -395,12 +395,12 @@ class SetupSuite extends FunSuite with ShouldMatchers {
 
     val setupTop2 = setupTop.withConnsReplaced(List(), Set(connsTop2))
     
-    setupTop2.connsQualified should equal (Set(connsTop2))
+    setupTop2.conns should equal (Set(connsTop2))
     setupTop2.rigs should equal (Set("<rig1>"))
     setupTop2.pos should equal (List("<rig1>", "<rig2>"))
     
-    setupTop2.connsQualified(List("<rig1>")) should equal (Set(connsMid))
-    setupTop2.connsQualified(List("<rig1>", "<rig2>")) should equal (Set(connsBottom))
+    setupTop2.conns(List("<rig1>")) should equal (Set(connsMid))
+    setupTop2.conns(List("<rig1>", "<rig2>")) should equal (Set(connsBottom))
   }
   
   test("withConnsReplaced - If becomes disconnected from higher level, it should remain") {
@@ -413,7 +413,7 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     
     val setupTop2 = setupTop.withConnsReplaced(List(), Set(connsTop2))
     
-    setupTop2.connsQualified(List("<rig1>")) should equal (Set(connsRig))
+    setupTop2.conns(List("<rig1>")) should equal (Set(connsRig))
   }
   
   test("withConnsReplaced - If rig appears in connections, should be able to ask for its connections") {
@@ -427,8 +427,8 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     val setupTopPlus = setupTop.withConnsReplaced(List(), Set(connsTop, connsTopPlus))
     
     setupTopPlus.rigs should equal (Set("<rig1>", "<rig3>"))
-    setupTopPlus.connsQualified(List("<rig1>")) should equal (Set(connsRig))
-    setupTopPlus.connsQualified(List("<rig3>")) should equal (Set())
+    setupTopPlus.conns(List("<rig1>")) should equal (Set(connsRig))
+    setupTopPlus.conns(List("<rig3>")) should equal (Set())
   }
   
   test("withConnsReplaced - If rig remains in connections, its connections should remain") {
@@ -442,8 +442,8 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     
     val setupTop2 = setupTop.withConnsReplaced(List(), Set(connsTop2))
     
-    setupTop2.connsQualified should equal (Set(connsTop2))
-    setupTop2.connsQualified(List("<rig1>")) should equal (Set(connsRig))
+    setupTop2.conns should equal (Set(connsTop2))
+    setupTop2.conns(List("<rig1>")) should equal (Set(connsRig))
   }
 
 }

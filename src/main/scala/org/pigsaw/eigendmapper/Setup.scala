@@ -34,8 +34,6 @@ class Setup private(private val portNames0: Map[String, Map[String, String]],
    * The connections at a given pos, including their qualifiers.
    */
   def conns(p: List[String]): Set[Connection] =
-    bestNames(unqualified( conns0 filter { _ hasPos p } ))
-  def connsQualified(p: List[String]): Set[Connection] =
     bestNames(conns0 filter { _ hasPos p } map { _ defaultQualifier List() } )
 
   /**
@@ -44,7 +42,6 @@ class Setup private(private val portNames0: Map[String, Map[String, String]],
    * for ports
    */
   lazy val conns: Set[Connection] = conns(List())
-  lazy val connsQualified: Set[Connection] = connsQualified(List())
 
   /**
    * A setup with no internal rig setups
@@ -55,7 +52,7 @@ class Setup private(private val portNames0: Map[String, Map[String, String]],
    * Get all the agents at a particular position.
    */
   def agents(p: List[String]): Set[String] =
-    connsQualified(p) flatMap { _.agents }
+    conns(p) flatMap { _.agents }
   
   /**
    * Get all the agent mentioned in the top level set of connections,
@@ -67,16 +64,16 @@ class Setup private(private val portNames0: Map[String, Map[String, String]],
    * Get all the ports named in the connections.
    */
   lazy val ports: Set[String] =
-    connsQualified flatMap { c => List(c.master, c.slave) }
+    conns flatMap { c => List(c.master, c.slave) }
   lazy val portsQualified: Set[String] =
-    connsQualified flatMap { c => List(c.master, c.slave) }
+    conns flatMap { c => List(c.master, c.slave) }
 
   /**
    * Get a map from each agent to each agent (strings, including
    * angle brackets.)
    */
   lazy val agentAgentConnections: Set[(String, String)] =
-    connsQualified map { c => (c.master.agent, c.slave.agent) }
+    conns map { c => (c.master.agent, c.slave.agent) }
 
   /**
    * Get a map from each agent (a string including angle brackets)
