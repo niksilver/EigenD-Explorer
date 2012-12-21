@@ -20,13 +20,12 @@ class SetupSuite extends FunSuite with ShouldMatchers {
   }
   
   test("conns - Just gets lower level unqualified at lower pos") {
-    val connTop = Connection("<rig1>#1.1", "<ag1>#1.1")
+    val connTop = Connection("<main:rig1>#1.1", "<main:ag1>#1.1")
     val connRig = Connection("<main.rig1:ag22>#2.2", "<main.rig1:ag23>#2.3")
-    val connRigUnqual = Connection("<ag22>#2.2", "<ag23>#2.3")
     
     val setup = Setup(Set(connTop, connRig))
     
-    setup.conns(List("<rig1>")) should equal (Set(connRigUnqual))
+    setup.connsQualified(List("<rig1>")) should equal (Set(connRig))
   }
 
   test("Agents") {
