@@ -11,12 +11,12 @@ import org.pigsaw.eigendmapper.Graphable._
 class SetupSuite extends FunSuite with ShouldMatchers {
   
   test("conns - Just gets top level if at top level") {
-    val connTop = Connection("<rig1>#1.1", "<ag1>#1.1")
+    val connTop = Connection("<main:rig1>#1.1", "<main:ag1>#1.1")
     val connRig = Connection("<main.rig1:ag22>#2.2", "<main.rig1:ag23>#2.3")
     
     val setup = Setup(Set(connTop, connRig))
     
-    setup.conns should equal (Set(connTop))
+    setup.connsQualified should equal (Set(connTop))
   }
   
   test("conns - Just gets lower level unqualified at lower pos") {
