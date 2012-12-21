@@ -73,19 +73,25 @@ class ShowCommand extends Command {
   }
 
   def doShow(agent: String, setup: Setup, prln: PrintlnFn) {
-    showLinks(agent, setup.conns(setup.pos), prln)
-  }
+    val pos = setup.pos
+    val conns = setup.connsQualified(setup.pos)
     
-  private def showLinks(agent: String, conns: Set[Connection], prln: PrintlnFn) {
+    // If a port ID is in this rig then it doesn't need to
+    // qualified. Otherwise, leave is qualified.
+    
+    def cleaned(portID: String) =
+      if (portID.pos == setup.pos) portID.unqualified
+      else portID
+      
     val links: Set[(String, String, String)] = for {
       conn <- conns
       val master = conn.master
       val slave = conn.slave
       if (master.agent.unqualified == agent || slave.agent.unqualified == agent)
       val link = if (master.agent.unqualified == agent)
-        ("", master.nodeLabel, slave)
+        ("", master.nodeLabel, cleaned(slave))
       else
-        (master, slave.nodeLabel, "")
+        (cleaned(master), slave.nodeLabel, "")
     } yield link
 
     if (links.size == 0)
