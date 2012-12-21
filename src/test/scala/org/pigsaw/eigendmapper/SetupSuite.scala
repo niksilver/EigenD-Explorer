@@ -205,27 +205,26 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     connSet2 should contain(conn_bnau.defaultQualifier(List()))
   }
 
-  test("Unqualified port IDs automatically (cut the 'main:' in <main:agentname3>)") {
-    val a_short = "<a>#1.1"
-    val a_long = "<main:a>#1.1"
-    val b_short = "<b> b12"
-    val b_long = "<main:b> b12"
-    val c_short = "<c>#1.3"
-    val c_long = "<main:c>#1.3"
+  test("Port IDs are automatically qualified") {
+    val aUnqual = "<a>#1.1"
+    val aQual = "<main:a>#1.1"
+    val bUnqual = "<b> b12"
+    val bQual = "<main:b> b12"
+    val cUnqual = "<c>#1.3"
+    val cQual = "<main:c>#1.3"
 
     val conns = Set(
-      Connection(a_short, b_long),
-      Connection(b_long, c_long),
-      Connection(b_short, c_long))
+      Connection(aUnqual, bQual),
+      Connection(bQual, cQual),
+      Connection(bUnqual, cQual))
 
-    val conns2 = new Setup(conns).conns
+    val conns2 = new Setup(conns).connsQualified
 
     conns2.size should equal(2)
-    conns2 should not contain (Connection(a_short, b_long))
-    conns2 should not contain (Connection(b_long, c_long))
-    conns2 should not contain (Connection(b_short, c_long))
-    conns2 should contain(Connection(a_short, b_short))
-    conns2 should contain(Connection(b_short, c_short))
+    conns2 should not contain (Connection(aUnqual, bQual))
+    conns2 should not contain (Connection(bUnqual, cQual))
+    conns2 should contain(Connection(aQual, bQual))
+    conns2 should contain(Connection(bQual, cQual))
 
   }
 
