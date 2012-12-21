@@ -417,10 +417,8 @@ class SetupSuite extends FunSuite with ShouldMatchers {
   }
   
   test("withConnsReplaced - If rig appears in connections, should be able to ask for its connections") {
-    val connsTop = Connection("<rig1> one out", "<top> top input")
+    val connsTop = Connection("<main:rig1> one out", "<main:top> top input")
     val connsRig = Connection("<main.rig1:too> two out", "<main.rig1:mid> mid input")
-
-    val connsRigUnqual = Connection("<too> two out", "<mid> mid input")
     
     val setupTop = Setup(Set(connsTop, connsRig)).withPosUpdated(List("<rig1>"))
 
@@ -429,8 +427,8 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     val setupTopPlus = setupTop.withConnsReplaced(List(), Set(connsTop, connsTopPlus))
     
     setupTopPlus.rigs should equal (Set("<rig1>", "<rig3>"))
-    setupTopPlus.conns(List("<rig1>")) should equal (Set(connsRigUnqual))
-    setupTopPlus.conns(List("<rig3>")) should equal (Set())
+    setupTopPlus.connsQualified(List("<rig1>")) should equal (Set(connsRig))
+    setupTopPlus.connsQualified(List("<rig3>")) should equal (Set())
   }
   
   test("withConnsReplaced - If rig remains in connections, its connections should remain") {
