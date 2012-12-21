@@ -71,6 +71,7 @@ object Preamble {
     def pos: List[String] =
       qualifier match {
         case "" => List()
+        case "main:" => List()
         case q => q split ":" map { "<" + _.drop(5) + ">" } toList
       }
   }

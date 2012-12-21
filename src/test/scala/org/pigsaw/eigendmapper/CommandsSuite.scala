@@ -151,14 +151,14 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
   }
 
   test("Snapshot - Preserves other setup data") {
-    val connsTop = Connection("<rig1> one out", "<top> top input")
+    val connsTop = Connection("<main:rig1> one out", "<main:top> top input")
     val connsRig = Connection("<main.rig1:too> two out", "<main.rig1:mid> mid input")
 
     val setupTop = Setup(Set(connsTop, connsRig)).withPosUpdated(List("<rig1>"))
 
     val connsRigV2 = Connection("<main.rig1:too> two out2", "<main.rig1:mid> mid input2")
 
-    val connsRigV2Unqual = Connection("<too> two out2", "<mid> mid input2")
+    //val connsRigV2Unqual = Connection("<too> two out2", "<mid> mid input2")
 
     val command = new SnapshotCommand {
       override def bls(index: String): BLs = new BLs(index) {
@@ -173,11 +173,11 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
     val catcher = new PrintCatcher
     val setupTop2 = command.action(List())(setupTop, catcher.println)
 
-    setupTop2.conns should equal(Set(connsTop))
+    setupTop2.connsQualified should equal(Set(connsTop))
     setupTop2.rigs should equal(Set("<rig1>"))
     setupTop2.pos should equal(List("<rig1>"))
 
-    setupTop2.conns(List("<rig1>")) should equal(Set(connsRigV2Unqual))
+    setupTop2.connsQualified(List("<rig1>")) should equal(Set(connsRigV2))
   }
 
   test("Snapshot - Captures port cnames") {
