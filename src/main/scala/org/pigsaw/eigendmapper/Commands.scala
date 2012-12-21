@@ -187,7 +187,7 @@ class GraphCommand extends Command {
     command match {
       // When graphing ports: Write port-port edges and agent-port edges
       case "ports" => {
-        setup.conns foreach { out write _.edgeXML + "\n" }
+        setup.connsQualified foreach { out write _.edgeXML + "\n" }
         localConns foreach { out write GAgentPort(_).edgeXML + "\n" }
       }
       // When graphing agents: Write agent-agent-edges
