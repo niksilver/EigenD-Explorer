@@ -27,6 +27,17 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     
     setup.conns(List("<rig1>")) should equal (Set(connRig))
   }
+  
+  test("allConns - Gets all connections, fully qualified") {
+    val connTop = Connection("<rig1>#1.1", "<ag1>#1.1")
+    val connRig = Connection("<main.rig1:ag22>#2.2", "<main.rig1:ag23>#2.3")
+
+    val connTopQual = Connection("<main:rig1>#1.1", "<main:ag1>#1.1")
+
+    val setup = Setup(Set(connTop, connRig))
+    
+    setup.allConns should equal (Set(connTopQual, connRig))
+  }
 
   test("Agents") {
     val a = "<a>#1.1"

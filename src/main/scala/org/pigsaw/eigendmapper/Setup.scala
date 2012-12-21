@@ -9,7 +9,8 @@ import Preamble._
  * @param portNames0  A map from each agent name (unqualified)
  *     to a map from each node ID to its cname (if any).
  *     The we can map from `<cycler1>` to `3.4` to `beat input`.
- * @param conns0  The set of connections in this setup.
+ * @param conns0  The set of connections in this setup. Do not use this
+ *     internally; use allConns instead.
  * @param pos  The position in the rig hierarchy in which we're currently
  *     interested. An empty list means the top level; List("&lt;rig3&gt")
  *     means rig3 within the top level, and so on.
@@ -31,10 +32,16 @@ class Setup private(private val portNames0: Map[String, Map[String, String]],
   def portNames: Map[String, Map[String, String]] = portNames(List())
 
   /**
+   * Get all the connections, fully qualified.
+   */
+  lazy val allConns =
+    conns0 map { _ defaultQualifier List() }
+    
+  /**
    * The connections at a given pos, including their qualifiers.
    */
   def conns(p: List[String]): Set[Connection] =
-    bestNames(conns0 filter { _ hasPos p } map { _ defaultQualifier List() } )
+    bestNames(allConns filter { _ hasPos p })
 
   /**
    * The connections in this setup at the top level, with agent names
@@ -114,7 +121,7 @@ class Setup private(private val portNames0: Map[String, Map[String, String]],
    * The rigs in this setup at the given pos.
    */
   def rigs(p: List[String]): Set[String] =
-    conns0 flatMap { _.agents } flatMap { ag =>
+    allConns flatMap { _.agents } flatMap { ag =>
       Set() ++
         (if (ag.pos == p && ag.isRig) Set(ag.unqualified) else Set()) ++
         (if (ag.pos.length >= 1 && ag.pos.init == p) Set(ag.pos.last) else Set())
@@ -129,7 +136,7 @@ class Setup private(private val portNames0: Map[String, Map[String, String]],
    */
   def withPortNamesReplaced(pos2: List[String], portNames2: Map[String, Map[String, String]]): Setup = {
     val portNamesCleaned = portNames0 filterNot { _._1.hasPos(pos2) }
-    new Setup(portNamesCleaned ++ portNames2, this.conns0, this.pos)
+    new Setup(portNamesCleaned ++ portNames2, this.allConns, this.pos)
   }
 
   /**
@@ -140,7 +147,7 @@ class Setup private(private val portNames0: Map[String, Map[String, String]],
    * @param map  The map from node IDs to port names for the agent
    */
   def withPortNames(pos2: List[String], agent: String, map: Map[String, String]): Setup = {
-    new Setup(portNames0 ++ Map(agent.qualified(pos2) -> map), this.conns0, this.pos)
+    new Setup(portNames0 ++ Map(agent.qualified(pos2) -> map), this.allConns, this.pos)
   }
 
   /**
@@ -160,7 +167,7 @@ class Setup private(private val portNames0: Map[String, Map[String, String]],
    * @param conns2  The new connections.
    */
   def withConnsReplaced(pos2: List[String], conns2: Set[Connection]): Setup = {
-    val connsCleaned = conns0 filterNot { _.hasPos(pos2) }
+    val connsCleaned = allConns filterNot { _.hasPos(pos2) }
     new Setup(portNames0, connsCleaned ++ conns2, pos)
   }
 
@@ -172,7 +179,7 @@ class Setup private(private val portNames0: Map[String, Map[String, String]],
    * @param conns2  The extra connections.
    */
   def withConns(pos2: List[String], conns2: Set[Connection]): Setup = {
-    new Setup(portNames0, conns0 ++ conns2, pos)
+    new Setup(portNames0, allConns ++ conns2, pos)
   }
   
   /**
@@ -187,7 +194,7 @@ class Setup private(private val portNames0: Map[String, Map[String, String]],
    * Create a new setup just like this, but with the pos updated.
    */
   def withPosUpdated(posNow: List[String]) =
-    new Setup(portNames0, conns0, posNow)
+    new Setup(portNames0, allConns, posNow)
 
   def canEqual(other: Any): Boolean = (other.isInstanceOf[Setup])
 
@@ -195,13 +202,13 @@ class Setup private(private val portNames0: Map[String, Map[String, String]],
     other match {
       case that: Setup => (that canEqual this) &&
         this.portNames0 == that.portNames0 &&
-        this.conns0 == that.conns0 &&
+        this.allConns == that.allConns &&
         this.pos == that.pos
       case _ => false
     }
 
   override def hashCode: Int =
-    41 * (41 * (41 + portNames0.hashCode) + conns0.hashCode) + pos.hashCode
+    41 * (41 * (41 + portNames0.hashCode) + allConns.hashCode) + pos.hashCode
 
 }
 
