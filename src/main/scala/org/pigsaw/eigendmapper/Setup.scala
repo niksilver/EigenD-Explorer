@@ -133,8 +133,8 @@ class Setup private(private val portNames0: Map[String, String],
 
   /**
    * Create a setup just like this, but with the map from port ID with node IDs
-   * to port IDs with names replaced with the given one.
-   * map replaced at some point in the rig hierarchy
+   * to port IDs with names replaced with the given one. Any port IDs which are
+   * unqualified are given the current pos.
    * @param portNames2  The new map from port IDs (with node ID) to port IDs (with names)
    */
   def withPortNamesReplaced(portNames2: Map[String, String]): Setup = {
@@ -159,7 +159,9 @@ class Setup private(private val portNames0: Map[String, String],
    *     to port IDs (with names)
    */
   def withPortNames(portNames2: Map[String, String]): Setup = {
-    new Setup(portNames0 ++ portNames2, allConns, pos)
+    val namesQual = portNames2 map { fromTo =>
+      (fromTo._1.defaultQualifier(pos), fromTo._2.defaultQualifier(pos)) }
+    new Setup(portNames0 ++ namesQual, allConns, pos)
   }
 
   /**

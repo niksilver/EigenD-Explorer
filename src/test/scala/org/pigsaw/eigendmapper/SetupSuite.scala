@@ -152,6 +152,26 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     
     setup2.allPortNames should equal (portNames1 ++ portNames2)
   }
+  
+  test("withPortNames - Defaults unqualified ports to current pos") {
+    val portNames1 = Map(
+        "<main:rig1>#1.1" -> "<main:rig1> oneone",
+        "<main:ag1>#1.1" -> "<main:ag1> agone agone")
+    val portNames2 = Map(
+        "<rig2>#2.2" -> "<main:rig2> twotwo",
+        "<main:ag2>#2.2" -> "<ag2> agtwo agtwo")
+    val portNames2Qual = Map(
+        "<main.rig9:rig2>#2.2" -> "<main:rig2> twotwo",
+        "<main:ag2>#2.2" -> "<main.rig9:ag2> agtwo agtwo")
+    
+    val setup1 = Setup().withPortNamesReplaced(portNames1)
+    
+    setup1.allPortNames should equal (portNames1)
+    
+    val setup2 = setup1.withPosUpdated(List("<rig9>")).withPortNames(portNames2)
+    
+    setup2.allPortNames should equal (portNames1 ++ portNames2Qual)
+  }
 
   test("Agents") {
     val a = "<a>#1.1"
