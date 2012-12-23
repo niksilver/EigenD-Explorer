@@ -173,11 +173,11 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
     val catcher = new PrintCatcher
     val setupTop2 = command.action(List())(setupTop, catcher.println)
 
-    setupTop2.conns should equal(Set(connsTop))
+    setupTop2.conns(List()) should equal(Set(connsTop))
     setupTop2.rigs should equal(Set("<rig1>"))
     setupTop2.pos should equal(List("<rig1>"))
 
-    setupTop2.conns(List("<rig1>")) should equal(Set(connsRigV2))
+    setupTop2.conns should equal(Set(connsRigV2))
   }
 
   test("Snapshot - Captures port cnames") {

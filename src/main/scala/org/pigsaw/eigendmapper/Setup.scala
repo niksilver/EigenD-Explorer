@@ -52,7 +52,7 @@ class Setup private(private val portNames0: Map[String, String],
    * which are not qualified, and using the best names
    * for ports
    */
-  lazy val conns: Set[Connection] = conns(List())
+  lazy val conns: Set[Connection] = conns(pos)
 
   /**
    * A setup with no internal rig setups
@@ -72,7 +72,8 @@ class Setup private(private val portNames0: Map[String, String],
   lazy val agents: Set[String] = agents(List())
 
   /**
-   * Get all the ports named in the connections.
+   * Get all the ports named in the connections
+   * at the current pos.
    */
   lazy val ports: Set[String] =
     conns flatMap { c => List(c.master, c.slave) }

@@ -28,6 +28,17 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     setup.conns(List("<rig1>")) should equal (Set(connRig))
   }
   
+  test("conns - Without an arguement gives connections at pos") {
+    val connTop = Connection("<main:rig1>#1.1", "<main:ag1>#1.1")
+    val connRig = Connection("<main.rig1:ag22>#2.2", "<main.rig1:ag23>#2.3")
+    
+    val setup1 = Setup(Set(connTop, connRig)).withPosUpdated(List())
+    setup1.conns should equal (Set(connTop))
+    
+    val setup2 = setup1.withPosUpdated(List("<rig1>"))
+    setup2.conns should equal (Set(connRig))
+  }
+  
   test("Conns - Connections come out without best names") {
     val connTop = Connection("<rig1>#1.1", "<ag1>#1.1")
     val connRig = Connection("<main.rig1:ag22>#2.2", "<main.rig1:ag23>#2.3")
@@ -293,7 +304,7 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     val setupV2 = setup.withPosUpdated(List("<rig1>"))
     
     setupV2.pos should equal (List("<rig1>"))
-    setupV2.conns should equal (Set(conn))
+    setupV2.allConns should equal (Set(conn))
   }
   
   test("withConnsReplaced - No args") {
@@ -330,12 +341,12 @@ class SetupSuite extends FunSuite with ShouldMatchers {
 
     val setupTop2 = setupTop.withConnsReplaced(List("<rig1>", "<rig2>"), Set(connsBottom2))
     
-    setupTop2.conns should equal (Set(connsTop))
+    setupTop2.conns(List()) should equal (Set(connsTop))
     setupTop2.rigs should equal (Set("<rig1>"))
     setupTop2.pos should equal (List("<rig1>", "<rig2>"))
     
     setupTop2.conns(List("<rig1>")) should equal (Set(connsMid))
-    setupTop2.conns(List("<rig1>", "<rig2>")) should equal (Set(connsBottom2))
+    setupTop2.conns should equal (Set(connsBottom2))
   }
 
   test("withConnsReplaced - Replacing a specific rig's conns - middle of hierarchy") {
@@ -349,12 +360,12 @@ class SetupSuite extends FunSuite with ShouldMatchers {
 
     val setupTop2 = setupTop.withConnsReplaced(List("<rig1>"), Set(connsMid2))
     
-    setupTop2.conns should equal (Set(connsTop))
+    setupTop2.conns(List()) should equal (Set(connsTop))
     setupTop2.rigs should equal (Set("<rig1>"))
     setupTop2.pos should equal (List("<rig1>", "<rig2>"))
     
     setupTop2.conns(List("<rig1>")) should equal (Set(connsMid2))
-    setupTop2.conns(List("<rig1>", "<rig2>")) should equal (Set(connsBottom))
+    setupTop2.conns should equal (Set(connsBottom))
   }
   
   test("withConnsReplaced - Replacing a specific rig's conns - top of hierarchy") {
@@ -368,12 +379,12 @@ class SetupSuite extends FunSuite with ShouldMatchers {
 
     val setupTop2 = setupTop.withConnsReplaced(List(), Set(connsTop2))
     
-    setupTop2.conns should equal (Set(connsTop2))
+    setupTop2.conns(List()) should equal (Set(connsTop2))
     setupTop2.rigs should equal (Set("<rig1>"))
     setupTop2.pos should equal (List("<rig1>", "<rig2>"))
     
     setupTop2.conns(List("<rig1>")) should equal (Set(connsMid))
-    setupTop2.conns(List("<rig1>", "<rig2>")) should equal (Set(connsBottom))
+    setupTop2.conns should equal (Set(connsBottom))
   }
   
   test("withConnsReplaced - If becomes disconnected from higher level, it should remain") {
@@ -386,7 +397,7 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     
     val setupTop2 = setupTop.withConnsReplaced(List(), Set(connsTop2))
     
-    setupTop2.conns(List("<rig1>")) should equal (Set(connsRig))
+    setupTop2.conns should equal (Set(connsRig))
   }
   
   test("withConnsReplaced - If rig appears in connections, should be able to ask for its connections") {
@@ -400,7 +411,7 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     val setupTopPlus = setupTop.withConnsReplaced(List(), Set(connsTop, connsTopPlus))
     
     setupTopPlus.rigs should equal (Set("<rig1>", "<rig3>"))
-    setupTopPlus.conns(List("<rig1>")) should equal (Set(connsRig))
+    setupTopPlus.conns should equal (Set(connsRig))
     setupTopPlus.conns(List("<rig3>")) should equal (Set())
   }
   
@@ -415,8 +426,8 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     
     val setupTop2 = setupTop.withConnsReplaced(List(), Set(connsTop2))
     
-    setupTop2.conns should equal (Set(connsTop2))
-    setupTop2.conns(List("<rig1>")) should equal (Set(connsRig))
+    setupTop2.conns(List()) should equal (Set(connsTop2))
+    setupTop2.conns should equal (Set(connsRig))
   }
 
 }
