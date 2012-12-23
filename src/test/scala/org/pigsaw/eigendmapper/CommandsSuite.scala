@@ -174,7 +174,7 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
     val setupTop2 = command.action(List())(setupTop, catcher.println)
 
     setupTop2.conns(List()) should equal(Set(connsTop))
-    setupTop2.rigs should equal(Set("<rig1>"))
+    setupTop2.rigs(List()) should equal(Set("<rig1>"))
     setupTop2.pos should equal(List("<rig1>"))
 
     setupTop2.conns should equal(Set(connsRigV2))

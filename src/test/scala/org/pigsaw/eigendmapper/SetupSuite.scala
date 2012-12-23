@@ -342,7 +342,7 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     val setupTop2 = setupTop.withConnsReplaced(List("<rig1>", "<rig2>"), Set(connsBottom2))
     
     setupTop2.conns(List()) should equal (Set(connsTop))
-    setupTop2.rigs should equal (Set("<rig1>"))
+    setupTop2.rigs(List()) should equal (Set("<rig1>"))
     setupTop2.pos should equal (List("<rig1>", "<rig2>"))
     
     setupTop2.conns(List("<rig1>")) should equal (Set(connsMid))
@@ -361,7 +361,7 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     val setupTop2 = setupTop.withConnsReplaced(List("<rig1>"), Set(connsMid2))
     
     setupTop2.conns(List()) should equal (Set(connsTop))
-    setupTop2.rigs should equal (Set("<rig1>"))
+    setupTop2.rigs(List()) should equal (Set("<rig1>"))
     setupTop2.pos should equal (List("<rig1>", "<rig2>"))
     
     setupTop2.conns(List("<rig1>")) should equal (Set(connsMid2))
@@ -380,7 +380,7 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     val setupTop2 = setupTop.withConnsReplaced(List(), Set(connsTop2))
     
     setupTop2.conns(List()) should equal (Set(connsTop2))
-    setupTop2.rigs should equal (Set("<rig1>"))
+    setupTop2.rigs(List()) should equal (Set("<rig1>"))
     setupTop2.pos should equal (List("<rig1>", "<rig2>"))
     
     setupTop2.conns(List("<rig1>")) should equal (Set(connsMid))
@@ -410,7 +410,7 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     
     val setupTopPlus = setupTop.withConnsReplaced(List(), Set(connsTop, connsTopPlus))
     
-    setupTopPlus.rigs should equal (Set("<rig1>", "<rig3>"))
+    setupTopPlus.rigs(List()) should equal (Set("<rig1>", "<rig3>"))
     setupTopPlus.conns should equal (Set(connsRig))
     setupTopPlus.conns(List("<rig3>")) should equal (Set())
   }
