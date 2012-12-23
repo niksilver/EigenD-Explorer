@@ -132,14 +132,19 @@ class Setup private(private val portNames0: Map[String, String],
     }
 
   /**
+   * Qualify all unqualified port names in this mapping to the current pos.
+   */
+  private def defaultQualifier(portNames2: Map[String, String]): Map[String, String] =
+    portNames2 map { fromTo =>
+      (fromTo._1.defaultQualifier(pos), fromTo._2.defaultQualifier(pos)) }
+  /**
    * Create a setup just like this, but with the map from port ID with node IDs
    * to port IDs with names replaced with the given one. Any port IDs which are
    * unqualified are given the current pos.
    * @param portNames2  The new map from port IDs (with node ID) to port IDs (with names)
    */
   def withPortNamesReplaced(portNames2: Map[String, String]): Setup = {
-    val namesQual = portNames2 map { fromTo =>
-      (fromTo._1.defaultQualifier(pos), fromTo._2.defaultQualifier(pos)) }
+    val namesQual = defaultQualifier(portNames2)
     new Setup(namesQual, allConns, pos)
   }
 
@@ -159,8 +164,7 @@ class Setup private(private val portNames0: Map[String, String],
    *     to port IDs (with names)
    */
   def withPortNames(portNames2: Map[String, String]): Setup = {
-    val namesQual = portNames2 map { fromTo =>
-      (fromTo._1.defaultQualifier(pos), fromTo._2.defaultQualifier(pos)) }
+    val namesQual = defaultQualifier(portNames2)
     new Setup(portNames0 ++ namesQual, allConns, pos)
   }
 
