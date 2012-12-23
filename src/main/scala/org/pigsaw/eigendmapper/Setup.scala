@@ -137,6 +137,7 @@ class Setup private(private val portNames0: Map[String, String],
   private def defaultQualifier(portNames2: Map[String, String]): Map[String, String] =
     portNames2 map { fromTo =>
       (fromTo._1.defaultQualifier(pos), fromTo._2.defaultQualifier(pos)) }
+  
   /**
    * Create a setup just like this, but with the map from port ID with node IDs
    * to port IDs with names replaced with the given one. Any port IDs which are
@@ -151,10 +152,12 @@ class Setup private(private val portNames0: Map[String, String],
   /**
    * Create a setup just like this, but with the specified port ID name mappings
    * removed.
-   * @param test  A test for each port ID, and if true its mapping is removed.
+   * @param test  A test for each port ID (with node name), and if true
+   *     its mapping is removed.
    */
   def withPortNamesRemoved(test: String => Boolean): Setup = {
-    this
+    val portNamesCleaned = allPortNames filterNot { pn => test(pn._1) }
+    new Setup(portNamesCleaned, conns0, pos)
   }
 
   /**
@@ -169,34 +172,33 @@ class Setup private(private val portNames0: Map[String, String],
   }
 
   /**
-   * Create a setup just like this, but the connections replaced at some
-   * point in the rig hierarchy
-   * @param pos2  The position of the rig to replace
+   * Create a setup just like this, but all the connections replaced.
+   * Unqualified port IDs will default to the current pos.
    * @param conns2  The new connections.
    */
-  def withConnsReplaced(pos2: List[String], conns2: Set[Connection]): Setup = {
-    val connsCleaned = allConns filterNot { _.hasPos(pos2) }
-    new Setup(portNames0, connsCleaned ++ conns2, pos)
+  def withConnsReplaced(conns2: Set[Connection]): Setup = {
+    val connsQual = conns2 map { _.defaultQualifier(pos) }
+    new Setup(portNames0, connsQual, pos)
   }
 
   /**
-   * Create a setup just like this, but with additional connections at some
-   * point in the rig hierarchy
-   * NB: Currently not clear if the conns2 are qualified.
-   * @param pos2  The position of the rig to replace
+   * Create a setup just like this, but with additional connections.
+   * Unqualified port IDs will default to the current pos.
    * @param conns2  The extra connections.
    */
-  def withConns(pos2: List[String], conns2: Set[Connection]): Setup = {
-    new Setup(portNames0, allConns ++ conns2, pos)
+  def withConns(conns2: Set[Connection]): Setup = {
+    val connsQual = conns2 map { _.defaultQualifier(pos) }
+    new Setup(portNames0, conns0 ++ connsQual, pos)
   }
-  
+
   /**
-   * Create a setup just like this, but the with connections replaced at the
-   * top level.
-   * @param conns2  The new connections.
+   * Create a setup just like this, but with connections that satisfy
+   * the given test removed.
+   * @param test  The test to see if a connection should be removed.
    */
-  def withConnsReplaced(conns2: Set[Connection]): Setup =
-    withConnsReplaced(List(), conns2)
+  def withConnsRemoved(test: Connection => Boolean): Setup = {
+    new Setup(portNames0, allConns filterNot test, pos)
+  }
 
   /**
    * Create a new setup just like this, but with the pos updated.
