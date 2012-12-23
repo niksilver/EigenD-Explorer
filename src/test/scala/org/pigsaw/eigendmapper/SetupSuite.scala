@@ -119,6 +119,23 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     setup2.allPortNames should equal (portNames2)
   }
   
+  test("withPortNamesReplaced - Defaults pos to current pos") {
+    val portNames1 = Map(
+        "<rig1>#1.1" -> "<main:rig1> oneone",
+        "<main:ag1>#1.1" -> "<ag1> agone agone")
+    val portNames2 = Map(
+        "<main:rig2>#2.2" -> "<main:rig2> twotwo",
+        "<main:ag2>#2.2" -> "<main:ag2> agtwo agtwo")
+    
+    val setup1 = Setup().withPosUpdated(List("<rig2>")).withPortNamesReplaced(portNames1)
+    
+    setup1.allPortNames should equal (
+        Map(
+        "<main.rig2:rig1>#1.1" -> "<main:rig1> oneone",
+        "<main:ag1>#1.1" -> "<main.rig2:ag1> agone agone")
+    )
+  }
+  
   test("withPortNames - Make sure it adds port names") {
     val portNames1 = Map(
         "<main:rig1>#1.1" -> "<main:rig1> oneone",

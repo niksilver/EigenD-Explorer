@@ -138,7 +138,9 @@ class Setup private(private val portNames0: Map[String, String],
    * @param portNames2  The new map from port IDs (with node ID) to port IDs (with names)
    */
   def withPortNamesReplaced(portNames2: Map[String, String]): Setup = {
-    new Setup(portNames2, allConns, pos)
+    val namesQual = portNames2 map { fromTo =>
+      (fromTo._1.defaultQualifier(pos), fromTo._2.defaultQualifier(pos)) }
+    new Setup(namesQual, allConns, pos)
   }
 
   /**
