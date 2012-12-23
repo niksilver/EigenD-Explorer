@@ -157,7 +157,7 @@ class Setup private(private val portNames0: Map[String, String],
    */
   def withPortNamesRemoved(test: String => Boolean): Setup = {
     val portNamesCleaned = allPortNames filterNot { pn => test(pn._1) }
-    new Setup(portNamesCleaned, conns0, pos)
+    new Setup(portNamesCleaned, allConns, pos)
   }
 
   /**
@@ -188,7 +188,7 @@ class Setup private(private val portNames0: Map[String, String],
    */
   def withConns(conns2: Set[Connection]): Setup = {
     val connsQual = conns2 map { _.defaultQualifier(pos) }
-    new Setup(portNames0, conns0 ++ connsQual, pos)
+    new Setup(portNames0, allConns ++ connsQual, pos)
   }
 
   /**

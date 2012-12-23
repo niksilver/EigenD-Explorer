@@ -4,8 +4,8 @@ import org.scalatest.FunSuite
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.matchers.ShouldMatchers
-
 import org.pigsaw.eigendmapper.Preamble._
+import com.sun.org.apache.xalan.internal.xsltc.compiler.WithParam
 
 @RunWith(classOf[JUnitRunner])
 class SetupSuite extends FunSuite with ShouldMatchers {
@@ -100,96 +100,6 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     // Not specified; should default
     setup.portIDNamed("<main:ag1>#1.1") should equal ("<main:ag1>#1.1")
     setup.portIDNamed( "<main.rig1:ag23>#2.3") should equal ("<main.rig1:ag23>#2.3")
-  }
-  
-  test("withPortNamesReplaced - Make sure it replaces") {
-    val portNames1 = Map(
-        "<main:rig1>#1.1" -> "<main:rig1> oneone",
-        "<main:ag1>#1.1" -> "<main:ag1> agone agone")
-    val portNames2 = Map(
-        "<main:rig2>#2.2" -> "<main:rig2> twotwo",
-        "<main:ag2>#2.2" -> "<main:ag2> agtwo agtwo")
-    
-    val setup1 = Setup().withPortNamesReplaced(portNames1)
-    
-    setup1.allPortNames should equal (portNames1)
-    
-    val setup2 = setup1.withPortNamesReplaced(portNames2)
-    
-    setup2.allPortNames should equal (portNames2)
-  }
-  
-  test("withPortNamesReplaced - Defaults pos to current pos") {
-    val portNames1 = Map(
-        "<rig1>#1.1" -> "<main:rig1> oneone",
-        "<main:ag1>#1.1" -> "<ag1> agone agone")
-    val portNames2 = Map(
-        "<main:rig2>#2.2" -> "<main:rig2> twotwo",
-        "<main:ag2>#2.2" -> "<main:ag2> agtwo agtwo")
-    
-    val setup1 = Setup().withPosUpdated(List("<rig2>")).withPortNamesReplaced(portNames1)
-    
-    setup1.allPortNames should equal (
-        Map(
-        "<main.rig2:rig1>#1.1" -> "<main:rig1> oneone",
-        "<main:ag1>#1.1" -> "<main.rig2:ag1> agone agone")
-    )
-  }
-  
-  test("withPortNamesRemoved - Removes port names") {
-    val portNames = Map(
-        "<main:rig1>#1.1" -> "<main:rig1> oneone",
-        "<main:ag1>#1.1" -> "<main:ag1> agone agone",
-        "<main.rig1:ag22>#2.2" -> "<main.rig1:ag22> twotwo",
-        "<main.rig1:xx23>#2.3" -> "<main.rig1:xx23> two three")
-
-    val setup1 = Setup().withPortNames(portNames)
-    
-    val test = { portID: String => portID.unqualified startsWith "<ag" }
-    val setup2 = setup1.withPortNamesRemoved(test)
-    
-    val expectedPortNames = Map(
-        "<main:rig1>#1.1" -> "<main:rig1> oneone",
-        "<main.rig1:xx23>#2.3" -> "<main.rig1:xx23> two three")
-        
-    setup2.allPortNames should equal (expectedPortNames)
-  }
-  
-  test("withPortNames - Make sure it adds port names") {
-    val portNames1 = Map(
-        "<main:rig1>#1.1" -> "<main:rig1> oneone",
-        "<main:ag1>#1.1" -> "<main:ag1> agone agone")
-    val portNames2 = Map(
-        "<main:rig2>#2.2" -> "<main:rig2> twotwo",
-        "<main:ag2>#2.2" -> "<main:ag2> agtwo agtwo")
-    
-    val setup1 = Setup().withPortNamesReplaced(portNames1)
-    
-    setup1.allPortNames should equal (portNames1)
-    
-    val setup2 = setup1.withPortNames(portNames2)
-    
-    setup2.allPortNames should equal (portNames1 ++ portNames2)
-  }
-  
-  test("withPortNames - Defaults unqualified ports to current pos") {
-    val portNames1 = Map(
-        "<main:rig1>#1.1" -> "<main:rig1> oneone",
-        "<main:ag1>#1.1" -> "<main:ag1> agone agone")
-    val portNames2 = Map(
-        "<rig2>#2.2" -> "<main:rig2> twotwo",
-        "<main:ag2>#2.2" -> "<ag2> agtwo agtwo")
-    val portNames2Qual = Map(
-        "<main.rig9:rig2>#2.2" -> "<main:rig2> twotwo",
-        "<main:ag2>#2.2" -> "<main.rig9:ag2> agtwo agtwo")
-    
-    val setup1 = Setup().withPortNamesReplaced(portNames1)
-    
-    setup1.allPortNames should equal (portNames1)
-    
-    val setup2 = setup1.withPosUpdated(List("<rig9>")).withPortNames(portNames2)
-    
-    setup2.allPortNames should equal (portNames1 ++ portNames2Qual)
   }
 
   test("Agents") {
@@ -373,6 +283,110 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     setupV2.pos should equal (List("<rig1>"))
     setupV2.allConns should equal (Set(conn))
   }
+  
+  test("withPortNamesReplaced - Make sure it replaces") {
+    val portNames1 = Map(
+        "<main:rig1>#1.1" -> "<main:rig1> oneone",
+        "<main:ag1>#1.1" -> "<main:ag1> agone agone")
+    val portNames2 = Map(
+        "<main:rig2>#2.2" -> "<main:rig2> twotwo",
+        "<main:ag2>#2.2" -> "<main:ag2> agtwo agtwo")
+    
+    val setup1 = Setup().withPortNamesReplaced(portNames1)
+    
+    setup1.allPortNames should equal (portNames1)
+    
+    val setup2 = setup1.withPortNamesReplaced(portNames2)
+    
+    setup2.allPortNames should equal (portNames2)
+  }
+  
+  test("withPortNamesReplaced - Defaults pos to current pos") {
+    val portNames1 = Map(
+        "<rig1>#1.1" -> "<main:rig1> oneone",
+        "<main:ag1>#1.1" -> "<ag1> agone agone")
+    val portNames2 = Map(
+        "<main:rig2>#2.2" -> "<main:rig2> twotwo",
+        "<main:ag2>#2.2" -> "<main:ag2> agtwo agtwo")
+    
+    val setup1 = Setup().withPosUpdated(List("<rig2>")).withPortNamesReplaced(portNames1)
+    
+    setup1.allPortNames should equal (
+        Map(
+        "<main.rig2:rig1>#1.1" -> "<main:rig1> oneone",
+        "<main:ag1>#1.1" -> "<main.rig2:ag1> agone agone")
+    )
+  }
+  
+  test("withPortNamesRemoved - Removes port names") {
+    val portNames = Map(
+        "<main:rig1>#1.1" -> "<main:rig1> oneone",
+        "<main:ag1>#1.1" -> "<main:ag1> agone agone",
+        "<main.rig1:ag22>#2.2" -> "<main.rig1:ag22> twotwo",
+        "<main.rig1:xx23>#2.3" -> "<main.rig1:xx23> two three")
+
+    val setup1 = Setup().withPortNames(portNames)
+    
+    val test = { portID: String => portID.unqualified startsWith "<ag" }
+    val setup2 = setup1.withPortNamesRemoved(test)
+    
+    val expectedPortNames = Map(
+        "<main:rig1>#1.1" -> "<main:rig1> oneone",
+        "<main.rig1:xx23>#2.3" -> "<main.rig1:xx23> two three")
+        
+    setup2.allPortNames should equal (expectedPortNames)
+  }
+  
+  test("withPortNamesRemoved - Retains unqualified agent names correctly") {
+    val conn = Connection("<rig1>#1.1", "<ag1>#1.1")
+
+    // The unqualified port names should default to the current pos
+    // which is initially the top level.
+    
+    val setup1 = Setup(Set(conn)).withPosUpdated(List("<rig9>"))
+    val setup2 = setup1.withPortNamesRemoved({ _ => true })
+    
+    val expectedConn = Connection("<main:rig1>#1.1", "<main:ag1>#1.1")
+    
+    setup2.allConns should equal (Set(expectedConn))
+  }
+  
+  test("withPortNames - Make sure it adds port names") {
+    val portNames1 = Map(
+        "<main:rig1>#1.1" -> "<main:rig1> oneone",
+        "<main:ag1>#1.1" -> "<main:ag1> agone agone")
+    val portNames2 = Map(
+        "<main:rig2>#2.2" -> "<main:rig2> twotwo",
+        "<main:ag2>#2.2" -> "<main:ag2> agtwo agtwo")
+    
+    val setup1 = Setup().withPortNamesReplaced(portNames1)
+    
+    setup1.allPortNames should equal (portNames1)
+    
+    val setup2 = setup1.withPortNames(portNames2)
+    
+    setup2.allPortNames should equal (portNames1 ++ portNames2)
+  }
+  
+  test("withPortNames - Defaults unqualified ports to current pos") {
+    val portNames1 = Map(
+        "<main:rig1>#1.1" -> "<main:rig1> oneone",
+        "<main:ag1>#1.1" -> "<main:ag1> agone agone")
+    val portNames2 = Map(
+        "<rig2>#2.2" -> "<main:rig2> twotwo",
+        "<main:ag2>#2.2" -> "<ag2> agtwo agtwo")
+    val portNames2Qual = Map(
+        "<main.rig9:rig2>#2.2" -> "<main:rig2> twotwo",
+        "<main:ag2>#2.2" -> "<main.rig9:ag2> agtwo agtwo")
+    
+    val setup1 = Setup().withPortNamesReplaced(portNames1)
+    
+    setup1.allPortNames should equal (portNames1)
+    
+    val setup2 = setup1.withPosUpdated(List("<rig9>")).withPortNames(portNames2)
+    
+    setup2.allPortNames should equal (portNames1 ++ portNames2Qual)
+  }
 
   test("withConnsReplaced - Replaces all conns") {
     val connTopA = Connection("<main:rig1>#1.1", "<main:ag1>#1.1")
@@ -444,6 +458,20 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     val conn4Qual = Connection("<main:cog11>#1.1", "<main.rig1:dig1>#1.1")
     
     setup2.allConns should equal (Set(conn1, conn2, conn3Qual, conn4Qual))
+  }
+  
+  test("withConns - Retains unqualified agent names correctly") {
+    val conn = Connection("<rig1>#1.1", "<ag1>#1.1")
+
+    // The unqualified port names should default to the current pos
+    // which is initially the top level.
+    
+    val setup1 = Setup().withConns(Set(conn))
+    val setup2 = setup1.withPosUpdated(List("<rig9>"))
+    
+    val expectedConn = Connection("<main:rig1>#1.1", "<main:ag1>#1.1")
+    
+    setup2.allConns should equal (Set(expectedConn))
   }
   
   test("withConnsRemoved - Removes specified connections") {
