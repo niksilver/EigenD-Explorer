@@ -116,9 +116,9 @@ class Setup private(private val portNames0: Map[String, String],
     c map { _.unqualified }
 
   /**
-   * The rigs in this setup at the top level. E.g. `"<rig2>"`.
+   * The rigs in this setup at the current pos, unqualified. E.g. `"<rig2>"`.
    */
-  def rigs: Set[String] = rigs(List())
+  def rigs: Set[String] = rigs(pos)
 
   /**
    * The rigs in this setup at the given pos.

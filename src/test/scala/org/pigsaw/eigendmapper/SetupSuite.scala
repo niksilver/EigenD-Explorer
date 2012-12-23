@@ -28,7 +28,7 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     setup.conns(List("<rig1>")) should equal (Set(connRig))
   }
   
-  test("conns - Without an arguement gives connections at pos") {
+  test("conns - Without an argument gives connections at pos") {
     val connTop = Connection("<main:rig1>#1.1", "<main:ag1>#1.1")
     val connRig = Connection("<main.rig1:ag22>#2.2", "<main.rig1:ag23>#2.3")
     
@@ -293,6 +293,17 @@ class SetupSuite extends FunSuite with ShouldMatchers {
 
     setup.rigs should equal (Set("<rig1>"))
     setup.rigs(List("<rig1>")) should equal (Set("<rig2>"))
+  }
+  
+  test("Rigs - Defaults to current pos") {
+    val connTop = Connection("<main:rig1>#1.1", "<main:ag1>#1.1")
+    val connRig = Connection("<main.rig1:rig2>#2.2", "<main.rig1:ag23>#2.3")
+    
+    val setup1 = Setup(Set(connTop, connRig)).withPosUpdated(List())
+    setup1.rigs should equal (Set("<rig1>"))
+    
+    val setup2 = setup1.withPosUpdated(List("<rig1>"))
+    setup2.rigs should equal (Set("<rig2>"))
   }
   
   test("Position - Can update position") {
