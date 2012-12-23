@@ -221,23 +221,27 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
     val setup = command.action(List())(Setup(), catcher.println)
     
     setup.conns.size should equal (5)
+    val processedPorts = setup.ports map setup.portIDNamed
     
-    setup.ports should contain ("<main:ag1> one one")
-    setup.ports should contain ("<main:ag1>#1.2")
-    setup.ports should contain ("<main:ag1>#1.3")
-    setup.ports should contain ("<main:ag1>#1.4")
-    setup.ports should contain ("<main:ag1>#1.22")
+    processedPorts should contain ("<main:ag1> one one")
+    processedPorts should contain ("<main:ag1>#1.2")
+    processedPorts should contain ("<main:ag1>#1.3")
+    processedPorts should contain ("<main:ag1>#1.4")
+    processedPorts should contain ("<main:ag1>#1.22")
     
-    setup.ports should contain ("<main:ag2>#2.1")
-    setup.ports should contain ("<main:ag2> two two")
-    setup.ports should contain ("<main:ag2> two three")
-    setup.ports should contain ("<main:ag2>#2.4")
+    processedPorts should contain ("<main:ag2>#2.1")
+    processedPorts should contain ("<main:ag2> two two")
+    processedPorts should contain ("<main:ag2> two three")
+    processedPorts should contain ("<main:ag2>#2.4")
     
-    setup.conns should contain (Connection("<main:ag1> one one", "<main:ag2>#2.1"))
-    setup.conns should contain (Connection("<main:ag1>#1.2", "<main:ag2> two two"))
-    setup.conns should contain (Connection("<main:ag1>#1.3", "<main:ag2> two three"))
-    setup.conns should contain (Connection("<main:ag1>#1.4", "<main:ag2>#2.4"))
-    setup.conns should contain (Connection("<main:ag2> two two", "<main:ag1>#1.22"))
+    val processedConns = setup.conns map { c =>
+      Connection(setup.portIDNamed(c.master), setup.portIDNamed(c.slave)) }
+    
+    processedConns should contain (Connection("<main:ag1> one one", "<main:ag2>#2.1"))
+    processedConns should contain (Connection("<main:ag1>#1.2", "<main:ag2> two two"))
+    processedConns should contain (Connection("<main:ag1>#1.3", "<main:ag2> two three"))
+    processedConns should contain (Connection("<main:ag1>#1.4", "<main:ag2>#2.4"))
+    processedConns should contain (Connection("<main:ag2> two two", "<main:ag1>#1.22"))
   }
 
   test("Into - Can go into an empty rig") {

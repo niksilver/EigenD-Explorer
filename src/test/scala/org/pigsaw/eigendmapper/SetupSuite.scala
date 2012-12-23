@@ -28,6 +28,25 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     setup.conns(List("<rig1>")) should equal (Set(connRig))
   }
   
+  test("Conns - Connections come out without best names") {
+    val connTop = Connection("<rig1>#1.1", "<ag1>#1.1")
+    val connRig = Connection("<main.rig1:ag22>#2.2", "<main.rig1:ag23>#2.3")
+    
+    val portNames = Map(
+        "<rig1>#1.1" -> "<rig1> oneone",
+        "<ag1>#1.1" -> "<ag1> agone agone",
+        "<main.rig1:ag22>#2.2" -> "<main.rig1:ag22> twotwo",
+        "<main.rig1:ag23>#2.3" -> "<main.rig1:ag23> two three")
+
+    val connTopQual = Connection("<main:rig1>#1.1", "<main:ag1>#1.1")
+
+    val setup = Setup(Set(connTop, connRig)).
+      withPortNamesReplaced(portNames)
+    
+    setup.conns(List()) should equal (Set(connTopQual))
+    setup.conns(List("<rig1>")) should equal (Set(connRig))
+  }
+  
   test("allConns - Gets all connections, fully qualified") {
     val connTop = Connection("<rig1>#1.1", "<ag1>#1.1")
     val connRig = Connection("<main.rig1:ag22>#2.2", "<main.rig1:ag23>#2.3")
@@ -37,6 +56,73 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     val setup = Setup(Set(connTop, connRig))
     
     setup.allConns should equal (Set(connTopQual, connRig))
+  }
+  
+  test("allPortNames - Expect port names to be fully qualified") {
+    val portNames = Map(
+        "<rig1>#1.1" -> "<rig1> oneone",
+        "<ag1>#1.1" -> "<ag1> agone agone",
+        "<main.rig1:ag22>#2.2" -> "<main.rig1:ag22> twotwo",
+        "<main.rig1:ag23>#2.3" -> "<main.rig1:ag23> two three")
+    val portNamesQual = Map(
+        "<main:rig1>#1.1" -> "<main:rig1> oneone",
+        "<main:ag1>#1.1" -> "<main:ag1> agone agone",
+        "<main.rig1:ag22>#2.2" -> "<main.rig1:ag22> twotwo",
+        "<main.rig1:ag23>#2.3" -> "<main.rig1:ag23> two three")
+    
+    val setup = Setup().withPortNamesReplaced(portNames)
+    
+    setup.allPortNames should equal (portNamesQual)
+  }
+  
+  test("portIDNamed - Maps names which are and aren't specified") {
+    val portNames = Map(
+        "<rig1>#1.1" -> "<rig1> oneone",
+        "<main.rig1:ag22>#2.2" -> "<main.rig1:ag22> twotwo")
+    
+    val setup = Setup().withPortNamesReplaced(portNames)
+    
+    // Specified
+    setup.portIDNamed("<main:rig1>#1.1") should equal ("<main:rig1> oneone")
+    setup.portIDNamed("<main.rig1:ag22>#2.2") should equal ("<main.rig1:ag22> twotwo")
+    
+    // Not specified; should default
+    setup.portIDNamed("<main:ag1>#1.1") should equal ("<main:ag1>#1.1")
+    setup.portIDNamed( "<main.rig1:ag23>#2.3") should equal ("<main.rig1:ag23>#2.3")
+  }
+  
+  test("withPortNamesReplaced - Make sure it replaces") {
+    val portNames1 = Map(
+        "<main:rig1>#1.1" -> "<main:rig1> oneone",
+        "<main:ag1>#1.1" -> "<main:ag1> agone agone")
+    val portNames2 = Map(
+        "<main:rig2>#2.2" -> "<main:rig2> twotwo",
+        "<main:ag2>#2.2" -> "<main:ag2> agtwo agtwo")
+    
+    val setup1 = Setup().withPortNamesReplaced(portNames1)
+    
+    setup1.allPortNames should equal (portNames1)
+    
+    val setup2 = setup1.withPortNamesReplaced(portNames2)
+    
+    setup2.allPortNames should equal (portNames2)
+  }
+  
+  test("withPortNames - Make sure it adds port names") {
+    val portNames1 = Map(
+        "<main:rig1>#1.1" -> "<main:rig1> oneone",
+        "<main:ag1>#1.1" -> "<main:ag1> agone agone")
+    val portNames2 = Map(
+        "<main:rig2>#2.2" -> "<main:rig2> twotwo",
+        "<main:ag2>#2.2" -> "<main:ag2> agtwo agtwo")
+    
+    val setup1 = Setup().withPortNamesReplaced(portNames1)
+    
+    setup1.allPortNames should equal (portNames1)
+    
+    val setup2 = setup1.withPortNames(portNames2)
+    
+    setup2.allPortNames should equal (portNames1 ++ portNames2)
   }
 
   test("Agents") {
@@ -112,110 +198,6 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     conns2 should contain("<main:b>" -> b2)
   }
 
-  test("Best names - Add a slave name, expect a slave updated automatically") {
-    val port_a_unnamed = "<a>#1.1"
-    val port_b_named = "<b> b12"
-    val port_b_unnamed = "<b>#1.2"
-    val port_c_unnamed = "<c>#1.3"
-    
-    val portMap_for_b = Map("1.2" -> "b12")
-
-    val conn_aubu = Connection(port_a_unnamed, port_b_unnamed)
-
-    val connSet1 = Set(conn_aubu)
-
-    connSet1.size should equal(1)
-    connSet1 should contain(conn_aubu)
-
-    val conn_cubn = Connection(port_c_unnamed, port_b_named) // We'll add this
-    val conn_aubn = Connection(port_a_unnamed, port_b_named) // This should get created
-
-    val connSet2 = Setup(connSet1 + conn_cubn).withPortNames("<b>", portMap_for_b).conns
-
-    connSet2.size should equal(2)
-    connSet2 should contain(conn_cubn.defaultQualifier(List()))
-    connSet2 should not contain (conn_aubu.defaultQualifier(List()))
-    connSet2 should contain(conn_aubn.defaultQualifier(List()))
-  }
-
-  test("Best names - Add a slave name, expect a master updated automatically") {
-    val port_a_unnamed = "<a>#1.1"
-    val port_b_named = "<b> b12"
-    val port_b_unnamed = "<b>#1.2"
-    val port_c_unnamed = "<c>#1.3"
-    
-    val portMap_for_b = Map("1.2" -> "b12")
-
-    val conn_buau = Connection(port_b_unnamed, port_a_unnamed)
-
-    val connSet1 = Set(conn_buau)
-
-    connSet1.size should equal(1)
-    connSet1 should contain(conn_buau)
-
-    val conn_cubn = Connection(port_c_unnamed, port_b_named) // We'll add this
-    val conn_bnau = Connection(port_b_named, port_a_unnamed) // This should get created
-
-    val connSet2 = Setup(connSet1 + conn_cubn).withPortNames("<b>", portMap_for_b).conns
-
-    connSet2.size should equal(2)
-    connSet2 should contain(conn_cubn.defaultQualifier(List()))
-    connSet2 should not contain (conn_buau.defaultQualifier(List()))
-    connSet2 should contain(conn_bnau.defaultQualifier(List()))
-  }
-
-  test("Best names - Add a master name, expect a slave updated automatically") {
-    val port_a_unnamed = "<a>#1.1"
-    val port_b_named = "<b> b12"
-    val port_b_unnamed = "<b>#1.2"
-    val port_c_unnamed = "<c>#1.3"
-    
-    val portMap_for_b = Map("1.2" -> "b12")
-
-    val conn_aubu = Connection(port_a_unnamed, port_b_unnamed)
-
-    val connSet1 = Set(conn_aubu)
-
-    connSet1.size should equal(1)
-    connSet1 should contain(conn_aubu)
-
-    val conn_bncu = Connection(port_b_named, port_c_unnamed) // We'll add this
-    val conn_aubn = Connection(port_a_unnamed, port_b_named) // This should get created
-
-    val connSet2 = Setup(connSet1 + conn_bncu).withPortNames("<b>", portMap_for_b).conns
-
-    connSet2.size should equal(2)
-    connSet2 should contain(conn_bncu.defaultQualifier(List()))
-    connSet2 should not contain (conn_aubu.defaultQualifier(List()))
-    connSet2 should contain(conn_aubn.defaultQualifier(List()))
-  }
-
-  test("Unify - Add a master name, expect a master updated automatically") {
-    val port_a_unnamed = "<a>#1.1"
-    val port_b_named = "<b> b12"
-    val port_b_unnamed = "<b>#1.2"
-    val port_c_unnamed = "<c>#1.3"
-    
-    val portMap_for_b = Map("1.2" -> "b12")
-
-    val conn_buau = Connection(port_b_unnamed, port_a_unnamed)
-
-    val connSet1 = Set(conn_buau)
-
-    connSet1.size should equal(1)
-    connSet1 should contain(conn_buau)
-
-    val conn_bncu = Connection(port_b_named, port_c_unnamed) // We'll add this
-    val conn_bnau = Connection(port_b_named, port_a_unnamed) // This should get created
-
-    val connSet2 = Setup(connSet1 + conn_bncu).withPortNames("<b>", portMap_for_b).conns
-
-    connSet2.size should equal(2)
-    connSet2 should contain(conn_bncu.defaultQualifier(List()))
-    connSet2 should not contain (conn_buau.defaultQualifier(List()))
-    connSet2 should contain(conn_bnau.defaultQualifier(List()))
-  }
-
   test("Port IDs are automatically qualified") {
     val aUnqual = "<a>#1.1"
     val aQual = "<main:a>#1.1"
@@ -279,26 +261,6 @@ class SetupSuite extends FunSuite with ShouldMatchers {
   test("Apply - Should allow empty setup with no params") {
     val setup = Setup()
     setup.agents.size should be(0)
-  }
-
-  test("Constructor - Make sure it unifies") {
-    val port_a_unnamed = "<a>#1.1"
-    val port_b_named = "<b> b12"
-    val port_b_unnamed = "<b>#1.2"
-    val port_c_unnamed = "<c>#1.3"
-    
-    val portMap_for_b = Map("1.2" -> "b12")
-
-    val conn_buau = Connection(port_b_unnamed, port_a_unnamed)
-    val conn_bncu = Connection(port_b_named, port_c_unnamed) // We'll add this
-    val conn_bnau = Connection(port_b_named, port_a_unnamed) // This should get created
-
-    val conns = Setup(Set(conn_buau, conn_bncu)).withPortNames("<b>", portMap_for_b).conns
-
-    conns.size should equal(2)
-    conns should contain(conn_bncu.defaultQualifier(List()))
-    conns should not contain (conn_buau.defaultQualifier(List()))
-    conns should contain(conn_bnau.defaultQualifier(List()))
   }
 
   test("Rigs - Detects rig names") {

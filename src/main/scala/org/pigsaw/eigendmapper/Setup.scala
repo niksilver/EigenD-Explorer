@@ -6,31 +6,35 @@ import Preamble._
 
 /**
  * A particular set of connections
- * @param portNames0  A map from each agent name (unqualified)
- *     to a map from each node ID to its cname (if any).
- *     The we can map from `<cycler1>` to `3.4` to `beat input`.
+ * @param portNames0  A map from a port ID (with a node ID) to the same
+ *     port ID but with a name.
  * @param conns0  The set of connections in this setup. Do not use this
  *     internally; use allConns instead.
  * @param pos  The position in the rig hierarchy in which we're currently
  *     interested. An empty list means the top level; List("&lt;rig3&gt")
  *     means rig3 within the top level, and so on.
  */
-class Setup private(private val portNames0: Map[String, Map[String, String]],
+class Setup private(private val portNames0: Map[String, String],
     private val conns0: Set[Connection],
     val pos: List[String]) {
+
+  /**
+   * The mapping from each port ID (with node ID) to the port ID with
+   * a name. All port IDs are fully qualified.
+   */
+  lazy val allPortNames: Map[String, String] =
+    portNames0 map { pn =>
+      ( pn._1.defaultQualifier(List()), pn._2.defaultQualifier(List()) )
+    }
+
+  /**
+   * The named version of a port ID, or the port ID itself if there
+   * is no name. The given port ID is expected to be fully
+   * qualified. The returned port ID is fully qualified.
+   */
+  def portIDNamed(portID: String): String =
+    allPortNames.getOrElse(portID, portID)
   
-  /**
-   * The port names at a given position,
-   * including their qualifiers
-   */
-  def portNames(p: List[String]): Map[String, Map[String, String]] =
-    portNames0 filter { _._1 hasPos p }
-
-  /**
-   * The port names at the top level
-   */
-  def portNames: Map[String, Map[String, String]] = portNames(List())
-
   /**
    * Get all the connections, fully qualified.
    */
@@ -41,7 +45,7 @@ class Setup private(private val portNames0: Map[String, Map[String, String]],
    * The connections at a given pos, including their qualifiers.
    */
   def conns(p: List[String]): Set[Connection] =
-    bestNames(allConns filter { _ hasPos p })
+    allConns filter { _ hasPos p }
 
   /**
    * The connections in this setup at the top level, with agent names
@@ -92,15 +96,15 @@ class Setup private(private val portNames0: Map[String, Map[String, String]],
    * carry a port name, then those names are applied wherever those
    * ports are used.
    */
-  private def bestNames(cos: Set[Connection]): Set[Connection] = {
-    def bestNameMap(agent: String): Map[String, String] =
-      portNames.getOrElse(agent, Map())
-    def bestForm(portID: String): String = {
-      val bestForms = bestNameMap(portID.agent)
-      portID.bestForm(bestForms)
-    }
-    cos map { c => Connection(bestForm(c.master), bestForm(c.slave)) }
-  }
+//  private def bestNamesDeprected(cos: Set[Connection]): Set[Connection] = {
+//    def bestNameMap(agent: String): Map[String, String] =
+//      portNames.getOrElse(agent, Map())
+//    def bestForm(portID: String): String = {
+//      val bestForms = bestNameMap(portID.agent)
+//      portID.bestForm(bestForms)
+//    }
+//    cos map { c => Connection(bestForm(c.master), bestForm(c.slave)) }
+//  }
 
   /**
    * Make an unqualified version of a set of connections, in which
@@ -127,36 +131,33 @@ class Setup private(private val portNames0: Map[String, Map[String, String]],
     }
 
   /**
-   * Create a setup just like this, but the with the agent/nodeID/port name
+   * Create a setup just like this, but with the map from port ID with node IDs
+   * to port IDs with names replaced with the given one.
    * map replaced at some point in the rig hierarchy
-   * @param pos2  The position of the rig to replace
-   * @param portNames2  The new mapping
+   * @param portNames2  The new map from port IDs (with node ID) to port IDs (with names)
    */
-  def withPortNamesReplaced(pos2: List[String], portNames2: Map[String, Map[String, String]]): Setup = {
-    val portNamesCleaned = portNames0 filterNot { _._1.hasPos(pos2) }
-    new Setup(portNamesCleaned ++ portNames2, this.allConns, this.pos)
+  def withPortNamesReplaced(portNames2: Map[String, String]): Setup = {
+    new Setup(portNames2, allConns, pos)
   }
 
   /**
-   * Create a setup just like this, but  at some point in the rig hierarchy
-   * with additional port node IDs for a particular agent.
-   * @param pos2  The position of the rig to replace
-   * @param agent  The agent name whose node IDs we have names for
-   * @param map  The map from node IDs to port names for the agent
+   * Create a setup just like this, but with the specified port ID name mappings
+   * removed.
+   * @param test  A test for each port ID, and if true its mapping is removed.
    */
-  def withPortNames(pos2: List[String], agent: String, map: Map[String, String]): Setup = {
-    new Setup(portNames0 ++ Map(agent.qualified(pos2) -> map), this.allConns, this.pos)
+  def withPortNamesRemoved(test: String => Boolean): Setup = {
+    this
   }
 
   /**
-   * Create a setup just like this, but with an additional mapping of
-   * port names for an agent.
-   * @param agent  The agent whose port names we have.
-   * @param map  A mapping from each node ID in the agent (e.g. `"15.6.5"`)
-   *     to its port name (e.g. `"beat bar input"`).
+   * Create a setup just like this, but with the
+   * additional port names mappings.
+   * @param portNames2  The additional mappings from port IDs (with node ID)
+   *     to port IDs (with names)
    */
-  def withPortNames(agent: String, map: Map[String, String]): Setup =
-    withPortNames(List(), agent, map)
+  def withPortNames(portNames2: Map[String, String]): Setup = {
+    new Setup(portNames0 ++ portNames2, allConns, pos)
+  }
 
   /**
    * Create a setup just like this, but the connections replaced at some
