@@ -22,10 +22,9 @@ class Setup private(private val portNames0: Map[String, String],
    * The mapping from each port ID (with node ID) to the port ID with
    * a name. All port IDs are fully qualified.
    */
-  lazy val allPortNames: Map[String, String] =
-    portNames0 map { pn =>
-      ( pn._1.defaultQualifier(List()), pn._2.defaultQualifier(List()) )
-    }
+  lazy val allPortNames: Map[String, String] = portNames0
+  // Note that it's okay to use portNames0 because whenever it's set
+  // it also gets fully qualified, too.
 
   /**
    * The named version of a port ID, or the port ID itself if there
@@ -33,7 +32,7 @@ class Setup private(private val portNames0: Map[String, String],
    * qualified. The returned port ID is fully qualified.
    */
   def portIDNamed(portID: String): String =
-    allPortNames.getOrElse(portID, portID)
+    portNames0.getOrElse(portID, portID)
   
   /**
    * Get all the connections, fully qualified.

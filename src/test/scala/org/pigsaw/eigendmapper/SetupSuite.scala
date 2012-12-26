@@ -69,6 +69,14 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     setup.allConns should equal (Set(connTopQual, connRig))
   }
   
+  test("allConns - Defaults to correct rig/pos") {
+    val conn = Connection("<rig1>#1.1", "<ag1>#1.1")
+    
+    val setup = Setup(Set(conn)).withPosUpdated(List("<rig8>"))
+    
+    setup.allConns should equal (Set(Connection("<main:rig1>#1.1", "<main:ag1>#1.1")))
+  }
+  
   test("allPortNames - Expect port names to be fully qualified") {
     val portNames = Map(
         "<rig1>#1.1" -> "<rig1> oneone",
@@ -196,43 +204,6 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     conns2 should contain(Connection(aQual, bQual))
     conns2 should contain(Connection(bQual, cQual))
 
-  }
-
-  test("Equals - Simple setups") {
-    Setup() should equal (Setup())
-
-    val conn1 = Connection("<rig3> three", "<fff> five")
-    
-    Setup(Set(conn1)) should equal (Setup(Set(conn1)))
-  }
-  
-  test("Equals - with a rig") {
-    // One setup
-    val conn1 = Connection("<rig3> three", "<fff> five")
-    val rigConn1 = Connection("<main.rig3:sss>#7.7", "<main.rig3:other> other")
-
-    val setup1WithRig = Setup(Set(conn1, rigConn1))
-
-    // Identical setup with different vals
-    val conn2 = Connection("<rig3> three", "<fff> five")
-    val rigConn2 = Connection("<main.rig3:sss>#7.7", "<main.rig3:other> other")
-
-    val setup2WithRig = Setup(Set(conn2, rigConn2))
-
-    setup1WithRig should equal(setup2WithRig)
-  }
-  
-  test("Equals - with pos") {
-    val setupBasic1 = new Setup(Set())
-    val setupBasic2 = new Setup(Set())
-    val setupWithPos1 = Setup().withPosUpdated(List("<rig1>"))
-    val setupWithPos2 = Setup().withPosUpdated(List("<rig1>"))
-    
-    setupBasic1 should equal (setupBasic2)
-    setupWithPos1 should equal (setupWithPos2)
-    
-    setupBasic1 should not equal (setupWithPos1)
-    setupWithPos1 should not equal (setupBasic1)
   }
 
   test("Apply - Should allow empty setup with no params") {
@@ -490,6 +461,57 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     val setup2 = setup1.withConnsRemoved(removeMasterIgs)
     
     setup2.allConns should equal (Set(conn2, conn4))
+  }
+
+  test("Equals - Simple setups") {
+    Setup() should equal (Setup())
+
+    val conn1 = Connection("<rig3> three", "<fff> five")
+    
+    Setup(Set(conn1)) should equal (Setup(Set(conn1)))
+  }
+  
+  test("Equals - with a rig") {
+    // One setup
+    val conn1 = Connection("<rig3> three", "<fff> five")
+    val rigConn1 = Connection("<main.rig3:sss>#7.7", "<main.rig3:other> other")
+
+    val setup1WithRig = Setup(Set(conn1, rigConn1))
+
+    // Identical setup with different vals
+    val conn2 = Connection("<rig3> three", "<fff> five")
+    val rigConn2 = Connection("<main.rig3:sss>#7.7", "<main.rig3:other> other")
+
+    val setup2WithRig = Setup(Set(conn2, rigConn2))
+
+    setup1WithRig should equal(setup2WithRig)
+  }
+  
+  test("Equals - with pos") {
+    val setupBasic1 = new Setup(Set())
+    val setupBasic2 = new Setup(Set())
+    val setupWithPos1 = Setup().withPosUpdated(List("<rig1>"))
+    val setupWithPos2 = Setup().withPosUpdated(List("<rig1>"))
+    
+    setupBasic1 should equal (setupBasic2)
+    setupWithPos1 should equal (setupWithPos2)
+    
+    setupBasic1 should not equal (setupWithPos1)
+    setupWithPos1 should not equal (setupBasic1)
+  }
+  
+  test("Equals - with portNames defaulted") {
+    val setupBasic1 = new Setup(Set())
+    val setupBasic2 = new Setup(Set())
+    
+    val portNames1 = Map("<ag1>#1.1" -> "<ag2>#2.2")
+    val portNames2 = Map("<main:ag1>#1.1" -> "<main:ag2>#2.2")
+    
+    val setup1 = setupBasic1.withPortNames(portNames1)
+    val setup2 = setupBasic2.withPortNames(portNames2)
+    
+    setup1 should equal (setup2)
+    setup2 should equal (setup1)
   }
   
 }
