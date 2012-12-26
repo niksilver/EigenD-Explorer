@@ -45,7 +45,7 @@ class BLs(index: String) {
  */
 class BCat(val agent: String) {
   type Dict = Map[String, List[String]]
-  
+
   /**
    * The text output of the bcat command, line by line.
    */
@@ -71,21 +71,6 @@ class BCat(val agent: String) {
       dict <- stateNodeIDValue._2.dictValue.seq
     } yield (stateNodeID -> dict)
 
-  /**
-   * Get the (optional) name or cname from a state dictionary value
-   */
-  private def name(dict: Dict): Option[String] = {
-    val optCName = dict.get("cname") map { _.mkString }
-    val optCOrdinal = dict.get("cordinal") map { _.mkString }
-    val optName = dict.get("name") map { _.mkString }
-    if (optName.nonEmpty)
-      optName
-    else if (optCName.nonEmpty && optCOrdinal.nonEmpty)
-      Some(optCName.get + " " + optCOrdinal.get)
-    else
-      optCName
-  }
-    
   /**
    * The set of all master/slave connections that involve this agent
    * on one side or the other.
@@ -125,11 +110,99 @@ class BCat(val agent: String) {
    * Get a map from node IDs to their names. Not all node IDs will have
    * a name, of course.
    */
-  lazy val nodeIDNames: Map[String, String] =
+  lazy val nodeIDNames: Map[String, String] = {
+    for {
+      (stateNodeID, dict) <- nodeIDDicts
+      if name(dict).nonEmpty
+      val name = simplestUniqueName(stateNodeID)
+    } yield (stateNodeID -> name)
+  }
+
+  /**
+   * Get a map from node IDs to their names. Not all node IDs will have
+   * a name, of course.
+   */
+  lazy val unqualifiedNodeIDNames: Map[String, String] =
     for {
       (stateNodeID, dict) <- nodeIDDicts
       portName <- name(dict).seq
     } yield (stateNodeID -> portName)
+
+  /**
+   * Get the simplest unique name for a node ID.
+   * If a node ID has a non-unique name then prefix it with the name
+   * next up the node tree, and do so repeatedly until the name
+   * is unique.
+   */
+  def simplestUniqueName(nodeID: String): String =
+    simplestUniqueName(nodeID, 0)
+
+  private def simplestUniqueName(nodeID: String, steps: Int): String = {
+    val candidateName = qualifiedNodeIDName(nodeID, steps)
+    val nonUnique = unqualifiedNodeIDNames exists { nn =>
+      qualifiedNodeIDName(nn._1, steps) == candidateName && nn._1 != nodeID
+    }
+    if (nonUnique)
+      simplestUniqueName(nodeID, steps + 1)
+    else
+      candidateName
+  }
+
+  /**
+   * @param revAccumNames  The list of (optiona) names for the node ID
+   *     and some of its parents/grandparents up the tree. The length
+   *     of the list is the number of steps we have gone up the tree.
+   *     So if the node ID is `4.3.6.12` and the list is empty then
+   *     we still have to add the name for node `4.3.6.12`. If the list
+   *     is two items long then it includes the names of
+   *     `4.3.6` followed by `4.3.6.12`.
+   */
+  def simplestUniqueName(nodeID: String, revAccumNames: List[Option[String]]): List[Option[String]] = {
+    val nodes = nodeID split '.'
+    val stillNeedNode = nodes drop revAccumNames.length
+    val stillNeedNodeID = stillNeedNode mkString "."
+    val nextName = unqualifiedNodeIDNames.get(stillNeedNodeID)
+    val newRevAccumNames = nextName :: revAccumNames
+    val newName = "????"
+    List()
+  }
+
+  /**
+   * Get the node ID name, qualified up the specified number of steps.
+   */
+  def qualifiedNodeIDName(nodeID: String, steps: Int): String =
+    qualifiedNodeIDName(nodeID, steps, "")
+
+  private def qualifiedNodeIDName(nodeID: String, steps: Int, accum: String): String =
+    steps match {
+      case 0 => accum
+      case _ => {
+        val name = unqualifiedNodeIDNames.get(nodeID).mkString
+        val nodes = nodeID split '.'
+        val nextNodeSeq = nodes dropRight 1
+        val nextNodeID = nextNodeSeq mkString "."
+        val sep = if (accum == "") "" else " "
+        qualifiedNodeIDName(nextNodeID, steps - 1, name + sep + accum)
+      }
+    }
+  //    val basicName = unqualifiedNodeIDNames.get(nodeID)
+  //    val notUnique = unqualifiedNodeIDNames exists (nn => nn._2 == basicName && nn._1 != nodeID)
+
+  /**
+   * Get the (optional) name or cname (with cordinal) from a state
+   * dictionary value
+   */
+  private def name(dict: Dict): Option[String] = {
+    val optCName = dict.get("cname") map { _.mkString }
+    val optCOrdinal = dict.get("cordinal") map { _.mkString }
+    val optName = dict.get("name") map { _.mkString }
+    if (optName.nonEmpty)
+      optName
+    else if (optCName.nonEmpty && optCOrdinal.nonEmpty)
+      Some(optCName.get + " " + optCOrdinal.get)
+    else
+      optCName
+  }
 
   /**
    * Get the settings in this agent. Each key value pair is the port ID
