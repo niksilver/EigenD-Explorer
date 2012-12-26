@@ -74,11 +74,17 @@ class BCat(val agent: String) {
   /**
    * Get the (optional) name or cname from a state dictionary value
    */
-  private def name(dict: Dict): Option[String] =
-    dict.get("name") match {
-      case Some(name) => Some(name.mkString)
-      case None => dict.get("cname") map { _.mkString }
-    }
+  private def name(dict: Dict): Option[String] = {
+    val optCName = dict.get("cname") map { _.mkString }
+    val optCOrdinal = dict.get("cordinal") map { _.mkString }
+    val optName = dict.get("name") map { _.mkString }
+    if (optName.nonEmpty)
+      optName
+    else if (optCName.nonEmpty && optCOrdinal.nonEmpty)
+      Some(optCName.get + " " + optCOrdinal.get)
+    else
+      optCName
+  }
     
   /**
    * The set of all master/slave connections that involve this agent

@@ -117,8 +117,8 @@ class BCatSuite extends FunSuite with ShouldMatchers {
     assert(connections contains Connection(master_port_drum_4_8, slave_port_drum_4_8))
   }
 
-  test("Connections - Reads names") {
-    val output = """3.1 {cordinal:1,protocols:input remove,ordinal:0,name:bar beat,master:conn(None,None,'<metronome1>#1.1',None,None),domain:bfloat(0,100,0,[])}""".
+  test("nodeIDNames - Reads cnames") {
+    val output = """3.1 {protocols:input remove,ordinal:0,cname:bar beat}""".
       stripMargin
 
     val bcat = new BCat("<rig3>") {
@@ -128,7 +128,18 @@ class BCatSuite extends FunSuite with ShouldMatchers {
     bcat.nodeIDNames should contain (("3.1" -> "bar beat"))
   }
 
-  test("Connections - Names should trump cnames") {
+  test("nodeIDNames - Reads names") {
+    val output = """3.1 {cordinal:1,protocols:input remove,ordinal:0,name:bar beat}""".
+      stripMargin
+
+    val bcat = new BCat("<rig3>") {
+      override def text: Stream[String] = output.lines.toStream
+    }
+  
+    bcat.nodeIDNames should contain (("3.1" -> "bar beat"))
+  }
+
+  test("nodeIDNames - Names should trump cnames") {
     val output = """3.1 {cordinal:1,name:bar beat,cname:bor boot}""".
       stripMargin
 
@@ -137,6 +148,17 @@ class BCatSuite extends FunSuite with ShouldMatchers {
     }
   
     bcat.nodeIDNames should contain (("3.1" -> "bar beat"))
+  }
+  
+  test("nodeIDNames - Includes cordinal with cname") {
+    val output = """3.1 {cordinal:1,protocols:input remove,ordinal:0,cname:bar beat}""".
+      stripMargin
+
+    val bcat = new BCat("<rig3>") {
+      override def text: Stream[String] = output.lines.toStream
+    }
+  
+    bcat.nodeIDNames should contain (("3.1" -> "bar beat 1"))
   }
 
   /*test("Real bcat output") {
