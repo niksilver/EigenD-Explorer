@@ -39,6 +39,7 @@ class ConsoleParser extends RegexParsers {
   val prln: Any=>Unit = scala.Console.println
   
   val commands = List(
+      new DumpCommand,
       new SnapshotCommand,
       new ShowCommand,
       new GraphCommand,

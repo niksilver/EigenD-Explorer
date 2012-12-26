@@ -37,6 +37,7 @@ class HelpCommand extends Command {
 
   def action(args: List[String])(state: Setup, prln: PrintlnFn): Setup = {
     prln("""Commands are:
+        |dump      Dump the information known about the setup.
         |help      Show this message
         |into <rigN>  Go into a rig. E.g. into <rig3>
         |graph [agents|ports]  Dump a gexf format file of all the agent or
@@ -83,11 +84,17 @@ class ShowCommand extends Command {
     def cleaned(portID: String) =
       if (portID.pos == setup.pos) portID.unqualified
       else portID
+    
+    // Map a port ID to its best form, meaning its node ID becomes
+    // a name if there is one available.
+    
+    def bestForm(portID: String): String =
+      setup.portIDNamed(portID)
       
     val links: Set[(String, String, String)] = for {
       conn <- conns
-      val master = conn.master
-      val slave = conn.slave
+      val master = bestForm(conn.master)
+      val slave = bestForm(conn.slave)
       if (master.agent == agentQual || slave.agent == agentQual)
       val link = if (master.agent == agentQual)
         ("", master.nodeLabel, cleaned(slave))
@@ -238,4 +245,29 @@ class IntoCommand extends Command {
       { prln("No such rig: " + rig); setup }
   }
 
+}
+
+/**
+ * Dump the current setup
+ */
+class DumpCommand extends Command {
+
+  val command = "dump"
+
+  /**
+   * The dump action. Dump all the information about the current setup,
+   * in a pretty raw form.
+   */
+  def action(args: List[String])(setup: Setup, prln: PrintlnFn): Setup = {
+    prln("Port names:\n")
+    setup.allPortNames.toSeq.sortBy(  _._1  ).
+      foreach { pn => prln(pn._1 + " -> " + pn._2) }
+    
+    prln("\nConnections:\n")
+    setup.allConns.toSeq.sortBy(  _.master  ).
+      foreach { pn => prln(pn.master + " -> " + pn.slave) }
+    
+    prln("\nPos: " + setup.pos.displayString)
+    setup
+  }
 }
