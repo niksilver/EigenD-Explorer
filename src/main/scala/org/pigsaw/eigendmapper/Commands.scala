@@ -251,6 +251,30 @@ class IntoCommand extends Command {
 }
 
 /**
+ * Go up a loevel
+ */
+class UpCommand extends Command {
+
+  val command = "up"
+
+  def action(args: List[String])(setup: Setup, prln: PrintlnFn): Setup = {
+    val setup2 = args.length match {
+      case 0 => doUp(setup, prln)
+      case _ => prln("into: Too many arguments"); setup
+    }
+    prln("Position: " + setup2.pos.displayString)
+    setup2
+  }
+
+  def doUp(setup: Setup, prln: PrintlnFn): Setup = {
+    val targetPos = setup.pos.init
+    prln("Position: " + targetPos.displayString)
+    setup.withPosUpdated(targetPos)
+  }
+
+}
+
+/**
  * Dump the current setup
  */
 class DumpCommand extends Command {

@@ -363,4 +363,18 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
     catcher2.output.lines.toList(1) should equal("Position: Top level")
   }
 
+  test("Up - Can go up a level") {
+    val connsTop = Connection("<rig1>#1.1", "<top>#20.2")
+    val connsBot = Connection("<main.rig1:rig2>#2.3", "<main.rig1:mid>#14.3")
+
+    val setup1 = Setup(Set(connsTop, connsBot)).withPosUpdated(List("<rig1>"))
+
+    val command = new UpCommand
+    val catcher = new PrintCatcher
+    val setup2 = command.action(List())(setup1, catcher.println)
+
+    setup2.pos should equal(List())
+    catcher.output should include("Position: Top level")
+  }
+
 }
