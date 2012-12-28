@@ -96,9 +96,9 @@ class ShowCommand extends Command {
       val slave = bestForm(conn.slave)
       if (master.agent == agentQual || slave.agent == agentQual)
       val link = if (master.agent == agentQual)
-        ("", master.nodeLabel, cleaned(slave))
+        ("", master.nodeLabelWithHash, cleaned(slave))
       else
-        (cleaned(master), slave.nodeLabel, "")
+        (cleaned(master), slave.nodeLabelWithHash, "")
     } yield link
 
     if (links.size == 0)

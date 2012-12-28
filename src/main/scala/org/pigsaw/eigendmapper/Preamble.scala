@@ -139,6 +139,15 @@ object Preamble {
     def nodeLabel: String = label0
 
     /**
+     * Get the node label (the node ID or the node CName), and include
+     * the `#` if it's a node ID.
+     * E.g. in `"<cycler1>#4.56"` it is `"#4.56"'
+     * and in `"<cycler1> beat input"` it is `"beat input"'
+     */
+    def nodeLabelWithHash: String =
+      (if (sep0 == "#") "#" else "") + label0
+
+    /**
      * Substitute the node ID for a cname if we have one. The # separator will
      * be replaced by a space, too. E.g. `"<cycler1>#3.4"` will become
      * `"<cycler1> beat input"` if we have a map from `"3.4"` to `"beat input"`.

@@ -138,9 +138,14 @@ class PreambleSuite extends FunSuite with ShouldMatchers {
     "<main.rig1:main.rig2:c>#1.2".unqualified should equal("<c>#1.2")
   }
 
-  test("PortID - Extract node label (ID or cname)") {
+  test("PortID.nodeLabel") {
     PortID("<rig3> beat input").nodeLabel should equal("beat input")
     PortID("<rig3>#4.5.6").nodeLabel should equal("4.5.6")
+  }
+
+  test("PortID.nodeLabelWithHash") {
+    PortID("<rig3> beat input").nodeLabelWithHash should equal("beat input")
+    PortID("<rig3>#4.5.6").nodeLabelWithHash should equal("#4.5.6")
   }
 
   test("PortID - Make it the best format, using cname if possible") {

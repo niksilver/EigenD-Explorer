@@ -57,9 +57,9 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
 
     catcher.output should not include ("Unknown")
     catcher.output should include ("<prev> three three --> one one")
-    catcher.output should include ("<prev>#3.4         --> 1.2")
+    catcher.output should include ("<prev>#3.4         --> #1.2")
     catcher.output should include ("two two --> <next> four four")
-    catcher.output should include ("2.3     --> <next>#4.5")
+    catcher.output should include ("#2.3    --> <next>#4.5")
   }
 
   test("Show - Handles being in a rig") {
@@ -89,7 +89,7 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
 
     catcher.output should not include ("Unknown")
     catcher.output should not include ("No agent called")
-    catcher.output should include("<main:rig1>#1.1 --> 5.5")
+    catcher.output should include("<main:rig1>#1.1 --> #5.5")
   }
 
   test("Show - Doesn't show different agent with same name in other rig") {
