@@ -107,6 +107,27 @@ class BCat(val agent: String) {
   }
 
   /**
+   * Get the (optional) name or cname (with cordinal) from a state
+   * dictionary value
+   */
+  private def name(dict: Dict): Option[String] = {
+    val optCName    = dict.get("cname") map { _.mkString }
+    val optCOrdinal = dict.get("cordinal") map { _.mkString }
+    val optName     = dict.get("name") map { _.mkString }
+    val optOrdinal  = dict.get("ordinal") map { _.mkString }
+    if (optName.nonEmpty && optOrdinal.nonEmpty)
+      Some(optName.get.trim + " " + optOrdinal.get.trim)
+    else if (optName.nonEmpty && optOrdinal.isEmpty && optCOrdinal.nonEmpty)
+      Some(optName.get.trim + " " + optCOrdinal.get.trim)
+    else if (optName.nonEmpty && optOrdinal.isEmpty && optCOrdinal.isEmpty)
+      Some(optName.get.trim)
+    else if (optCName.nonEmpty && optCOrdinal.nonEmpty)
+      Some(optCName.get.trim + " " + optCOrdinal.get.trim)
+    else
+      optCName
+  }
+
+  /**
    * Get a map from node IDs to their names. Not all node IDs will have
    * a name, of course.
    */
@@ -138,33 +159,19 @@ class BCat(val agent: String) {
     simplestUniqueName(nodeID, 0)
 
   private def simplestUniqueName(nodeID: String, steps: Int): String = {
+    println("simplestUniqueName(" + nodeID + ", " + steps + ")")
     val candidateName = qualifiedNodeIDName(nodeID, steps)
+    var other: String = "undef so far"
     val nonUnique = unqualifiedNodeIDNames exists { nn =>
+      other = nn._1
       qualifiedNodeIDName(nn._1, steps) == candidateName && nn._1 != nodeID
     }
-    if (nonUnique)
+    if (nonUnique) {
+      println("Found '" + candidateName + "' at " + other)
       simplestUniqueName(nodeID, steps + 1)
+    }
     else
       candidateName
-  }
-
-  /**
-   * @param revAccumNames  The list of (optiona) names for the node ID
-   *     and some of its parents/grandparents up the tree. The length
-   *     of the list is the number of steps we have gone up the tree.
-   *     So if the node ID is `4.3.6.12` and the list is empty then
-   *     we still have to add the name for node `4.3.6.12`. If the list
-   *     is two items long then it includes the names of
-   *     `4.3.6` followed by `4.3.6.12`.
-   */
-  def simplestUniqueName(nodeID: String, revAccumNames: List[Option[String]]): List[Option[String]] = {
-    val nodes = nodeID split '.'
-    val stillNeedNode = nodes drop revAccumNames.length
-    val stillNeedNodeID = stillNeedNode mkString "."
-    val nextName = unqualifiedNodeIDNames.get(stillNeedNodeID)
-    val newRevAccumNames = nextName :: revAccumNames
-    val newName = "????"
-    List()
   }
 
   /**
@@ -185,24 +192,6 @@ class BCat(val agent: String) {
         qualifiedNodeIDName(nextNodeID, steps - 1, name + sep + accum)
       }
     }
-  //    val basicName = unqualifiedNodeIDNames.get(nodeID)
-  //    val notUnique = unqualifiedNodeIDNames exists (nn => nn._2 == basicName && nn._1 != nodeID)
-
-  /**
-   * Get the (optional) name or cname (with cordinal) from a state
-   * dictionary value
-   */
-  private def name(dict: Dict): Option[String] = {
-    val optCName = dict.get("cname") map { _.mkString }
-    val optCOrdinal = dict.get("cordinal") map { _.mkString }
-    val optName = dict.get("name") map { _.mkString }
-    if (optName.nonEmpty)
-      optName
-    else if (optCName.nonEmpty && optCOrdinal.nonEmpty)
-      Some(optCName.get + " " + optCOrdinal.get)
-    else
-      optCName
-  }
 
   /**
    * Get the settings in this agent. Each key value pair is the port ID

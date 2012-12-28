@@ -124,32 +124,32 @@ class BCatSuite extends FunSuite with ShouldMatchers {
     val bcat = new BCat("<rig3>") {
       override def text: Stream[String] = output.lines.toStream
     }
-  
-    bcat.unqualifiedNodeIDNames should contain (("3.1" -> "bar beat"))
+
+    bcat.unqualifiedNodeIDNames should contain(("3.1" -> "bar beat"))
   }
 
   test("unqualifiedNodeIDNames - Reads names") {
-    val output = """3.1 {cordinal:1,protocols:input remove,ordinal:0,name:bar beat}""".
+    val output = """3.1 {protocols:input remove,name:bar beat}""".
       stripMargin
 
     val bcat = new BCat("<rig3>") {
       override def text: Stream[String] = output.lines.toStream
     }
-  
-    bcat.unqualifiedNodeIDNames should contain (("3.1" -> "bar beat"))
+
+    bcat.unqualifiedNodeIDNames should contain(("3.1" -> "bar beat"))
   }
 
   test("unqualifiedNodeIDNames - Names should trump cnames") {
-    val output = """3.1 {cordinal:1,name:bar beat,cname:bor boot}""".
+    val output = """3.1 {name:bar beat,cname:bor boot}""".
       stripMargin
 
     val bcat = new BCat("<rig3>") {
       override def text: Stream[String] = output.lines.toStream
     }
-  
-    bcat.unqualifiedNodeIDNames should contain (("3.1" -> "bar beat"))
+
+    bcat.unqualifiedNodeIDNames should contain(("3.1" -> "bar beat"))
   }
-  
+
   test("unqualifiedNodeIDNames - Includes cordinal with cname") {
     val output = """3.1 {cordinal:1,protocols:input remove,ordinal:0,cname:bar beat}""".
       stripMargin
@@ -157,16 +157,76 @@ class BCatSuite extends FunSuite with ShouldMatchers {
     val bcat = new BCat("<rig3>") {
       override def text: Stream[String] = output.lines.toStream
     }
-  
-    bcat.unqualifiedNodeIDNames should contain (("3.1" -> "bar beat 1"))
+
+    bcat.unqualifiedNodeIDNames should contain(("3.1" -> "bar beat 1"))
   }
-  
+
+  test("unqualifiedNodeIDNames - Includes ordinal with name, if any") {
+    val output = """3.1 {cordinal:1,protocols:input remove,ordinal:0,name:bar beat}
+      |3.2 {name:bor boot}""".
+      stripMargin
+
+    val bcat = new BCat("<rig3>") {
+      override def text: Stream[String] = output.lines.toStream
+    }
+
+    bcat.unqualifiedNodeIDNames should contain(("3.1" -> "bar beat 0"))
+    bcat.unqualifiedNodeIDNames should contain(("3.2" -> "bor boot"))
+  }
+
+  test("unqualifiedNodeIDNames - Includes cordinal with name, if available and no ordinal") {
+    val output = """3.1 {cordinal:1,protocols:input remove,name:bar beat}""".
+      stripMargin
+
+    val bcat = new BCat("<rig3>") {
+      override def text: Stream[String] = output.lines.toStream
+    }
+
+    bcat.unqualifiedNodeIDNames should contain(("3.1" -> "bar beat 1"))
+  }
+
+  test("unqualifiedNodeIDNames - Trims cnames, names and cordinals") {
+    val output = """2 {cname:audio outputs,protocols:}
+    		|2.1 {cname:channels,protocols:}
+    		|2.1.1 {cname:  audio output  ,cordinal:  1  }
+    		|2.1.2 {name: audio output }
+    		|"""".stripMargin
+
+    val bcat = new BCat("<audio_unit1>") {
+      override def text: Stream[String] = output.lines.toStream
+    }
+
+    bcat.unqualifiedNodeIDNames should contain(("2.1.1" -> "audio output 1"))
+    bcat.unqualifiedNodeIDNames should contain(("2.1.2" -> "audio output"))
+  }
+
+  test("qualifiedNodeIDName - basic test") {
+    val output = """3.1 {cordinal:1,cname:one}
+      |3.1.2 {cname:a and b}
+      |3.1.2.3 {cname:b or c,cordinal:1}
+      |3.1.2.3.4 {cname:de or fg}
+      |3.1.2.3.4.1 {cname:hi and jk,cordinal:1}
+      |3.1.2.5 {cname:b or c,cordinal:2}
+      |3.1.2.5.4 {cname:de or fg}
+      |3.1.2.5.4.1 {cname:hi and jk,cordinal:1}
+      """.stripMargin
+
+    val bcat = new BCat("<rig3>") {
+      override def text: Stream[String] = output.lines.toStream
+    }
+
+    bcat.qualifiedNodeIDName("3.1.2.3.4.1", 0) should equal("")
+    bcat.qualifiedNodeIDName("3.1.2.3.4.1", 1) should equal("hi and jk 1")
+    bcat.qualifiedNodeIDName("3.1.2.3.4.1", 2) should equal("de or fg hi and jk 1")
+    bcat.qualifiedNodeIDName("3.1.2.3.4.1", 3) should equal("b or c 1 de or fg hi and jk 1")
+  }
+
   test("nodeIDNames - Picks simplest unique qualified name") {
     // We have:
     //   3.1.2 - A deep name which is unique
     //   3.1.2.3.4.1 - A deep name which is unique only by going two steps up
     //   3.1.2.5.4.1 - The same deep name which is unique only by going two steps up
-    
+
     val output = """3.1 {cordinal:1,cname:one}
       |3.1.2 {cname:a and b}
       |3.1.2.3 {cname:b or c,cordinal:1}
@@ -180,31 +240,10 @@ class BCatSuite extends FunSuite with ShouldMatchers {
     val bcat = new BCat("<rig3>") {
       override def text: Stream[String] = output.lines.toStream
     }
-  
-    bcat.nodeIDNames should contain (("3.1.2" -> "a and b"))
-    bcat.nodeIDNames should contain (("3.1.2.3.4.1" -> "b or c 1 de or fg hi and jk 1"))
-    bcat.nodeIDNames should contain (("3.1.2.5.4.1" -> "b or c 2 de or fg hi and jk 1"))
-  }
-  
-  test("qualifiedNodeIDName") {
-    val output = """3.1 {cordinal:1,cname:one}
-      |3.1.2 {cname:a and b}
-      |3.1.2.3 {cname:b or c,cordinal:1}
-      |3.1.2.3.4 {cname:de or fg}
-      |3.1.2.3.4.1 {cname:hi and jk,cordinal:1}
-      |3.1.2.5 {cname:b or c,cordinal:2}
-      |3.1.2.5.4 {cname:de or fg}
-      |3.1.2.5.4.1 {cname:hi and jk,cordinal:1}
-      """.stripMargin
 
-    val bcat = new BCat("<rig3>") {
-      override def text: Stream[String] = output.lines.toStream
-    }
-  
-    bcat.qualifiedNodeIDName("3.1.2.3.4.1", 0) should equal ("")
-    bcat.qualifiedNodeIDName("3.1.2.3.4.1", 1) should equal ("hi and jk 1")
-    bcat.qualifiedNodeIDName("3.1.2.3.4.1", 2) should equal ("de or fg hi and jk 1")
-    bcat.qualifiedNodeIDName("3.1.2.3.4.1", 3) should equal ("b or c 1 de or fg hi and jk 1")
+    bcat.nodeIDNames should contain(("3.1.2" -> "a and b"))
+    bcat.nodeIDNames should contain(("3.1.2.3.4.1" -> "b or c 1 de or fg hi and jk 1"))
+    bcat.nodeIDNames should contain(("3.1.2.5.4.1" -> "b or c 2 de or fg hi and jk 1"))
   }
 
   /*test("Real bcat output") {
