@@ -215,29 +215,26 @@ object Preamble {
    * Thus `"agent1" < "agent2" < "agent10" < "agentA"`.
    */
   def lessThanAlphaInts(a: String, b: String): Boolean = {
-    println("Comparing a = '" + a + "', b = '" + b + "'")
-
+    
+    val IntTail = """(\d+)(.*)""".r
+    def split(s: String): (Either[Int,Char], String) =
+      s match {
+        case IntTail(s1, st) => (Left(s1.toInt), st)
+        case _ => (Right(s.head), s.tail)
+      }
+    
     if (a == "")
-      (b != "") returnedAfter { v => println("b != \"\" is " + v)}
+      (b != "")
     else if (b == "")
-      false butFirstPrint "false"
+      false
     else {
-      val IntTail = """(\d+)(.*)""".r
-      val (aHead, aTail) = a match {
-        case IntTail(a1, at) => (Left(a1.toInt), at)
-        case _ => (Right(a.head), a.tail)
-      }
-      val (bHead, bTail) = b match {
-        case IntTail(b1, bt) => (Left(b1.toInt), bt)
-        case _ => (Right(b.head), b.tail)
-      }
+      val (aHead, aTail) = split(a)
+      val (bHead, bTail) = split(b)
 
-      println("aHead = '" + aHead + "', aTail = '" + aTail + "'")
-      println("bHead = '" + bHead + "', bTail = '" + bTail + "'")
       if (aHead == bHead)
-        lessThanAlphaInts(aTail, bTail) butFirstPrint ("lessThanAlphaInts(" + aTail + ", " + bTail + ")")
+        lessThanAlphaInts(aTail, bTail)
       else
-        lessThanStringElt(aHead, bHead) butFirstPrint ("lessThanStringElt(" + aHead + ", " + bHead + ")")
+        lessThanStringElt(aHead, bHead)
     }
   }
 }
