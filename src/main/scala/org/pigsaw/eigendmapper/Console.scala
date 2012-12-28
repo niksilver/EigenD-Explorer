@@ -40,11 +40,12 @@ class ConsoleParser extends RegexParsers {
   
   val commands = List(
       new DumpCommand,
-      new SnapshotCommand,
-      new ShowCommand,
       new GraphCommand,
+      new HelpCommand,
       new IntoCommand,
-      new HelpCommand)
+      new ShowCommand,
+      new SnapshotCommand,
+      new UpCommand)
 
   // A parser for a single command. It outputs a parser which has already
   // been fed the additional arguments, and just needs a setup to process.

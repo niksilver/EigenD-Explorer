@@ -377,4 +377,34 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
     catcher.output should include("Position: Top level")
   }
 
+  test("Up - Can't go beyond top level") {
+    val connsTop = Connection("<rig1>#1.1", "<top>#20.2")
+    val connsBot = Connection("<main.rig1:rig2>#2.3", "<main.rig1:mid>#14.3")
+
+    val setup1 = Setup(Set(connsTop, connsBot)).withPosUpdated(List())
+
+    val command = new UpCommand
+    val catcher = new PrintCatcher
+    val setup2 = command.action(List())(setup1, catcher.println)
+
+    setup2.pos should equal(List())
+    catcher.output should include("Already at top level")
+    catcher.output should include("Position: Top level")
+  }
+
+  test("Up - Rejects too many arguments") {
+    val connsTop = Connection("<rig1>#1.1", "<top>#20.2")
+    val connsBot = Connection("<main.rig1:rig2>#2.3", "<main.rig1:mid>#14.3")
+
+    val setup1 = Setup(Set(connsTop, connsBot)).withPosUpdated(List("<rig1>"))
+
+    val command = new UpCommand
+    val catcher = new PrintCatcher
+    val setup2 = command.action(List("something"))(setup1, catcher.println)
+
+    setup2.pos should equal(List("<rig1>"))
+    catcher.output should include("up: Does not take arguments")
+    catcher.output should include("Position: <rig1>")
+  }
+
 }

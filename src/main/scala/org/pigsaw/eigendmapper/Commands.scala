@@ -8,11 +8,12 @@ trait Command {
   /** The command itself, as a string. */
   val command: String
 
-  /** A println function (normally scala.Console.println,
-   *     but can be changed for testing purposes). 
+  /**
+   * A println function (normally scala.Console.println,
+   *     but can be changed for testing purposes).
    */
   type PrintlnFn = Any => Unit
-  
+
   /**
    * The action to perform when the command is found.
    * @param args   The arguments the user gave after the command
@@ -21,12 +22,14 @@ trait Command {
    * @return  The new setup, after the command has been executed.
    */
   def action(args: List[String])(setup: Setup, prln: PrintlnFn): Setup
-  
-  /** Create a new bls command
+
+  /**
+   * Create a new bls command
    */
   def bls(index: String): BLs = new BLs(index)
-  
-  /** Create a new bcat command
+
+  /**
+   * Create a new bcat command
    */
   def bcat(agent: String): BCat = new BCat(agent)
 }
@@ -45,7 +48,8 @@ class HelpCommand extends Command {
         |show <agentName>   Show the connections into and out of an agent.
         |          The agent name includes angle brackets, e.g. <drummer1>
         |snapshot  Capture the state of all the agents' connections. Will not
-        |          go into rigs and snapshot those. You need to do them individually."""
+        |          go into rigs and snapshot those. You need to do them individually.
+        |up        Go up a level, out of this rig."""
       .stripMargin)
     state
   }
@@ -76,20 +80,20 @@ class ShowCommand extends Command {
   def doShow(agent: String, setup: Setup, prln: PrintlnFn) {
     val pos = setup.pos
     val agentQual = agent.defaultQualifier(pos)
-    
+
     // If a port ID is in this rig then it doesn't need to
     // qualified. Otherwise, leave is qualified.
-    
+
     def cleaned(portID: String) =
       if (portID.pos == setup.pos) portID.unqualified
       else portID
-    
+
     // Map a port ID to its best form, meaning its node ID becomes
     // a name if there is one available.
-    
+
     def bestForm(portID: String): String =
       setup.portIDNamed(portID)
-      
+
     val links: Set[(String, String, String)] = for {
       conn <- setup.allConns
       val master = bestForm(conn.master)
@@ -104,7 +108,7 @@ class ShowCommand extends Command {
     if (links.size == 0)
       prln("No agent called " + agent)
     else {
-      type Cols = Tuple3[String,String,String]
+      type Cols = Tuple3[String, String, String]
       val sorter = ((a: Cols, b: Cols) => lessThanAlphaInts(a._2, b._2))
       val padder = new Padder(links.toSeq.sortWith(sorter), " --> ")
       padder.output foreach { prln(_) }
@@ -122,14 +126,14 @@ class SnapshotCommand extends Command {
   def action(args: List[String])(setup: Setup, prln: PrintlnFn): Setup = {
     doSnapshot(setup, prln)
   }
-  
+
   def doSnapshot(setup: Setup, prln: PrintlnFn): Setup = {
     prln("Starting snapshot...")
-    
+
     val pos = setup.pos
     val bls = this.bls(pos.index)
     val agents = bls.agents
-    
+
     // Update a setup with the results of bcat on a single agent
     def updateWithBCat(ag: String, s: Setup): Setup = {
       val agQual = ag.qualified(pos)
@@ -138,13 +142,13 @@ class SnapshotCommand extends Command {
       s.withPortNames(portNames).
         withConns(bcat.connections)
     }
-    
+
     // Update a setup for a bcat on all agents
     def updateForAgents(ags: List[String], s: Setup): Setup = ags match {
       case Nil => s
       case ag :: tail => updateForAgents(tail, updateWithBCat(ag, s))
     }
-    
+
     val portIsAtPos = { portID: String => portID.hasPos(pos) }
     val connIsAtPos = { conn: Connection => conn.hasPos(pos) }
     val baseSetup = setup.
@@ -160,15 +164,15 @@ class GraphCommand extends Command {
 
   def action(args: List[String])(setup: Setup, prln: PrintlnFn): Setup = {
     args match {
-      case Nil            => prln("graph: You need to specify something to graph")
-      case List("ports")  => doGraph("ports", setup, prln)
+      case Nil => prln("graph: You need to specify something to graph")
+      case List("ports") => doGraph("ports", setup, prln)
       case List("agents") => doGraph("agents", setup, prln)
-      case List(_)        => prln("graph: Do not recognise what to graph")
-      case _              => prln("graph: Too many arguments")
+      case List(_) => prln("graph: Do not recognise what to graph")
+      case _ => prln("graph: Too many arguments")
     }
     setup
   }
-  
+
   /**
    * Output the gexf file.
    * @param arg    What to graph, either "agents" or "ports"
@@ -192,7 +196,7 @@ class GraphCommand extends Command {
 
     // Maybe declare the port nodes
     arg match {
-      case "ports"  => setup.ports foreach { out write _.portNodeXML + "\n" }
+      case "ports" => setup.ports foreach { out write _.portNodeXML + "\n" }
       case "agents" => ; // Do nothing
     }
 
@@ -218,7 +222,7 @@ class GraphCommand extends Command {
 
     prln("Output to " + filename)
   }
-  
+
 }
 
 /**
@@ -244,8 +248,7 @@ class IntoCommand extends Command {
     val rigQual = rig.qualified(pos)
     if (setup.agents(pos) contains rigQual)
       setup.withPosUpdated(targetPos)
-    else
-      { prln("No such rig: " + rig); setup }
+    else { prln("No such rig: " + rig); setup }
   }
 
 }
@@ -260,16 +263,17 @@ class UpCommand extends Command {
   def action(args: List[String])(setup: Setup, prln: PrintlnFn): Setup = {
     val setup2 = args.length match {
       case 0 => doUp(setup, prln)
-      case _ => prln("into: Too many arguments"); setup
+      case _ => prln("up: Does not take arguments"); setup
     }
     prln("Position: " + setup2.pos.displayString)
     setup2
   }
 
   def doUp(setup: Setup, prln: PrintlnFn): Setup = {
-    val targetPos = setup.pos.init
-    prln("Position: " + targetPos.displayString)
-    setup.withPosUpdated(targetPos)
+    if (setup.pos.isEmpty)
+      { prln("Already at top level"); setup }
+    else
+      setup.withPosUpdated(setup.pos.init)
   }
 
 }
@@ -287,13 +291,13 @@ class DumpCommand extends Command {
    */
   def action(args: List[String])(setup: Setup, prln: PrintlnFn): Setup = {
     prln("Port names:\n")
-    setup.allPortNames.toSeq.sortBy(  _._1  ).
+    setup.allPortNames.toSeq.sortBy(_._1).
       foreach { pn => prln(pn._1 + " -> " + pn._2) }
-    
+
     prln("\nConnections:\n")
-    setup.allConns.toSeq.sortBy(  _.master  ).
+    setup.allConns.toSeq.sortBy(_.master).
       foreach { pn => prln(pn.master + " -> " + pn.slave) }
-    
+
     prln("\nPos: " + setup.pos.displayString)
     setup
   }
