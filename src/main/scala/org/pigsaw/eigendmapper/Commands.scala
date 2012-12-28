@@ -105,7 +105,9 @@ class ShowCommand extends Command {
     if (links.size == 0)
       prln("No agent called " + agent)
     else {
-      val padder = new Padder(links.toSeq.sortBy(_._2), " --> ")
+      type Cols = Tuple3[String,String,String]
+      val sorter = ((a: Cols, b: Cols) => lessThanAlphaInts(a._2, b._2))
+      val padder = new Padder(links.toSeq.sortWith(sorter), " --> ")
       padder.output foreach { prln(_) }
     }
   }
