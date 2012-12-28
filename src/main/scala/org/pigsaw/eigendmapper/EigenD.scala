@@ -163,17 +163,19 @@ class BCat(val agent: String) {
     simplestUniqueName(nodeID, 0)
 
   private def simplestUniqueName(nodeID: String, steps: Int): String = {
-    println("simplestUniqueName(" + nodeID + ", " + steps + ")")
+    // The number of elements in the node ID.
+    // E.g. depth of "34.45.67" is 3
+    def depth(nodeID: String): Int = (nodeID split '.').length
+    
     val candidateName = qualifiedNodeIDName(nodeID, steps)
-    var other: String = "undef so far"
     val nonUnique = unqualifiedNodeIDNames exists { nn =>
-      other = nn._1
       qualifiedNodeIDName(nn._1, steps) == candidateName && nn._1 != nodeID
     }
-    if (nonUnique) {
-      println("Found '" + candidateName + "' at " + other)
+
+    if (nonUnique && steps < depth(nodeID))
       simplestUniqueName(nodeID, steps + 1)
-    }
+    else if (nonUnique)
+      "#" + nodeID + " " + candidateName
     else
       candidateName
   }
@@ -192,7 +194,7 @@ class BCat(val agent: String) {
         val nodes = nodeID split '.'
         val nextNodeSeq = nodes dropRight 1
         val nextNodeID = nextNodeSeq mkString "."
-        val sep = if (accum == "") "" else " "
+        val sep = if (accum == "" || name == "") "" else " "
         qualifiedNodeIDName(nextNodeID, steps - 1, name + sep + accum)
       }
     }
