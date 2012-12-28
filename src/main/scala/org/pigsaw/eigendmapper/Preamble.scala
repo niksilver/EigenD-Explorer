@@ -13,6 +13,14 @@ object Preamble {
   implicit def Any2ReturnableAfter[A](a: A) = new ReturnableAfter(a)
 
   /**
+   * Calculate and return a value after printing a message
+   */
+  class ButFirstPrintable[A](a: =>A) {
+    def butFirstPrint(s: String): A = { println(s); a }
+  }
+  implicit def Any2ButFirstPrintable[A](a: =>A) = new ButFirstPrintable(a)
+
+  /**
    * A wrapper for methods appropriate to both agents and port IDs.
    */
   case class AgentOrPortID(str: String) {
@@ -187,4 +195,49 @@ object Preamble {
   }
 
   implicit def ListString2Pos(p: List[String]): Pos = Pos(p: _*)
+
+  /**
+   * An ordering on elements of a string, or ints.
+   * Ints are "less than" chars, otherwise they are ordered naturally.
+   */
+  def lessThanStringElt(a: Either[Int, Char], b: Either[Int, Char]): Boolean = {
+    (a, b) match {
+      case (Left(i1), Left(i2)) => i1 < i2
+      case (Right(c1), Right(c2)) => c1 < c2
+      case (Left(_), Right(_)) => true
+      case (Right(_), Left(_)) => false
+    }
+  }
+
+  /**
+   * An ordering on strings, in which int sequences are considered
+   * numerically, and any int sequence is less than a char.
+   * Thus `"agent1" < "agent2" < "agent10" < "agentA"`.
+   */
+  def lessThanAlphaInts(a: String, b: String): Boolean = {
+    println("Comparing a = '" + a + "', b = '" + b + "'")
+
+    if (a == "")
+      (b != "") returnedAfter { v => println("b != \"\" is " + v)}
+    else if (b == "")
+      false butFirstPrint "false"
+    else {
+      val IntTail = """(\d+)(.*)""".r
+      val (aHead, aTail) = a match {
+        case IntTail(a1, at) => (Left(a1.toInt), at)
+        case _ => (Right(a.head), a.tail)
+      }
+      val (bHead, bTail) = b match {
+        case IntTail(b1, bt) => (Left(b1.toInt), bt)
+        case _ => (Right(b.head), b.tail)
+      }
+
+      println("aHead = '" + aHead + "', aTail = '" + aTail + "'")
+      println("bHead = '" + bHead + "', bTail = '" + bTail + "'")
+      if (aHead == bHead)
+        lessThanAlphaInts(aTail, bTail) butFirstPrint ("lessThanAlphaInts(" + aTail + ", " + bTail + ")")
+      else
+        lessThanStringElt(aHead, bHead) butFirstPrint ("lessThanStringElt(" + aHead + ", " + bHead + ")")
+    }
+  }
 }

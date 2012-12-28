@@ -178,5 +178,32 @@ class PreambleSuite extends FunSuite with ShouldMatchers {
     portRigB.hasPos(List("<rig1>")) should be (false)
     portRigB.hasPos(List("<rig1>", "<rig2>")) should be (true)    
   }
+  
+  test("lessThanStringElt") {
+    lessThanStringElt(Left(12), Left(13)) should equal (true)
+    lessThanStringElt(Left(13), Left(12)) should equal (false)
+    lessThanStringElt(Left(13), Left(13)) should equal (false)
+
+    lessThanStringElt(Right('a'), Right('b')) should equal (true)
+    lessThanStringElt(Right('b'), Right('a')) should equal (false)
+    lessThanStringElt(Right('b'), Right('b')) should equal (false)
+
+    lessThanStringElt(Left(12), Right('b')) should equal (true)
+    lessThanStringElt(Right('b'), Left(12)) should equal (false)
+  }
+  
+  test("lessThanAlphaInts") {
+    lessThanAlphaInts("agent1", "agent2") should equal (true)
+    lessThanAlphaInts("agent2", "agent10") should equal (true)
+    lessThanAlphaInts("agent10", "agent A") should equal (true)
+    lessThanAlphaInts("agent A", "agent B") should equal (true)
+
+    lessThanAlphaInts("agent2", "agent1") should equal (false)
+    lessThanAlphaInts("agent10", "agent2") should equal (false)
+    lessThanAlphaInts("agent A", "agent10") should equal (false)
+    lessThanAlphaInts("agent B", "agent A") should equal (false)
+
+    lessThanAlphaInts("agent", "agent") should equal (false)
+  }
 
 }
