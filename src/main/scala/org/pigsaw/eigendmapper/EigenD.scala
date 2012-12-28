@@ -107,24 +107,28 @@ class BCat(val agent: String) {
   }
 
   /**
-   * Get the (optional) name or cname (with cordinal) from a state
-   * dictionary value
+   * Get the (optional) name or cname (and ordinal) from a state
+   * dictionary value. Name trumps cname. Name will come with the
+   * ordinal, or else the cordinal. Cname will come with the cordinal.
    */
   private def name(dict: Dict): Option[String] = {
-    val optCName    = dict.get("cname") map { _.mkString }
-    val optCOrdinal = dict.get("cordinal") map { _.mkString }
-    val optName     = dict.get("name") map { _.mkString }
-    val optOrdinal  = dict.get("ordinal") map { _.mkString }
-    if (optName.nonEmpty && optOrdinal.nonEmpty)
-      Some(optName.get.trim + " " + optOrdinal.get.trim)
-    else if (optName.nonEmpty && optOrdinal.isEmpty && optCOrdinal.nonEmpty)
-      Some(optName.get.trim + " " + optCOrdinal.get.trim)
-    else if (optName.nonEmpty && optOrdinal.isEmpty && optCOrdinal.isEmpty)
-      Some(optName.get.trim)
-    else if (optCName.nonEmpty && optCOrdinal.nonEmpty)
-      Some(optCName.get.trim + " " + optCOrdinal.get.trim)
-    else
-      optCName
+    val cordinalSuffix = dict.get("cordinal") match {
+      case Some(cord) => " " + cord.mkString.trim
+      case None => ""
+    }
+    val ordinalSuffix = dict.get("ordinal") match {
+      case Some(ord) => " " + ord.mkString.trim
+      case None => cordinalSuffix
+    }
+    val optCNameCOrdinal = dict.get("cname") match {
+      case Some(cn) => Some(cn.mkString.trim + cordinalSuffix)
+      case None => None
+    }
+
+    dict.get("name") match {
+      case Some(n) => Some(n.mkString.trim + ordinalSuffix)
+      case None => optCNameCOrdinal
+    }
   }
 
   /**
