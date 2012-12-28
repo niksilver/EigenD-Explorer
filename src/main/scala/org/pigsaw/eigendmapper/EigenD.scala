@@ -1,17 +1,20 @@
 package org.pigsaw.eigendmapper
 
 import Preamble._
-
 import scala.sys.process.Process
+import scala.sys.process.ProcessLogger
 
 object EigenD {
   val bin = "C:\\Program Files (x86)\\Eigenlabs\\release-2.0.68-stable\\bin"
 
+  private val nullLogger = ProcessLogger( line => () )
   /**
    * The output of an EigenD command, with newlines omitted.
+   * Stderr is not output
    * @param command  The command, e.g. <code>"bls.exe &lt;main&gt;"</code>
    */
-  def exec(command: String): Stream[String] = Process(EigenD.bin + "/" + command).lines
+  def exec(command: String): Stream[String] =
+    Process(EigenD.bin + "/" + command) lines_! nullLogger
 }
 /**
  * A bls command.

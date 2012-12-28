@@ -123,6 +123,8 @@ class SnapshotCommand extends Command {
   }
   
   def doSnapshot(setup: Setup, prln: PrintlnFn): Setup = {
+    prln("Starting snapshot...")
+    
     val pos = setup.pos
     val bls = this.bls(pos.index)
     val agents = bls.agents
