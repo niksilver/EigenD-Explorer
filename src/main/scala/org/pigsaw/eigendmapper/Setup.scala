@@ -8,6 +8,7 @@ import Preamble._
  * A particular set of connections
  * @param portNames0  A map from a port ID (with a node ID) to the same
  *     port ID but with a name.
+ * @param settings0  A map from each port ID to its set value. 
  * @param conns0  The set of connections in this setup. Do not use this
  *     internally; use allConns instead.
  * @param pos  The position in the rig hierarchy in which we're currently
@@ -15,6 +16,7 @@ import Preamble._
  *     means rig3 within the top level, and so on.
  */
 class Setup private(private val portNames0: Map[String, String],
+    private val settings0: Map[String, String],
     private val conns0: Set[Connection],
     val pos: List[String]) {
 
@@ -33,6 +35,13 @@ class Setup private(private val portNames0: Map[String, String],
    */
   def portIDNamed(portID: String): String =
     portNames0.getOrElse(portID, portID)
+  
+  /**
+   * All the settings, with port IDs fully qualified.
+   */
+  lazy val allSettings: Map[String, String] = settings0
+  // Note that it's okay to use portNames0 because whenever it's set
+  // it also gets fully qualified, too.
   
   /**
    * Get all the connections, fully qualified.
@@ -56,7 +65,7 @@ class Setup private(private val portNames0: Map[String, String],
   /**
    * A setup with no internal rig setups
    */
-  def this(conns: Set[Connection]) = this(Map(), conns, List())
+  def this(conns: Set[Connection]) = this(Map(), Map(), conns, List())
 
   /**
    * Get all the agents at a particular position.
@@ -145,7 +154,7 @@ class Setup private(private val portNames0: Map[String, String],
    */
   def withPortNamesReplaced(portNames2: Map[String, String]): Setup = {
     val namesQual = defaultQualifier(portNames2)
-    new Setup(namesQual, allConns, pos)
+    new Setup(namesQual, settings0, allConns, pos)
   }
 
   /**
@@ -156,7 +165,7 @@ class Setup private(private val portNames0: Map[String, String],
    */
   def withPortNamesRemoved(test: String => Boolean): Setup = {
     val portNamesCleaned = allPortNames filterNot { pn => test(pn._1) }
-    new Setup(portNamesCleaned, allConns, pos)
+    new Setup(portNamesCleaned, settings0, allConns, pos)
   }
 
   /**
@@ -167,7 +176,22 @@ class Setup private(private val portNames0: Map[String, String],
    */
   def withPortNames(portNames2: Map[String, String]): Setup = {
     val namesQual = defaultQualifier(portNames2)
-    new Setup(portNames0 ++ namesQual, allConns, pos)
+    new Setup(portNames0 ++ namesQual, settings0, allConns, pos)
+  }
+
+  /**
+   * Qualify all unqualified settings in this mapping to the current pos.
+   */
+  private def defaultSettingsQualifier(settings2: Map[String, String]): Map[String, String] =
+    settings2 map { nameValue =>
+      (nameValue._1.defaultQualifier(pos), nameValue._2) }
+  
+  /**
+   * Create a setup just like this, but with the new settings given.
+   */
+  def withSettingsReplaced(settings2: Map[String, String]): Setup = {
+    val settingsQual = defaultSettingsQualifier(settings2)
+    new Setup(portNames0, settingsQual, allConns, pos)
   }
 
   /**
@@ -177,7 +201,7 @@ class Setup private(private val portNames0: Map[String, String],
    */
   def withConnsReplaced(conns2: Set[Connection]): Setup = {
     val connsQual = conns2 map { _.defaultQualifier(pos) }
-    new Setup(portNames0, connsQual, pos)
+    new Setup(portNames0, settings0, connsQual, pos)
   }
 
   /**
@@ -187,7 +211,7 @@ class Setup private(private val portNames0: Map[String, String],
    */
   def withConns(conns2: Set[Connection]): Setup = {
     val connsQual = conns2 map { _.defaultQualifier(pos) }
-    new Setup(portNames0, allConns ++ connsQual, pos)
+    new Setup(portNames0, settings0, allConns ++ connsQual, pos)
   }
 
   /**
@@ -196,14 +220,14 @@ class Setup private(private val portNames0: Map[String, String],
    * @param test  The test to see if a connection should be removed.
    */
   def withConnsRemoved(test: Connection => Boolean): Setup = {
-    new Setup(portNames0, allConns filterNot test, pos)
+    new Setup(portNames0, settings0, allConns filterNot test, pos)
   }
 
   /**
    * Create a new setup just like this, but with the pos updated.
    */
   def withPosUpdated(posNow: List[String]) =
-    new Setup(portNames0, allConns, posNow)
+    new Setup(portNames0, settings0, allConns, posNow)
 
   def canEqual(other: Any): Boolean = (other.isInstanceOf[Setup])
 
@@ -211,13 +235,14 @@ class Setup private(private val portNames0: Map[String, String],
     other match {
       case that: Setup => (that canEqual this) &&
         this.portNames0 == that.portNames0 &&
+        this.settings0 == that.settings0 &&
         this.allConns == that.allConns &&
         this.pos == that.pos
       case _ => false
     }
 
   override def hashCode: Int =
-    41 * (41 * (41 + portNames0.hashCode) + allConns.hashCode) + pos.hashCode
+    41 * (41 * (41 * (41 + portNames0.hashCode) + settings0.hashCode) + allConns.hashCode) + pos.hashCode
 
 }
 

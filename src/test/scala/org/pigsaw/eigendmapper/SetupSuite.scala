@@ -110,6 +110,16 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     setup.portIDNamed( "<main.rig1:ag23>#2.3") should equal ("<main.rig1:ag23>#2.3")
   }
 
+  test("allSettings - Defaults unqualified ports to current pos") {
+    val settings = Map(
+        "<aaa>#1.1" -> "my triple a value",
+        "<main:bbb>#2.2" -> "two dot two")
+    val setup = Setup().withPosUpdated(List("<rig1>")).withSettingsReplaced(settings)
+    
+    setup.allSettings should contain (("<main.rig1:aaa>#1.1" -> "my triple a value"))
+    setup.allSettings should contain (("<main:bbb>#2.2" -> "two dot two"))
+  }
+  
   test("Agents") {
     val a = "<a>#1.1"
     val b = "<b>#1.2"
