@@ -142,7 +142,7 @@ class Setup private(private val portNames0: Map[String, String],
   /**
    * Qualify all unqualified port names in this mapping to the current pos.
    */
-  private def defaultQualifier(portNames2: Map[String, String]): Map[String, String] =
+  private def defaultPortNamesQualifier(portNames2: Map[String, String]): Map[String, String] =
     portNames2 map { fromTo =>
       (fromTo._1.defaultQualifier(pos), fromTo._2.defaultQualifier(pos)) }
   
@@ -153,7 +153,7 @@ class Setup private(private val portNames0: Map[String, String],
    * @param portNames2  The new map from port IDs (with node ID) to port IDs (with names)
    */
   def withPortNamesReplaced(portNames2: Map[String, String]): Setup = {
-    val namesQual = defaultQualifier(portNames2)
+    val namesQual = defaultPortNamesQualifier(portNames2)
     new Setup(namesQual, settings0, allConns, pos)
   }
 
@@ -175,7 +175,7 @@ class Setup private(private val portNames0: Map[String, String],
    *     to port IDs (with names)
    */
   def withPortNames(portNames2: Map[String, String]): Setup = {
-    val namesQual = defaultQualifier(portNames2)
+    val namesQual = defaultPortNamesQualifier(portNames2)
     new Setup(portNames0 ++ namesQual, settings0, allConns, pos)
   }
 
@@ -192,6 +192,27 @@ class Setup private(private val portNames0: Map[String, String],
   def withSettingsReplaced(settings2: Map[String, String]): Setup = {
     val settingsQual = defaultSettingsQualifier(settings2)
     new Setup(portNames0, settingsQual, allConns, pos)
+  }
+
+  /**
+   * Create a setup just like this, but with the specified settings
+   * removed.
+   * @param test  A test for each port ID, and if true
+   *     its setting is removed.
+   */
+  def withSettingsRemoved(test: String => Boolean): Setup = {
+    val settingsCleaned = allSettings filterNot { pn => test(pn._1) }
+    new Setup(portNames0, settingsCleaned, allConns, pos)
+  }
+
+  /**
+   * Create a setup just like this, but with the
+   * additional settings.
+   * @param settings2  The additional settings
+   */
+  def withSettings(settings2: Map[String, String]): Setup = {
+    val settingsQual = defaultSettingsQualifier(settings2)
+    new Setup(portNames0, settings0 ++ settingsQual, allConns, pos)
   }
 
   /**

@@ -369,6 +369,96 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     setup2.allPortNames should equal (portNames1 ++ portNames2Qual)
   }
 
+  test("withSettingsReplaced - Make sure it replaces") {
+    val settings1 = Map(
+        "<main:rig1>#1.1" -> "oneone",
+        "<main:ag1>#1.1" -> "agone agone")
+    val settings2 = Map(
+        "<main:rig2>#2.2" -> "twotwo",
+        "<main:ag2>#2.2" -> "agtwo agtwo")
+    
+    val setup1 = Setup().withSettingsReplaced(settings1)
+    
+    setup1.allSettings should equal (settings1)
+    
+    val setup2 = setup1.withSettingsReplaced(settings2)
+    
+    setup2.allSettings should equal (settings2)
+  }
+  
+  test("withSettingsReplaced - Defaults pos to current pos") {
+    val settings1 = Map(
+        "<rig1>#1.1" -> "oneone",
+        "<main:ag1>#1.1" -> "agone agone")
+    val setting2 = Map(
+        "<main:rig2>#2.2" -> "twotwo",
+        "<main:ag2>#2.2" -> "agtwo agtwo")
+    
+    val setup1 = Setup().withPosUpdated(List("<rig2>")).withSettingsReplaced(settings1)
+    
+    setup1.allSettings should equal (
+        Map(
+        "<main.rig2:rig1>#1.1" -> "oneone",
+        "<main:ag1>#1.1" -> "agone agone")
+    )
+  }
+  
+  test("withSettingsRemoved - Removes settings") {
+    val settings = Map(
+        "<main:rig1>#1.1" -> "oneone",
+        "<main:ag1>#1.1" -> "agone agone",
+        "<main.rig1:ag22>#2.2" -> "twotwo",
+        "<main.rig1:xx23>#2.3" -> "two three")
+
+    val setup1 = Setup().withSettingsReplaced(settings)
+    
+    val test = { portID: String => portID.unqualified startsWith "<ag" }
+    val setup2 = setup1.withSettingsRemoved(test)
+    
+    val expectedSettings = Map(
+        "<main:rig1>#1.1" -> "oneone",
+        "<main.rig1:xx23>#2.3" -> "two three")
+        
+    setup2.allSettings should equal (expectedSettings)
+  }
+  
+  test("withSettings - Make sure it adds settings") {
+    val settings1 = Map(
+        "<main:rig1>#1.1" -> "oneone",
+        "<main:ag1>#1.1" -> "agone agone")
+    val settings2 = Map(
+        "<main:rig2>#2.2" -> "twotwo",
+        "<main:ag2>#2.2" -> "agtwo agtwo")
+    
+    val setup1 = Setup().withSettingsReplaced(settings1)
+    
+    setup1.allSettings should equal (settings1)
+    
+    val setup2 = setup1.withSettings(settings2)
+    
+    setup2.allSettings should equal (settings1 ++ settings2)
+  }
+  
+  test("withSettings - Defaults unqualified ports to current pos") {
+    val settings1 = Map(
+        "<main:rig1>#1.1" -> "<oneone",
+        "<main:ag1>#1.1" -> "agone agone")
+    val settings2 = Map(
+        "<rig2>#2.2" -> "twotwo",
+        "<main:ag2>#2.2" -> "agtwo agtwo")
+    val settings2Qual = Map(
+        "<main.rig9:rig2>#2.2" -> "twotwo",
+        "<main:ag2>#2.2" -> "agtwo agtwo")
+    
+    val setup1 = Setup().withSettingsReplaced(settings1)
+    
+    setup1.allSettings should equal (settings1)
+    
+    val setup2 = setup1.withPosUpdated(List("<rig9>")).withSettings(settings2)
+    
+    setup2.allSettings should equal (settings1 ++ settings2Qual)
+  }
+
   test("withConnsReplaced - Replaces all conns") {
     val connTopA = Connection("<main:rig1>#1.1", "<main:ag1>#1.1")
     val connRigA = Connection("<main.rig1:ag22>#2.2", "<main.rig1:ag23>#2.3")
@@ -519,6 +609,20 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     
     val setup1 = setupBasic1.withPortNames(portNames1)
     val setup2 = setupBasic2.withPortNames(portNames2)
+    
+    setup1 should equal (setup2)
+    setup2 should equal (setup1)
+  }
+  
+  test("Equals - with settings defaulted") {
+    val setupBasic1 = new Setup(Set())
+    val setupBasic2 = new Setup(Set())
+    
+    val settings1 = Map("<ag1>#1.1" -> "one one")
+    val settings2 = Map("<main:ag1>#1.1" -> "one one")
+    
+    val setup1 = setupBasic1.withSettingsReplaced(settings1)
+    val setup2 = setupBasic2.withSettingsReplaced(settings2)
     
     setup1 should equal (setup2)
     setup2 should equal (setup1)
