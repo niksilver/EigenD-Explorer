@@ -108,6 +108,16 @@ class ShowCommand extends Command {
     def omitValue(v: String): Boolean =
       (v == "" || (v.startsWith("<") && v.contains(">")))
     
+    def tidyValue(v: String): String = {
+      // Truncate decimals at 3dp
+      val Decimal = """(-?\d+\.)(\d\d\d)\d*""".r
+      val tidy1 = v match {
+        case Decimal(pre, post) => pre + post
+        case _ => v
+      }
+      tidy1
+    }
+    
     val settings = setup.allSettings filter {
       kv => kv._1.agent == agentQual } filterNot {
       kv => isLinked(kv._1) || omitValue(kv._2) } map {
@@ -118,7 +128,7 @@ class ShowCommand extends Command {
       val agentBest = bestForm(portID).nodeLabelWithHash
       // Add the setting if it exists and is not the empty stringg
       optSetting match {
-        case Some(value) => agentBest + (if (omitValue(value)) "" else " = " + value)
+        case Some(value) => agentBest + (if (omitValue(value)) "" else " = " + tidyValue(value))
         case None        => agentBest
       }
     }

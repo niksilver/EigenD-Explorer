@@ -158,6 +158,28 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
     catcher.output should not include ("#2.2")
   }
 
+  test("Show - Truncates decimal setting values to 3dp") {
+    val conn1 = Connection("<prev>#3.3", "<curr>#1.1")
+    val conn2 = Connection("<prev>#3.4", "<curr>#1.2")
+    
+    val settings = Map(
+        "<curr>#1.1" -> "34.1234",
+        "<curr>#1.2" -> "-34.1234") 
+    
+    val setup = Setup(Set(conn1, conn2)).
+      withSettings(settings)
+
+    val catcher = new PrintCatcher
+
+    (new ShowCommand).action(List("<curr>"))(setup, catcher.println)
+
+    catcher.output should not include ("Unknown")
+    catcher.output should include ("--> #1.1 = 34.123")
+    catcher.output should not include ("--> #1.1 = 34.1234")
+    catcher.output should include ("--> #1.2 = -34.123")
+    catcher.output should not include ("--> #1.2 = -34.1234")
+  }
+
   test("Show - Handles being in a rig") {
     val connTop = Connection("<rig1> one", "<fff> five")
     val connRig = Connection("<main.rig1:aaa> ayes", "<main.rig1:bbb> bees")

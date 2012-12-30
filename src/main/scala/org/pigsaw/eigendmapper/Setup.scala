@@ -101,21 +101,6 @@ class Setup private(private val portNames0: Map[String, String],
     ports map { p: String => (p.agent -> p) }
 
   /**
-   * Create a unified set of connections. This means if any connections
-   * carry a port name, then those names are applied wherever those
-   * ports are used.
-   */
-//  private def bestNamesDeprected(cos: Set[Connection]): Set[Connection] = {
-//    def bestNameMap(agent: String): Map[String, String] =
-//      portNames.getOrElse(agent, Map())
-//    def bestForm(portID: String): String = {
-//      val bestForms = bestNameMap(portID.agent)
-//      portID.bestForm(bestForms)
-//    }
-//    cos map { c => Connection(bestForm(c.master), bestForm(c.slave)) }
-//  }
-
-  /**
    * Make an unqualified version of a set of connections, in which
    * every port of the form ID &lt;main:agentnameN&gt; is changed to
    * its shorter form of &lt;agentnameN&gt;.
