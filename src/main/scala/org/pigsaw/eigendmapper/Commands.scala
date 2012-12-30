@@ -326,6 +326,10 @@ class DumpCommand extends Command {
     setup.allPortNames.toSeq.sortBy(_._1).
       foreach { pn => prln(pn._1 + " -> " + pn._2) }
 
+    prln("\nSettings:\n")
+    setup.allSettings.toSeq.sortBy(_._1).
+      foreach { s => prln(s._1 + " -> " + s._2) }
+
     prln("\nConnections:\n")
     setup.allConns.toSeq.sortBy(_.master).
       foreach { pn => prln(pn.master + " -> " + pn.slave) }
