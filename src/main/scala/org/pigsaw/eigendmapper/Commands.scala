@@ -99,33 +99,51 @@ class ShowCommand extends Command {
     // Returns a this agent's port (without agent name) and
     // the other agent's port (with its name)
 
-    def format(currAgentPort: String, otherAgentPort: String): (String, String) = {
-      val optSetting = setup.allSettings.get(currAgentPort)
-      val currBest = bestForm(currAgentPort).nodeLabelWithHash
-      val otherBest = cleaned(bestForm(otherAgentPort))
-      val currBestPlusSetting = optSetting match {
-        case Some(value) => currBest + " = " + value
-        case None => currBest
+//    def format(currAgentPort: String, otherAgentPort: String): (String, String) = {
+//      val optSetting = setup.allSettings.get(currAgentPort)
+//      val currBest = bestForm(currAgentPort).nodeLabelWithHash
+//      val otherBest = cleaned(bestForm(otherAgentPort))
+//      val currBestPlusSetting = optSetting match {
+//        case Some(value) => currBest + " = " + value
+//        case None => currBest
+//      }
+//      (currBestPlusSetting, otherBest)
+//    }
+    
+    val linksFrom =
+      setup.allConns filter { c => c.master.agent == agentQual } map { c => ("", c.master, c.slave) }
+    
+    val linksTo =
+      setup.allConns filter { c => c.slave.agent == agentQual } map { c => (c.master, c.slave, "") }
+    
+    val linksAll = linksFrom ++ linksTo
+    
+    def isLinked(portID: String) =
+      linksAll exists { _._2 == portID }
+    
+    val settings = setup.allSettings filterNot { kv => isLinked(kv._1) } map { kv => ("", kv._1, "")}
+    
+    def formatAgent(portID: String) = {
+      val optSetting = setup.allSettings.get(portID)
+      val agentBest = bestForm(portID).nodeLabelWithHash
+      optSetting match {
+        case Some(value) => agentBest + " = " + value
+        case None => agentBest
       }
-      (currBestPlusSetting, otherBest)
     }
     
-    val links1 =
-      setup.allConns filter { c => c.master.agent == agentQual } map { c => format(c.master, c.slave) }
+    def formatOther(str: String) =
+      if (str == "") ""
+      else cleaned(bestForm(str))
     
-    val links2 =
-      setup.allConns filter { c => c.slave.agent == agentQual } map { c => format(c.slave, c.master) }
-    
-    val links =
-      (links1 map { p => ("", p._1, p._2) }) ++
-      (links2 map { p => (p._2, p._1, "") })
+    val cols = (linksAll ++ settings) map { c => (formatOther(c._1), formatAgent(c._2), formatOther(c._3)) }
 
-    if (links.size == 0)
+    if (cols.size == 0)
       prln("No agent called " + agent)
     else {
       type Cols = Tuple3[String, String, String]
       val sorter = ((a: Cols, b: Cols) => lessThanAlphaInts(a._2, b._2))
-      val padder = new Padder(links.toSeq.sortWith(sorter), " --> ")
+      val padder = new Padder(cols.toSeq.sortWith(sorter), " --> ")
       padder.output foreach { prln(_) }
     }
   }
