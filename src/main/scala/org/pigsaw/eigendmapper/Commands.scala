@@ -94,22 +94,6 @@ class ShowCommand extends Command {
     def bestForm(portID: String): String =
       setup.portIDNamed(portID)
 
-    // Format the columns for a connection between this agent
-    // and another (either way round)
-    // Returns a this agent's port (without agent name) and
-    // the other agent's port (with its name)
-
-//    def format(currAgentPort: String, otherAgentPort: String): (String, String) = {
-//      val optSetting = setup.allSettings.get(currAgentPort)
-//      val currBest = bestForm(currAgentPort).nodeLabelWithHash
-//      val otherBest = cleaned(bestForm(otherAgentPort))
-//      val currBestPlusSetting = optSetting match {
-//        case Some(value) => currBest + " = " + value
-//        case None => currBest
-//      }
-//      (currBestPlusSetting, otherBest)
-//    }
-    
     val linksFrom =
       setup.allConns filter { c => c.master.agent == agentQual } map { c => ("", c.master, c.slave) }
     
@@ -121,8 +105,11 @@ class ShowCommand extends Command {
     def isLinked(portID: String) =
       linksAll exists { _._2 == portID }
     
+    def omitValue(v: String): Boolean =
+      (v == "" || (v.startsWith("<") && v.contains(">")))
+    
     val settings = setup.allSettings filterNot {
-      kv => isLinked(kv._1) || kv._2 == ""} map {
+      kv => isLinked(kv._1) || omitValue(kv._2) } map {
       kv => ("", kv._1, "")}
     
     def formatAgent(portID: String) = {
@@ -130,8 +117,7 @@ class ShowCommand extends Command {
       val agentBest = bestForm(portID).nodeLabelWithHash
       // Add the setting if it exists and is not the empty stringg
       optSetting match {
-        case Some("")    => agentBest
-        case Some(value) => agentBest + " = " + value
+        case Some(value) => agentBest + (if (omitValue(value)) "" else " = " + value)
         case None        => agentBest
       }
     }

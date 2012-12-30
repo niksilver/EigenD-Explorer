@@ -330,7 +330,7 @@ class BCatSuite extends FunSuite with ShouldMatchers {
     settings should contain(("<metronome1>#3.3" -> "0.0"))
   }
 
-  test("Settings - Will recognise named settings") {
+  test("Settings - Will not use port names") {
     val output = """"log:using portbase 5555
       |. {cname:metronome}
       |3.3 {domain:bfloat(),cname:tempo input}
@@ -349,9 +349,9 @@ class BCatSuite extends FunSuite with ShouldMatchers {
     val settings = bcat.settings
 
     settings.size should equal(3)
-    settings should contain(("<metronome1> tempo input" -> "0.0"))
-    settings should contain(("<metronome1> arbitrary thing" -> "some value with spaces"))
-    settings should contain(("<metronome1> open" -> "y"))
+    settings should contain(("<metronome1>#3.3" -> "0.0"))
+    settings should contain(("<metronome1>#4" -> "some value with spaces"))
+    settings should contain(("<metronome1>#5.6.7" -> "y"))
   }
 
 }
