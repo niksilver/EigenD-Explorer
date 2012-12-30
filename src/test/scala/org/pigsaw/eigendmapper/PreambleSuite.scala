@@ -210,5 +210,9 @@ class PreambleSuite extends FunSuite with ShouldMatchers {
 
     lessThanAlphaInts("agent", "agent") should equal (false)
   }
+  
+  test("lessThanAlphaInts - Handles excessively large ints") {
+    lessThanAlphaInts("123456789012345678901234567890", "2") should equal (false)
+  }
 
 }

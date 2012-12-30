@@ -225,7 +225,7 @@ object Preamble {
    */
   def lessThanAlphaInts(a: String, b: String): Boolean = {
     
-    val IntTail = """(\d+)(.*)""".r
+    val IntTail = """(\d{1,9})(.*)""".r
     def split(s: String): (Either[Int,Char], String) =
       s match {
         case IntTail(s1, st) => (Left(s1.toInt), st)
