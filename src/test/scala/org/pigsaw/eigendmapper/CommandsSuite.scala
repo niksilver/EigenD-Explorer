@@ -62,6 +62,26 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
     catcher.output should include ("#2.3    --> <next>#4.5")
   }
 
+  test("Show - Displays settings for ports with connections") {
+    val conn1 = Connection("<prev>#3.3", "<curr>#1.1")
+    val conn2 = Connection("<prev>#3.4", "<curr>#1.2")
+    
+    val settings = Map(
+        "<prev>#3.3" -> "three three", // Should not show, as not current agent
+        "<curr>#1.2" -> "one two") 
+    
+    val setup = Setup(Set(conn1, conn2)).
+      withSettings(settings)
+
+    val catcher = new PrintCatcher
+
+    (new ShowCommand).action(List("<curr>"))(setup, catcher.println)
+
+    catcher.output should not include ("Unknown")
+    catcher.output should include ("<prev>#3.3 --> #1.1")
+    catcher.output should include ("<prev>#3.4 --> #1.2 = one two")
+  }
+
   test("Show - Handles being in a rig") {
     val connTop = Connection("<rig1> one", "<fff> five")
     val connRig = Connection("<main.rig1:aaa> ayes", "<main.rig1:bbb> bees")

@@ -94,16 +94,31 @@ class ShowCommand extends Command {
     def bestForm(portID: String): String =
       setup.portIDNamed(portID)
 
-    val links: Set[(String, String, String)] = for {
-      conn <- setup.allConns
-      val master = bestForm(conn.master)
-      val slave = bestForm(conn.slave)
-      if (master.agent == agentQual || slave.agent == agentQual)
-      val link = if (master.agent == agentQual)
-        ("", master.nodeLabelWithHash, cleaned(slave))
-      else
-        (cleaned(master), slave.nodeLabelWithHash, "")
-    } yield link
+    // Format the columns for a connection between this agent
+    // and another (either way round)
+    // Returns a this agent's port (without agent name) and
+    // the other agent's port (with its name)
+
+    def format(currAgentPort: String, otherAgentPort: String): (String, String) = {
+      val optSetting = setup.allSettings.get(currAgentPort)
+      val currBest = bestForm(currAgentPort).nodeLabelWithHash
+      val otherBest = cleaned(bestForm(otherAgentPort))
+      val currBestPlusSetting = optSetting match {
+        case Some(value) => currBest + " = " + value
+        case None => currBest
+      }
+      (currBestPlusSetting, otherBest)
+    }
+    
+    val links1 =
+      setup.allConns filter { c => c.master.agent == agentQual } map { c => format(c.master, c.slave) }
+    
+    val links2 =
+      setup.allConns filter { c => c.slave.agent == agentQual } map { c => format(c.slave, c.master) }
+    
+    val links =
+      (links1 map { p => ("", p._1, p._2) }) ++
+      (links2 map { p => (p._2, p._1, "") })
 
     if (links.size == 0)
       prln("No agent called " + agent)
@@ -270,8 +285,7 @@ class UpCommand extends Command {
   }
 
   def doUp(setup: Setup, prln: PrintlnFn): Setup = {
-    if (setup.pos.isEmpty)
-      { prln("Already at top level"); setup }
+    if (setup.pos.isEmpty) { prln("Already at top level"); setup }
     else
       setup.withPosUpdated(setup.pos.init)
   }
