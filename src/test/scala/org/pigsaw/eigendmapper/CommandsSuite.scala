@@ -322,6 +322,51 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
     processedConns should contain (Connection("<main:ag2> two two", "<main:ag1>#1.22"))
   }
 
+  test("Snapshot - Captures Settings") {
+
+    val command = new SnapshotCommand {
+      var capturedIndex = "not yet set"
+      var capturedAgents = collection.mutable.Set[String]()
+      override def bls(index: String): BLs = new BLs(index) {
+        capturedIndex = index
+        override def text: Stream[String] = Stream("<ag1>", "<ag2>")
+      }
+      // In this setup we have:
+      // <ag1>#1.1 --> <ag2>#2.1
+      // <ag1>#1.2 --> <ag2>#2.2 --> <ag1>#1.22
+      // <ag1>#1.3 --> <ag2>#2.3
+      // <ag1>#1.4 --> <ag2>#2.4
+      // And we have cnames:
+      // <ag1>#1.1 = one one
+      // <ag2>#2.2 = two two
+      // <ag2>#2.3 = two three
+      override def bcat(agent: String): BCat = new BCat(agent) {
+        capturedAgents = capturedAgents + agent
+        val ag1Text = """. {cname:ag1,slave:}
+          |1.254 n""".stripMargin
+        val ag2Text = """. {cname:ag2,slave:}
+          |1 {comment:next_line_is_empty}
+          |1.254
+          |2 {comment:next_line_ends_with_one_space}
+          |2.254 
+          |2.2.254 two words""".stripMargin
+        override def text: Stream[String] =
+          (if (agent == "<main:ag1>") ag1Text else ag2Text).lines.toStream
+      }
+    }
+
+    val catcher = new PrintCatcher
+
+    val setup = command.action(List())(Setup(), catcher.println)
+    
+    val expectedSettings = Map(
+        "<main:ag1>#1" -> "n",
+        "<main:ag2>#2" -> "",
+        "<main:ag2>#2.2" -> "two words")
+    
+    setup.allSettings should equal (expectedSettings)
+  }
+
   test("Into - Can go into an empty rig") {
     val connsTop = Connection("<rig1> one out", "<top> top input")
     val connsMid = Connection("<main.rig1:rig2> two out", "<main.rig1:mid> mid input")

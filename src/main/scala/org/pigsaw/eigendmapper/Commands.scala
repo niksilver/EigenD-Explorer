@@ -173,6 +173,7 @@ class SnapshotCommand extends Command {
       val bcat = this.bcat(agQual) returnedAfter { bc => prln("Examining " + bc.agent) }
       val portNames = bcat.nodeIDNames map { pn => (agQual + "#" + pn._1, agQual + " " + pn._2) }
       s.withPortNames(portNames).
+        withSettings(bcat.settings).
         withConns(bcat.connections)
     }
 
@@ -186,6 +187,7 @@ class SnapshotCommand extends Command {
     val connIsAtPos = { conn: Connection => conn.hasPos(pos) }
     val baseSetup = setup.
       withPortNamesRemoved(portIsAtPos).
+      withSettingsRemoved(portIsAtPos).
       withConnsRemoved(connIsAtPos)
     updateForAgents(agents, baseSetup)
   }
