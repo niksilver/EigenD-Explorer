@@ -108,7 +108,8 @@ class ShowCommand extends Command {
     def omitValue(v: String): Boolean =
       (v == "" || (v.startsWith("<") && v.contains(">")))
     
-    val settings = setup.allSettings filterNot {
+    val settings = setup.allSettings filter {
+      kv => kv._1.agent == agentQual } filterNot {
       kv => isLinked(kv._1) || omitValue(kv._2) } map {
       kv => ("", kv._1, "")}
     
