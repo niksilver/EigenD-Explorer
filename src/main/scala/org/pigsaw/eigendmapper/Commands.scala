@@ -121,14 +121,18 @@ class ShowCommand extends Command {
     def isLinked(portID: String) =
       linksAll exists { _._2 == portID }
     
-    val settings = setup.allSettings filterNot { kv => isLinked(kv._1) } map { kv => ("", kv._1, "")}
+    val settings = setup.allSettings filterNot {
+      kv => isLinked(kv._1) || kv._2 == ""} map {
+      kv => ("", kv._1, "")}
     
     def formatAgent(portID: String) = {
       val optSetting = setup.allSettings.get(portID)
       val agentBest = bestForm(portID).nodeLabelWithHash
+      // Add the setting if it exists and is not the empty stringg
       optSetting match {
+        case Some("")    => agentBest
         case Some(value) => agentBest + " = " + value
-        case None => agentBest
+        case None        => agentBest
       }
     }
     

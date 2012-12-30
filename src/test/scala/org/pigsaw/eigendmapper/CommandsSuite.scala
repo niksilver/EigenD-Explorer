@@ -100,6 +100,43 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
     catcher.output should include ("#1.3 = one three")
   }
 
+  test("Show - Omits unlinked settings which are the empty string") {
+    val conn1 = Connection("<prev>#3.3", "<curr>#1.1")
+    val conn2 = Connection("<prev>#3.4", "<curr>#1.2")
+    
+    val settings = Map(
+        "<curr>#1.3" -> "") 
+    
+    val setup = Setup(Set(conn1, conn2)).
+      withSettings(settings)
+
+    val catcher = new PrintCatcher
+
+    (new ShowCommand).action(List("<curr>"))(setup, catcher.println)
+
+    catcher.output should not include ("Unknown")
+    catcher.output should not include ("#1.3")
+  }
+
+  test("Show - Omits linked settings which are the empty string") {
+    val conn1 = Connection("<prev>#3.3", "<curr>#1.1")
+    val conn2 = Connection("<prev>#3.4", "<curr>#1.2")
+    
+    val settings = Map(
+        "<curr>#1.1" -> "") 
+    
+    val setup = Setup(Set(conn1, conn2)).
+      withSettings(settings)
+
+    val catcher = new PrintCatcher
+
+    (new ShowCommand).action(List("<curr>"))(setup, catcher.println)
+
+    catcher.output should not include ("Unknown")
+    catcher.output should include ("--> #1.1")
+    catcher.output should not include ("--> #1.1 =")
+  }
+
   test("Show - Handles being in a rig") {
     val connTop = Connection("<rig1> one", "<fff> five")
     val connRig = Connection("<main.rig1:aaa> ayes", "<main.rig1:bbb> bees")
@@ -331,15 +368,6 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
         capturedIndex = index
         override def text: Stream[String] = Stream("<ag1>", "<ag2>")
       }
-      // In this setup we have:
-      // <ag1>#1.1 --> <ag2>#2.1
-      // <ag1>#1.2 --> <ag2>#2.2 --> <ag1>#1.22
-      // <ag1>#1.3 --> <ag2>#2.3
-      // <ag1>#1.4 --> <ag2>#2.4
-      // And we have cnames:
-      // <ag1>#1.1 = one one
-      // <ag2>#2.2 = two two
-      // <ag2>#2.3 = two three
       override def bcat(agent: String): BCat = new BCat(agent) {
         capturedAgents = capturedAgents + agent
         val ag1Text = """. {cname:ag1,slave:}
