@@ -16,18 +16,86 @@ package org.pigsaw.eigendmapper
  * }}}
  *
  */
-class Padder(data: Seq[(String, String, String)], separator: String) {
+class Padder(data: Seq[(String, String, String)],
+    separator: String, padCalc: PadCalc = new PadCalc(70, 8,15,8)) {
 
-  private val leftPadding = data.map(_._1.length).max
-  private val midPadding = data.map(_._2.length).max
+  private val maxLeft = data.map(_._1.length).max
+  private val maxMid = data.map(_._2.length).max
+  private val maxRight = data.map(_._3.length).max
+  
+  private val avgLeft = (data map { _._1.length.toDouble } sum) / data.length
+  private val avgMid = (data map { _._2.length.toDouble } sum) / data.length
+  private val avgRight = (data map { _._3.length.toDouble } sum) / data.length
+  
+  /**
+   * Widths of the main three columns.
+   */
+  val (padLeft, padMid, padRight) =
+    padCalc.forSizes(avgLeft, avgMid, avgRight, maxLeft, maxMid, maxRight)
+  
   private val noSeparator = " " * separator.length
 
-  def output: Seq[String] = data map { d =>
-    d._1.padTo(leftPadding, ' ') +
-      (if (d._1 == "") noSeparator else separator) +
-      d._2.padTo(midPadding, ' ') +
-      (if (d._3 == "") noSeparator else separator) +
-      d._3
+  /**
+   * Add a column of strings to an existing column of strings
+   * @param curr  The current column of strings
+   * @param next  The new column of Strings
+   * @param padNext  Whether to pad the new column with spaces.
+   */
+  private def addCol(curr: Seq[String], next: Seq[String], padNext: Boolean): Seq[String] = {
+    val currPad = " " * (curr map { _.length } max)
+    val nextPad =
+      if (padNext)
+        " " * (next map { _.length } max)
+      else
+        ""
+    curr.zipAll(next, currPad, nextPad) map { pair => pair._1 + pair._2 }
+  }
+  
+  /**
+   * Split a string into a sequence of strings of the given width.
+   */
+  private def split(s: String, width: Int): Seq[String] = {
+    if (s == "" || width == 0)
+      Seq("")
+    else
+      s.grouped(width).toSeq
+  }
+  
+  /**
+   * Split a string into a sequence of strings of the given width
+   * and ensure the last line is padded with spaces.
+   */
+  private def splitAndPad(s: String, width: Int): Seq[String] =
+    split(s, width) map { _.padTo(width, ' ') }
+    
+  /**
+   * Split left, mid and right strings into a series of triples,
+   * each of which is no bigger than the padding for that column.
+   */
+  def wrap(left: String, mid: String, right: String): List[(String, String, String)] = {
+    val splitLeft = left.grouped(padLeft).toList
+    val splitMid = mid.grouped(padMid).toList
+    val splitLeftMid = splitLeft.zipAll(splitMid, "", "")
+    
+    val splitRight = right.grouped(padRight).toList
+    val splitLeftMidPairRight = splitLeftMid.zipAll(splitRight, ("", ""), "")
+    val splitLeftMidRight = splitLeftMidPairRight map { e => (e._1._1, e._1._2, e._2) }
+    
+    splitLeftMidRight
+  }
+  
+  def output: Seq[String] = data flatMap { d =>
+    val col1 = splitAndPad(d._1, padLeft)
+    val col2 = if (d._1 == "") Seq(noSeparator) else Seq(separator)
+    val col3 = splitAndPad(d._2, padMid)
+    val col4 = if (d._3 == "") Seq("") else Seq(separator)
+    val col5 = split(d._3, padRight)
+    
+    val col12 = addCol(col1, col2, true)
+    val col123 = addCol(col12, col3, true)
+    val col1234 = addCol(col123, col4, false)
+    val col12345 = addCol(col1234, col5, false)
+    col12345
   }
 }
 
@@ -43,7 +111,7 @@ class Padder(data: Seq[(String, String, String)], separator: String) {
  */
 class PadCalc(cols: Int, minLeft: Int, minMid: Int, minRight: Int) {
 
-  def forSizes(avgLeft: Int, avgMid: Int, avgRight: Int,
+  def forSizes(avgLeft: Double, avgMid: Double, avgRight: Double,
     maxLeft: Int, maxMid: Int, maxRight: Int): (Int, Int, Int) = {
 
     val practicalMinLeft = minLeft min maxLeft
@@ -59,9 +127,9 @@ class PadCalc(cols: Int, minLeft: Int, minMid: Int, minRight: Int) {
       (inc + practicalMinRight) min maxRight
 
     val avgTotal = avgLeft + avgMid + avgRight
-    val scaleLeft = avgLeft.toDouble / avgTotal
-    val scaleMid = avgMid.toDouble / avgTotal
-    val scaleRight = avgRight.toDouble / avgTotal
+    val scaleLeft = avgLeft / avgTotal
+    val scaleMid = avgMid / avgTotal
+    val scaleRight = avgRight / avgTotal
 
     def settle(inc: Double): Seq[Int] = {
       val cand = Seq(incLeft(inc * scaleLeft), incMid(inc * scaleMid), incRight(inc * scaleRight))

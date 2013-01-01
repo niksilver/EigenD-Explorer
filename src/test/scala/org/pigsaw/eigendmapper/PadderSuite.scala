@@ -8,15 +8,32 @@ import org.scalatest.matchers.ShouldMatchers
 @RunWith(classOf[JUnitRunner])
 class UtilsSuite extends FunSuite with ShouldMatchers {
 
-  test("Padder") {
+  test("Padder - Basic padding") {
     val data = Seq(
       ("", "middle", "end"),
       ("in", "mid", ""),
       ("in2", "middle2", ""))
     val padder = new Padder(data, " -> ")
+    
     padder.output(0) should equal ("       middle  -> end")
-    padder.output(1) should equal ("in  -> mid        ")
-    padder.output(2) should equal ("in2 -> middle2    ")
+    padder.output(1) should equal ("in  -> mid    ")
+    padder.output(2) should equal ("in2 -> middle2")
+  }
+
+  test("Padder - Splits lines if necessary") {
+    val data = Seq(
+      ("", "12345678901234", "end"),
+      ("in", "mid", ""),
+      ("inner", "middle2", ""))
+    val padCalc = new PadCalc(12, 3,6,3)
+    val padder = new Padder(data, " -> ", padCalc)
+
+    padder.output(0) should equal ("       123456 -> end")
+    padder.output(1) should equal ("       789012")
+    padder.output(2) should equal ("       34    ")
+    padder.output(3) should equal ("in  -> mid   ")
+    padder.output(4) should equal ("inn -> middle")
+    padder.output(5) should equal ("er     2     ")
   }
   
   test("PadCalc") {
