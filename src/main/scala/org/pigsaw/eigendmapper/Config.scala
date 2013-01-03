@@ -6,26 +6,29 @@ import com.typesafe.config.ConfigException
 object Config {
   private val conf = ConfigFactory.load()
   
-  private def optInt(key: String): Option[Int] =
-    try {
-      Some(conf.getInt(key))
-    }
-    catch {
-      case e: ConfigException => None
-    }
+  // Get an Int from the config (or throw an exception)
+
+  private def getInt(key: String): Int = conf.getInt(key)
   
-  private def optStringList(key: String): Option[List[String]] =
-    try {
+  // Get a List[String] from the config (or throw an exception)
+  
+  private def getStringList(key: String): List[String] = {
       import scala.collection.JavaConverters._
-      val list = conf.getStringList(key).asScala.toList
-      Some(list)
+      conf.getStringList(key).asScala.toList
+  }
+  
+  // Get something from the config, as an Option
+  
+  private def optGet[T](fn: (String) => T, key: String): Option[T] =
+    try {
+      Some(fn(key))
     }
     catch {
       case e: ConfigException => None
     }
   
-  val doesNotExist = optInt("does.not.exist")
-  val consoleCols = optInt("console.cols")
+  val doesNotExist = optGet(getInt, "does.not.exist")
+  val consoleCols = optGet(getInt, "console.cols")
   
-  val bin = optStringList("bin")
+  val eigenDBbin = optGet(getStringList, "eigend.bin")
 }
