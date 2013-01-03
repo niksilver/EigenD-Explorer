@@ -3,19 +3,34 @@ package org.pigsaw.eigendmapper
 import Preamble._
 import scala.sys.process.Process
 import scala.sys.process.ProcessLogger
+import java.io.File
 
 object EigenD {
-  val bin = "C:\\Program Files (x86)\\Eigenlabs\\release-2.0.68-stable\\bin"
+  /**
+   * Directory string of the EigenD bin folder
+   */
+  val bin: Option[String] = Config.eigenDBin match {
+    case Some(filenames) => filenames find { n => new File(n).exists }
+    case None => None
+  }
 
-  private val nullLogger = ProcessLogger( line => () )
+  // Log things other than the annoying "log:using portbase 55555"
+  // from bcat and bls.
+  
+  private val cleanLogger = ProcessLogger( line =>
+    if (!line.startsWith("log:using portbase ")) println(line) )
+    
   /**
    * The output of an EigenD command, with newlines omitted.
    * Stderr is not output
    * @param command  The command, e.g. <code>"bls.exe &lt;main&gt;"</code>
    */
-  def exec(command: String): Stream[String] =
-    Process(EigenD.bin + "/" + command) lines_! nullLogger
+  def exec(command: String): Stream[String] = bin match {
+    case Some(dir) => Process(dir + "/" + command) lines_! cleanLogger
+    case None => throw new Exception("No EigenD bin detected")
+  }
 }
+
 /**
  * A bls command.
  * @param index  The index being listed, including angle brackets.

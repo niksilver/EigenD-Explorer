@@ -18,7 +18,7 @@ class BCatSuite extends FunSuite with ShouldMatchers {
   }
 
   test("Read bcat lines") {
-    val output = """"log:using portbase 5555
+    val output = """"log:using portbase 55555
       |. {cname:metronome,cordinal:1}
       |1 {cname:outputs,protocols:}
       |1.1 one point one

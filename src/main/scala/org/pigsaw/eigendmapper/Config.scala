@@ -30,5 +30,5 @@ object Config {
   val doesNotExist = optGet(getInt, "does.not.exist")
   val consoleCols = optGet(getInt, "console.cols")
   
-  val eigenDBbin = optGet(getStringList, "eigend.bin")
+  val eigenDBin = optGet(getStringList, "eigend.bin")
 }

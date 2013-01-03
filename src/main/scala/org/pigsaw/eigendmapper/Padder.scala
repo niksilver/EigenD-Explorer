@@ -17,7 +17,7 @@ package org.pigsaw.eigendmapper
  *
  */
 class Padder(data: Seq[(String, String, String)],
-    separator: String, padCalc: PadCalc = new PadCalc(70, 8,15,8)) {
+    separator: String, padCalc: PadCalc = DefaultPadCalc) {
 
   private val maxLeft = data.map(_._1.length).max
   private val maxMid = data.map(_._2.length).max
@@ -168,3 +168,11 @@ class PadCalc(cols: Int, minLeft: Int, minMid: Int, minRight: Int) {
     (pass2(0), pass2(1), pass2(2))
   }
 }
+
+/**
+ * The default PadCalc. The number of columns is the console
+ * columns less 1 (to avoid overrunning), less two times
+ * `" --> "` which is 5 chars.
+ */
+object DefaultPadCalc extends
+  PadCalc(Config.consoleCols.get - 1 - 10, 15,20,15)

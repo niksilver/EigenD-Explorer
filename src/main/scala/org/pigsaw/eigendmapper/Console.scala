@@ -8,7 +8,13 @@ object Console {
   def main(args: Array[String]) {
     val parser = new ConsoleParser
     val ul = new UserLine(">> ")
-    actLoop(Setup())
+    
+    outputConfig
+    
+    if (EigenD.bin.nonEmpty && Config.consoleCols.nonEmpty)
+      actLoop(Setup())
+    else
+      println("Exiting. Please make corrections in application.conf")
 
     def actLoop(setup: Setup): Unit = {
       ul.line match {
@@ -25,6 +31,17 @@ object Console {
         case Some(command) => command(setup)
         case None => println("Unknown command"); setup
       }
+    }
+  }
+  
+  private def outputConfig {
+    Config.consoleCols match {
+      case Some(cols) => println("Working to " + cols + " console columns")
+      case None => println("Error: Number of console columns not set")
+    }
+    EigenD.bin match {
+      case Some(dir) => println("Found EigenD bin folder " + dir)
+      case None => println("Error: No EigenD bin folder found")
     }
   }
 
