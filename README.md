@@ -1,7 +1,7 @@
 # EigenD Explorer
 
 This is a tool to explore the connections and settings in EigenD. If you
-don't know what EigenD is, then you won't be interested in this.
+don't know what EigenD is then you won't be interested in this.
 
 I wrote this entirely for myself, and will continue to play with it only
 as long it interests my, so do not expect any bug fixes or feature requests
