@@ -25,21 +25,20 @@ want it to look first earlier in the list.
 ## Running the application
 
 To run the application (and assuming your jar file is called
-`EigenD-explorer_2.9.2-1.0.jar) then simply run
+`eigend-explorer-1.0.jar`) then simply run
 
-    java -jar EigenD-explorer_2.9.2-1.0.jar
+    scala eigend-explorer_2.9.2-1.0.jar
 
 ## Using the application
 
 The general mode of operation is: (i) `snapshot` the top level EigenD
 setup, (ii) go `into` a rig of interest, then (iii) `inspect` one of the
 agents. You can browse around as you like, occasionally going `up` a level
-out of the current rig or `into` another rig.
+out of the current rig or down `into` another rig.
 
 Here is an example run...
 
-    java -jar EigenD-Explorer_2.9.2-1.0.jar
-    
+    > java -jar eigend-explorer_2.9.2-1.0.jar
     Working to 120 console columns
     Found EigenD bin folder C:/Program Files (x86)/Eigenlabs/release-2.0.72-stable/bin
     >> snapshot
@@ -51,9 +50,9 @@ Here is an example run...
     Examining <main:clicker1>
     ...
 
-And so on. With the factory setups this takes a _very_ long time, but you should see
-progress. Eventually you will get the prompt back and you can examine an agent,
-including its connections and any settings:
+..which continues for a while. With the factory setups this takes a _very_ long time,
+but you should see progress. Eventually you will get the prompt back and you can
+examine an agent, including its connections and any settings:
 
     ....
     Examining <main:rig5>
@@ -71,7 +70,7 @@ name, such as `<talker3>`. Agents at any other level will be given a fully-quali
 name such as `<main.rig3:scaler1>`.
 
 The `snapshot` command only snapshots the current level, so let's go into
-rig 3 and see how that's connected:
+rig 3, snapshot it, and look at one of its agents:
 
     >> into <rig3>
     Position: <rig3>
@@ -86,6 +85,7 @@ rig 3 and see how that's connected:
     Examining <main.rig3:eigend1>
     Examining <main.rig3:audio_unit1>
     Examining <main.rig3:recorder1>
+    >>
 
 Because we're now in rig 3 we can refer to its agents in their simple form, without
 qualification:
@@ -105,5 +105,3 @@ Now we can go back up a level:
     >>
 
 There's also a `help` command.
-
-This has only snapshot the top level, not any of the rigs. So we can go int
