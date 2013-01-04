@@ -17,9 +17,8 @@ older versions, too.
 1. Unzip the jar.
 1. Edit the top-level file `application.conf` so that (a) the number of 
 console columns (characters on a line) matches your console, and (b) the
-location of your EigenD `bin` directory is included. For the EigenD `bin`
-directory the earlier locations take precedent, so put the place(s) you
-want it to look first earlier in the list.
+location of your EigenD `bin` directory is included. Details are given in
+the `application.conf` file itself.
 1. Zip the jar back up.
 
 ## Running the application
@@ -27,7 +26,7 @@ want it to look first earlier in the list.
 To run the application (and assuming your jar file is called
 `eigend-explorer-1.0.jar`) then simply run
 
-    scala eigend-explorer_2.9.2-1.0.jar
+    scala eigend-explorer-1.0.jar
 
 ## Using the application
 
@@ -36,11 +35,20 @@ setup, (ii) go `into` a rig of interest, then (iii) `inspect` one of the
 agents. You can browse around as you like, occasionally going `up` a level
 out of the current rig or down `into` another rig.
 
-Here is an example run...
+Here is an example run with Factory Setup 1 on the Pico...
 
-    > java -jar eigend-explorer_2.9.2-1.0.jar
+    > scala eigend-explorer-1.0.jar
     Working to 120 console columns
     Found EigenD bin folder C:/Program Files (x86)/Eigenlabs/release-2.0.72-stable/bin
+    >> 
+
+Notice that it's using the `bin` folder in `release-2.0.72`. If ever I update my version
+of EigenD then it's a good idea that I update the `application.conf` file to reflect the
+new version. Or I could put a few future versions into `application.conf` to save me
+some time.
+
+Meanwhile my EigenD is running, so let's snapshot its current state:
+
     >> snapshot
     Starting snapshot...
     Examining <main:controller8>
@@ -53,9 +61,9 @@ Here is an example run...
     Examining <main:keygroup1>
     >>
 
-This is a slow process, and with the factory setups this takes a _very_ long time,
+This is a slow process, and with the factory setups it takes a _very_ long time,
 but you should see progress. Eventually you will get the prompt back and you can
-examine an agent, including its connections and any settings:
+examine an agent, including its connections and settings:
 
     >> inspect <clicker1>
     <talker3> key 15 action 1 trigger output --> #3.1 = n
@@ -66,21 +74,30 @@ examine an agent, including its connections and any settings:
                                                  status output      --> <talker3> key 15 action 1 status input
 
 The output above shows which ports on other agents go into ports in the selected
-agent, and what they in turn connect to. Ports are always given names if possible,
+agent, and what they in turn connect to. If a port has several inputs or
+outputs then it's shown for each one. For example, the `audio output` port in the
+above example has two outgoing connections, so it's listed twice.
+
+Ports are always given names if possible,
 and will be given the shortest unique name. But sometimes the names have to be long to
 ensure uniqueness, and sometimes (as with port 3.1 above) they don't have names,
-in which case you will see its port number instead.
+in which case you will see a port number instead.
 
-We can also see port `#3.1` is set to the value `n`, the port `bar beat input` is set to `0`,
-and `running input` is also set to `0`.
+We can also see settings:
+port `#3.1` is set to the value `n`, the port `bar beat input` is set to `0`,
+and `running input` is also set to `0`. More interesting settings can be seen
+in the talker agents (they carry Belcanto commands) and keygroup agents (which
+carry key layouts).
 
 Any agents at the current level (in this example, the top level) have a simple
 name, such as `<talker3>`. Agents at any other level will be given a fully-qualified
 name such as `<main.rig3:scaler1>` (for scaler 1 in rig 3) and `<main:clicker1>`
 (for clicker 1 at the top level).
 
+Now let's return to our example.
+
 The `snapshot` command only snapshots the current level, so let's go into
-rig 3, snapshot it, and look at one of its agents:
+rig 3, snapshot it, and inspect one of its agents:
 
     >> into <rig3>
     Position: <rig3>
