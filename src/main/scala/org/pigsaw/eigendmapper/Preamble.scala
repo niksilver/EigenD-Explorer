@@ -106,6 +106,12 @@ object Preamble {
       val strip1 = name.dropWhile(_ == '<')
       if (strip1.endsWith(">")) strip1.init else strip1
     }
+    
+    /**
+     * True if the name is a well-formed agent name,
+     * including the angle brackets.
+     */
+    def isAgent = Pattern.matches("<([^>]*:)?([^>]*)>", name)
 
     /**
      * True if this agent is a rig

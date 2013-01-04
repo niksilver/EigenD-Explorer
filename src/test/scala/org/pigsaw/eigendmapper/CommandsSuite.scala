@@ -255,6 +255,17 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
     catcher.output should include("<main:rig1>#1.1 --> #5.5")
   }
 
+  test("Inspect - Catches malformed agent name") {
+    val setup = Setup()
+    val catcher = new PrintCatcher
+
+    (new InspectCommand).action(List("<fff"))(setup, catcher.println)
+
+    catcher.output should not include ("Unknown")
+    catcher.output should not include ("No agent called")
+    catcher.output should include("Bad agent name")
+  }
+
   test("Inspect - Doesn't show different agent with same name in other rig") {
     val connTop = Connection("<rig1> one", "<aaa> top aye")
     val connRig = Connection("<main.rig1:aaa> ayes", "<main.rig1:bbb> bees")

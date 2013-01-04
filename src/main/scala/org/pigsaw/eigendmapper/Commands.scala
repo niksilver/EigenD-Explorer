@@ -166,7 +166,8 @@ class InspectCommand extends Command {
   def action(args: List[String])(setup: Setup, prln: PrintlnFn): Setup = {
     args.length match {
       case 0 => prln("inspect: No agent name given")
-      case 1 => doInspect(args(0), setup, prln)
+      case 1 => if (args(0).isAgent) doInspect(args(0), setup, prln)
+        else prln("Bad agent name. Names should be similar to <clicker1>.")
       case _ => prln("inspect: Too many arguments, only one required")
     }
 
