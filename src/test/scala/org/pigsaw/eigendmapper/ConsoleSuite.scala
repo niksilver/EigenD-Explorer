@@ -21,5 +21,38 @@ class ConsoleSuite extends FunSuite with ShouldMatchers {
     
     cmd should be ('defined)
   }
+  
+  test("ConsoleParser - Handles file output") {
+    // A setup which captures how it was created.
+    class TestableSetup(
+        val args: List[String],
+        val prln: (Any)=>Unit)
+      extends Setup(Set())
+    
+    // The command which generates a setup showing how it was created
+    val testCommand = new Command {
+      val command = "test"
+      def action(args: List[String])(setup: Setup, prln: PrintlnFn): Setup = {
+        new TestableSetup(args, prln)
+      }
+    }
+    
+    var filePrinterArg = "Not yet called"
+    // A parser which parses the test command
+    val parser = new ConsoleParser {
+      override val commands = List(testCommand)
+      override def filePrinter(filename: String): FilePrinter = {
+        filePrinterArg = filename
+        new FilePrinter(filename)
+      }
+    }
+    
+    val cmd: Option[Setup => Setup] = parser.parseLine("test output > myfile.txt")
+    
+    cmd should be ('defined)
+    val tcmd = (cmd.get)(Setup()).asInstanceOf[TestableSetup]
+    tcmd.args should equal (List("output"))
+    filePrinterArg should be ("myfile.txt")
+  }
 
 }
