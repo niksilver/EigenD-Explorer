@@ -54,7 +54,7 @@ class ConsoleParser extends RegexParsers {
    * Default println function with one argument; may be overriden.
    */
   val prln: Any => Unit = scala.Console.println
-  
+
   /**
    * Printer to a named file
    */
@@ -75,7 +75,7 @@ class ConsoleParser extends RegexParsers {
   // been fed the additional arguments, and just needs a setup to process.
   def oneCommandParser(cmd: Command): Parser[(Setup) => Setup] =
     cmd.command ~> (arg *) ~ (redirect ?) ^^ {
-      case args ~ Some(filename) => { (s: Setup) => val fp = filePrinter(filename); val s2 = cmd.action(args)(s, prln); fp.close; s2 }
+      case args ~ Some(filename) => { (s: Setup) => actionToFilePrinter(cmd, args, s, filename) }
       case args ~ None => { (s: Setup) => cmd.action(args)(s, prln) }
     }
 
@@ -99,7 +99,7 @@ class ConsoleParser extends RegexParsers {
     case cmd :: Nil => oneCommandParser(cmd)
     case cmd :: tail => oneCommandParser(cmd) | commandsParser(tail)
   }
-  
+
   // File redirection
   def redirect = ">" ~> filename ^^ { _.mkString }
   def filename = """\S+""".r
@@ -109,6 +109,17 @@ class ConsoleParser extends RegexParsers {
       case Success(out, _) => Some(out)
       case Failure(msg, _) => None
     }
+  
+  /**
+   * Execute a given command's action, but redirecting the output
+   * to a named file.
+   */
+  def actionToFilePrinter(cmd: Command, args: List[String], s: Setup, filename: String): Setup = {
+    val fp = filePrinter(filename)
+    val setup2 = cmd.action(args)(s, fp.println)
+    fp.close
+    setup2
+  }
 }
 
 /**
@@ -116,10 +127,10 @@ class ConsoleParser extends RegexParsers {
  */
 class FilePrinter(filename: String) {
   val out = new FileWriter(filename)
-  
-  def println(msg: String) {
-    out write msg
+
+  def println(msg: Any) {
+    out write msg.toString
   }
-  
+
   def close = out.close
 }
