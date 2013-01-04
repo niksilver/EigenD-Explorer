@@ -9,14 +9,6 @@ import org.scalatest.matchers.ShouldMatchers
 @RunWith(classOf[JUnitRunner])
 class BCatSuite extends FunSuite with ShouldMatchers {
 
-  trait TestParser extends BCatParser {
-    def parseOption[T](parser: Parser[T], dictstr: String): Option[T] =
-      parseAll(parser, dictstr) match {
-        case Success(out, _) => Some(out)
-        case fail => None
-      }
-  }
-
   test("Read bcat lines") {
     val output = """"log:using portbase 55555
       |. {cname:metronome,cordinal:1}

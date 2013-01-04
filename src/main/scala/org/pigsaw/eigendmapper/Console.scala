@@ -101,7 +101,10 @@ class ConsoleParser extends RegexParsers {
 
   // File redirection
   def redirect = ">" ~> filename ^^ { _.mkString }
-  def filename = """\S+""".r
+  def filename = singleQuotedFilename | doubleQuotedFilename | unquotedFilename
+  def unquotedFilename = """\S+""".r
+  def singleQuotedFilename = "'" ~> "[^']+".r <~ "'" ^^ { _.mkString }
+  def doubleQuotedFilename = "\"" ~> "[^\"]+".r <~ "\"" ^^ { _.mkString }
 
   def parseLine(line: String): Option[(Setup) => Setup] =
     parseAll(phrase(command), line) match {

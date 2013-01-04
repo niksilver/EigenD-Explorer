@@ -8,6 +8,45 @@ import org.scalatest.matchers.ShouldMatchers
 @RunWith(classOf[JUnitRunner])
 class ConsoleSuite extends FunSuite with ShouldMatchers {
 
+  trait TestParser extends ConsoleParser {
+    def parseOption[T](parser: Parser[T], line: String): Option[T] =
+      parseAll(parser, line) match {
+        case Success(out, _) => Some(out)
+        case fail => None
+      }
+  }
+
+  test("ConsoleParser.redirect") {
+    new TestParser {
+      
+      // When there are no spaces in the filename
+
+      parseOption(redirect, "> myfile.txt") should equal (Some("myfile.txt"))
+      parseOption(redirect, "> 'myfile.txt'") should equal (Some("myfile.txt"))
+      parseOption(redirect, """> "myfile.txt"""") should equal (Some("myfile.txt"))
+      
+      // When we have a space in the filename
+
+      parseOption(redirect, "> my file.txt") should equal (None)
+      parseOption(redirect, "> 'my file.txt'") should equal (Some("my file.txt"))
+      parseOption(redirect, """> "my file.txt"""") should equal (Some("my file.txt"))
+
+      // We should be able to do without a space after the > sign...
+      
+      // No space after > and no spaces in the filename
+
+      parseOption(redirect, ">myfile.txt") should equal (Some("myfile.txt"))
+      parseOption(redirect, ">'myfile.txt'") should equal (Some("myfile.txt"))
+      parseOption(redirect, """>"myfile.txt"""") should equal (Some("myfile.txt"))
+      
+      // No space after > and we have a space in the filename
+
+      parseOption(redirect, ">my file.txt") should equal (None)
+      parseOption(redirect, ">'my file.txt'") should equal (Some("my file.txt"))
+      parseOption(redirect, """>"my file.txt"""") should equal (Some("my file.txt"))
+    }
+  }
+  
   test("ConsoleParser - Parses inspect <agent>") {
     val parser = new ConsoleParser
     val cmd: Option[Setup => Setup] = parser.parseLine("inspect <agent>")
