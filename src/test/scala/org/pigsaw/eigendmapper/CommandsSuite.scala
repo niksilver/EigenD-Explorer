@@ -13,239 +13,12 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
     def println(s: Any): Unit = { output = output + s.toString + "\n" }
   }
 
-  test("Show - handles no agents") {
-    val setup = Setup()
-
-    val catcher = new PrintCatcher
-
-    (new ShowCommand).action(List("<rig1>"))(setup, catcher.println)
-
-    catcher.output should not include ("Unknown")
-    catcher.output should include("No agent called <rig1>")
-  }
-
-  test("Show - Produces somewhat sensible output") {
-    val conn = Connection("<ttt> three", "<fff> five")
-    val setup = Setup(Set(conn))
-
-    val catcher = new PrintCatcher
-
-    (new ShowCommand).action(List("<ttt>"))(setup, catcher.println)
-
-    catcher.output should not include ("Unknown")
-    catcher.output should include("-->")
-  }
-
-  test("Show - Uses portNames map") {
-    val conn1 = Connection("<prev>#3.3", "<curr>#1.1") // Will have names
-    val conn2 = Connection("<prev>#3.4", "<curr>#1.2") // Won't have names
-    val conn3 = Connection("<curr>#2.2", "<next>#4.4") // Will have names
-    val conn4 = Connection("<curr>#2.3", "<next>#4.5") // Won't have names
-    
-    val portNames = Map(
-        "<prev>#3.3" -> "<prev> three three",
-        "<curr>#1.1" -> "<curr> one one",
-        "<curr>#2.2" -> "<curr> two two",
-        "<next>#4.4" -> "<next> four four")
-    
-    val setup = Setup(Set(conn1, conn2, conn3, conn4)).
-      withPortNames(portNames)
-
-    val catcher = new PrintCatcher
-
-    (new ShowCommand).action(List("<curr>"))(setup, catcher.println)
-
-    catcher.output should not include ("Unknown")
-    catcher.output should include ("<prev> three three --> one one")
-    catcher.output should include ("<prev>#3.4         --> #1.2")
-    catcher.output should include ("two two --> <next> four four")
-    catcher.output should include ("#2.3    --> <next>#4.5")
-  }
-
-  test("Show - Displays settings for ports with connections") {
-    val conn1 = Connection("<prev>#3.3", "<curr>#1.1")
-    val conn2 = Connection("<prev>#3.4", "<curr>#1.2")
-    
-    val settings = Map(
-        "<prev>#3.3" -> "three three", // Should not show, as not current agent
-        "<curr>#1.2" -> "one two") 
-    
-    val setup = Setup(Set(conn1, conn2)).
-      withSettings(settings)
-
-    val catcher = new PrintCatcher
-
-    (new ShowCommand).action(List("<curr>"))(setup, catcher.println)
-
-    catcher.output should not include ("Unknown")
-    catcher.output should include ("<prev>#3.3 --> #1.1")
-    catcher.output should include ("<prev>#3.4 --> #1.2 = one two")
-  }
-
-  test("Show - Displays settings for ports with no connections") {
-    val conn1 = Connection("<prev>#3.3", "<curr>#1.1")
-    val conn2 = Connection("<prev>#3.4", "<curr>#1.2")
-    
-    val settings = Map(
-        "<curr>#1.3" -> "one three") 
-    
-    val setup = Setup(Set(conn1, conn2)).
-      withSettings(settings)
-
-    val catcher = new PrintCatcher
-
-    (new ShowCommand).action(List("<curr>"))(setup, catcher.println)
-
-    catcher.output should not include ("Unknown")
-    catcher.output should include ("#1.3 = one three")
-  }
-
-  test("Show - Omits unlinked settings which are the empty string") {
-    val conn1 = Connection("<prev>#3.3", "<curr>#1.1")
-    val conn2 = Connection("<prev>#3.4", "<curr>#1.2")
-    
-    val settings = Map(
-        "<curr>#1.3" -> "") 
-    
-    val setup = Setup(Set(conn1, conn2)).
-      withSettings(settings)
-
-    val catcher = new PrintCatcher
-
-    (new ShowCommand).action(List("<curr>"))(setup, catcher.println)
-
-    catcher.output should not include ("Unknown")
-    catcher.output should not include ("#1.3")
-  }
-
-  test("Show - Omits linked settings which are the empty string") {
-    val conn1 = Connection("<prev>#3.3", "<curr>#1.1")
-    val conn2 = Connection("<prev>#3.4", "<curr>#1.2")
-    
-    val settings = Map(
-        "<curr>#1.1" -> "") 
-    
-    val setup = Setup(Set(conn1, conn2)).
-      withSettings(settings)
-
-    val catcher = new PrintCatcher
-
-    (new ShowCommand).action(List("<curr>"))(setup, catcher.println)
-
-    catcher.output should not include ("Unknown")
-    catcher.output should include ("--> #1.1")
-    catcher.output should not include ("--> #1.1 =")
-  }
-
-  test("Show - Omits linked and unlinked settings which are XML") {
-    val conn1 = Connection("<prev>#3.3", "<curr>#1.1")
-    val conn2 = Connection("<prev>#3.4", "<curr>#1.2")
-    
-    val settings = Map(
-        "<curr>#1.2" -> "<widget name='my first widget'/>",
-        "<curr>#2.2" -> "<widget name='my second widget'/>") 
-    
-    val setup = Setup(Set(conn1, conn2)).
-      withSettings(settings)
-
-    val catcher = new PrintCatcher
-
-    (new ShowCommand).action(List("<curr>"))(setup, catcher.println)
-
-    catcher.output should not include ("Unknown")
-    catcher.output should include ("--> #1.2")
-    catcher.output should not include ("--> #1.2 =")
-    catcher.output should not include ("#2.2")
-  }
-
-  test("Show - Truncates decimal setting values to 3dp") {
-    val conn1 = Connection("<prev>#3.3", "<curr>#1.1")
-    val conn2 = Connection("<prev>#3.4", "<curr>#1.2")
-    
-    val settings = Map(
-        "<curr>#1.1" -> "34.1234",
-        "<curr>#1.2" -> "-34.1234") 
-    
-    val setup = Setup(Set(conn1, conn2)).
-      withSettings(settings)
-
-    val catcher = new PrintCatcher
-
-    (new ShowCommand).action(List("<curr>"))(setup, catcher.println)
-
-    catcher.output should not include ("Unknown")
-    catcher.output should include ("--> #1.1 = 34.123")
-    catcher.output should not include ("--> #1.1 = 34.1234")
-    catcher.output should include ("--> #1.2 = -34.123")
-    catcher.output should not include ("--> #1.2 = -34.1234")
-  }
-
-  test("Show - Handles being in a rig") {
-    val connTop = Connection("<rig1> one", "<fff> five")
-    val connRig = Connection("<main.rig1:aaa> ayes", "<main.rig1:bbb> bees")
-    
-    val setupTop = Setup(Set(connTop, connRig)).withPosUpdated(List("<rig1>"))
-
-    val catcher = new PrintCatcher
-
-    (new ShowCommand).action(List("<aaa>"))(setupTop, catcher.println)
-
-    catcher.output should not include ("Unknown")
-    catcher.output should not include ("No agent called")
-    catcher.output should include("ayes --> <bbb> bees")
-  }
-
-  test("Show - Allows qualified agent name") {
-    val connTop = Connection("<rig1>#1.1", "<fff>#5.5")
-    val connRig = Connection("<main.rig1:aaa>#2.2", "<main.rig1:bbb>#2.3")
-    
-    val setupTop = Setup(Set(connTop, connRig)).withPosUpdated(List("<rig1>"))
-
-    val catcher = new PrintCatcher
-
-    (new ShowCommand).action(List("<main:fff>"))(setupTop, catcher.println)
-
-    catcher.output should not include ("Unknown")
-    catcher.output should not include ("No agent called")
-    catcher.output should include("<main:rig1>#1.1 --> #5.5")
-  }
-
-  test("Show - Doesn't show different agent with same name in other rig") {
-    val connTop = Connection("<rig1> one", "<aaa> top aye")
-    val connRig = Connection("<main.rig1:aaa> ayes", "<main.rig1:bbb> bees")
-    
-    val setupTop = Setup(Set(connTop, connRig)).withPosUpdated(List("<rig1>"))
-
-    val catcher = new PrintCatcher
-
-    (new ShowCommand).action(List("<aaa>"))(setupTop, catcher.println)
-
-    catcher.output should not include ("Unknown")
-    catcher.output should not include ("No agent called")
-    catcher.output should include("ayes --> <bbb> bees")
-    catcher.output should not include ("top aye")
-  }
-
-  test("Show - Omits unlinked settings from other agents") {
-    val conn1 = Connection("<prev>#3.3", "<curr>#1.1")
-    val conn2 = Connection("<prev>#3.4", "<curr>#1.2")
-    
-    val settings = Map(
-        "<other>#5.5" -> "some value") 
-    
-    val setup = Setup(Set(conn1, conn2)).
-      withSettings(settings)
-
-    val catcher = new PrintCatcher
-
-    (new ShowCommand).action(List("<curr>"))(setup, catcher.println)
-
-    catcher.output should not include ("Unknown")
-    catcher.output should include ("--> #1.1")
-    catcher.output should include ("--> #1.2")
-    catcher.output should not include ("#5.5")
-  }
-
+  // -------------------------------------------------------------------------------
+  //
+  // Graph
+  //
+  // -------------------------------------------------------------------------------
+  
   test("Graph - handles no arguments") {
     val setup = Setup()
 
@@ -278,6 +51,336 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
 
     catcher.output should include("Do not recognise what to graph")
   }
+
+  // -------------------------------------------------------------------------------
+  //
+  // Inspect
+  //
+  // -------------------------------------------------------------------------------
+
+  test("Inspect - handles no agents") {
+    val setup = Setup()
+
+    val catcher = new PrintCatcher
+
+    (new InspectCommand).action(List("<rig1>"))(setup, catcher.println)
+
+    catcher.output should not include ("Unknown")
+    catcher.output should include("No agent called <rig1>")
+  }
+
+  test("Inspect - Produces somewhat sensible output") {
+    val conn = Connection("<ttt> three", "<fff> five")
+    val setup = Setup(Set(conn))
+
+    val catcher = new PrintCatcher
+
+    (new InspectCommand).action(List("<ttt>"))(setup, catcher.println)
+
+    catcher.output should not include ("Unknown")
+    catcher.output should include("-->")
+  }
+
+  test("Inspect - Uses portNames map") {
+    val conn1 = Connection("<prev>#3.3", "<curr>#1.1") // Will have names
+    val conn2 = Connection("<prev>#3.4", "<curr>#1.2") // Won't have names
+    val conn3 = Connection("<curr>#2.2", "<next>#4.4") // Will have names
+    val conn4 = Connection("<curr>#2.3", "<next>#4.5") // Won't have names
+    
+    val portNames = Map(
+        "<prev>#3.3" -> "<prev> three three",
+        "<curr>#1.1" -> "<curr> one one",
+        "<curr>#2.2" -> "<curr> two two",
+        "<next>#4.4" -> "<next> four four")
+    
+    val setup = Setup(Set(conn1, conn2, conn3, conn4)).
+      withPortNames(portNames)
+
+    val catcher = new PrintCatcher
+
+    (new InspectCommand).action(List("<curr>"))(setup, catcher.println)
+
+    catcher.output should not include ("Unknown")
+    catcher.output should include ("<prev> three three --> one one")
+    catcher.output should include ("<prev>#3.4         --> #1.2")
+    catcher.output should include ("two two --> <next> four four")
+    catcher.output should include ("#2.3    --> <next>#4.5")
+  }
+
+  test("Inspect - Displays settings for ports with connections") {
+    val conn1 = Connection("<prev>#3.3", "<curr>#1.1")
+    val conn2 = Connection("<prev>#3.4", "<curr>#1.2")
+    
+    val settings = Map(
+        "<prev>#3.3" -> "three three", // Should not show, as not current agent
+        "<curr>#1.2" -> "one two") 
+    
+    val setup = Setup(Set(conn1, conn2)).
+      withSettings(settings)
+
+    val catcher = new PrintCatcher
+
+    (new InspectCommand).action(List("<curr>"))(setup, catcher.println)
+
+    catcher.output should not include ("Unknown")
+    catcher.output should include ("<prev>#3.3 --> #1.1")
+    catcher.output should include ("<prev>#3.4 --> #1.2 = one two")
+  }
+
+  test("Inspect - Displays settings for ports with no connections") {
+    val conn1 = Connection("<prev>#3.3", "<curr>#1.1")
+    val conn2 = Connection("<prev>#3.4", "<curr>#1.2")
+    
+    val settings = Map(
+        "<curr>#1.3" -> "one three") 
+    
+    val setup = Setup(Set(conn1, conn2)).
+      withSettings(settings)
+
+    val catcher = new PrintCatcher
+
+    (new InspectCommand).action(List("<curr>"))(setup, catcher.println)
+
+    catcher.output should not include ("Unknown")
+    catcher.output should include ("#1.3 = one three")
+  }
+
+  test("Inspect - Omits unlinked settings which are the empty string") {
+    val conn1 = Connection("<prev>#3.3", "<curr>#1.1")
+    val conn2 = Connection("<prev>#3.4", "<curr>#1.2")
+    
+    val settings = Map(
+        "<curr>#1.3" -> "") 
+    
+    val setup = Setup(Set(conn1, conn2)).
+      withSettings(settings)
+
+    val catcher = new PrintCatcher
+
+    (new InspectCommand).action(List("<curr>"))(setup, catcher.println)
+
+    catcher.output should not include ("Unknown")
+    catcher.output should not include ("#1.3")
+  }
+
+  test("Inspect - Omits linked settings which are the empty string") {
+    val conn1 = Connection("<prev>#3.3", "<curr>#1.1")
+    val conn2 = Connection("<prev>#3.4", "<curr>#1.2")
+    
+    val settings = Map(
+        "<curr>#1.1" -> "") 
+    
+    val setup = Setup(Set(conn1, conn2)).
+      withSettings(settings)
+
+    val catcher = new PrintCatcher
+
+    (new InspectCommand).action(List("<curr>"))(setup, catcher.println)
+
+    catcher.output should not include ("Unknown")
+    catcher.output should include ("--> #1.1")
+    catcher.output should not include ("--> #1.1 =")
+  }
+
+  test("Inspect - Omits linked and unlinked settings which are XML") {
+    val conn1 = Connection("<prev>#3.3", "<curr>#1.1")
+    val conn2 = Connection("<prev>#3.4", "<curr>#1.2")
+    
+    val settings = Map(
+        "<curr>#1.2" -> "<widget name='my first widget'/>",
+        "<curr>#2.2" -> "<widget name='my second widget'/>") 
+    
+    val setup = Setup(Set(conn1, conn2)).
+      withSettings(settings)
+
+    val catcher = new PrintCatcher
+
+    (new InspectCommand).action(List("<curr>"))(setup, catcher.println)
+
+    catcher.output should not include ("Unknown")
+    catcher.output should include ("--> #1.2")
+    catcher.output should not include ("--> #1.2 =")
+    catcher.output should not include ("#2.2")
+  }
+
+  test("Inspect - Truncates decimal setting values to 3dp") {
+    val conn1 = Connection("<prev>#3.3", "<curr>#1.1")
+    val conn2 = Connection("<prev>#3.4", "<curr>#1.2")
+    
+    val settings = Map(
+        "<curr>#1.1" -> "34.1234",
+        "<curr>#1.2" -> "-34.1234") 
+    
+    val setup = Setup(Set(conn1, conn2)).
+      withSettings(settings)
+
+    val catcher = new PrintCatcher
+
+    (new InspectCommand).action(List("<curr>"))(setup, catcher.println)
+
+    catcher.output should not include ("Unknown")
+    catcher.output should include ("--> #1.1 = 34.123")
+    catcher.output should not include ("--> #1.1 = 34.1234")
+    catcher.output should include ("--> #1.2 = -34.123")
+    catcher.output should not include ("--> #1.2 = -34.1234")
+  }
+
+  test("Inspect - Handles being in a rig") {
+    val connTop = Connection("<rig1> one", "<fff> five")
+    val connRig = Connection("<main.rig1:aaa> ayes", "<main.rig1:bbb> bees")
+    
+    val setupTop = Setup(Set(connTop, connRig)).withPosUpdated(List("<rig1>"))
+
+    val catcher = new PrintCatcher
+
+    (new InspectCommand).action(List("<aaa>"))(setupTop, catcher.println)
+
+    catcher.output should not include ("Unknown")
+    catcher.output should not include ("No agent called")
+    catcher.output should include("ayes --> <bbb> bees")
+  }
+
+  test("Inspect - Allows qualified agent name") {
+    val connTop = Connection("<rig1>#1.1", "<fff>#5.5")
+    val connRig = Connection("<main.rig1:aaa>#2.2", "<main.rig1:bbb>#2.3")
+    
+    val setupTop = Setup(Set(connTop, connRig)).withPosUpdated(List("<rig1>"))
+
+    val catcher = new PrintCatcher
+
+    (new InspectCommand).action(List("<main:fff>"))(setupTop, catcher.println)
+
+    catcher.output should not include ("Unknown")
+    catcher.output should not include ("No agent called")
+    catcher.output should include("<main:rig1>#1.1 --> #5.5")
+  }
+
+  test("Inspect - Doesn't show different agent with same name in other rig") {
+    val connTop = Connection("<rig1> one", "<aaa> top aye")
+    val connRig = Connection("<main.rig1:aaa> ayes", "<main.rig1:bbb> bees")
+    
+    val setupTop = Setup(Set(connTop, connRig)).withPosUpdated(List("<rig1>"))
+
+    val catcher = new PrintCatcher
+
+    (new InspectCommand).action(List("<aaa>"))(setupTop, catcher.println)
+
+    catcher.output should not include ("Unknown")
+    catcher.output should not include ("No agent called")
+    catcher.output should include("ayes --> <bbb> bees")
+    catcher.output should not include ("top aye")
+  }
+
+  test("Inspect - Omits unlinked settings from other agents") {
+    val conn1 = Connection("<prev>#3.3", "<curr>#1.1")
+    val conn2 = Connection("<prev>#3.4", "<curr>#1.2")
+    
+    val settings = Map(
+        "<other>#5.5" -> "some value") 
+    
+    val setup = Setup(Set(conn1, conn2)).
+      withSettings(settings)
+
+    val catcher = new PrintCatcher
+
+    (new InspectCommand).action(List("<curr>"))(setup, catcher.println)
+
+    catcher.output should not include ("Unknown")
+    catcher.output should include ("--> #1.1")
+    catcher.output should include ("--> #1.2")
+    catcher.output should not include ("#5.5")
+  }
+
+  // -------------------------------------------------------------------------------
+  //
+  // Into
+  //
+  // -------------------------------------------------------------------------------
+
+  test("Into - Can go into an empty rig") {
+    val connsTop = Connection("<rig1> one out", "<top> top input")
+    val connsMid = Connection("<main.rig1:rig2> two out", "<main.rig1:mid> mid input")
+    val connsBottom = Connection("<main.rig1:main.rig2:rig3> three out", "<main.rig1:main.rig2:bottom> bottom input")
+
+    val setupTop = Setup(Set(connsTop, connsMid, connsBottom)).withPosUpdated(List("<rig1>", "<rig2>"))
+
+    val command = new IntoCommand
+    val catcher = new PrintCatcher
+    val setupTop2 = command.action(List("<rig3>"))(setupTop, catcher.println)
+
+    setupTop2.pos should equal(List("<rig1>", "<rig2>", "<rig3>"))
+    catcher.output should include("Position: <rig1> - <rig2> - <rig3>")
+  }
+
+  test("Into - Can go into an already-present rig") {
+    val connsTop = Connection("<rig1> one out", "<top> top input")
+    val connsMid = Connection("<main.rig1:rig2> two out", "<main.rig1:mid> mid input")
+    val connsBottom = Connection("<main.rig1:main.rig2:free> three out", "<main.rig1:main.rig2:bottom> bottom input")
+
+    val setupTop = Setup(Set(connsTop, connsMid, connsBottom)).withPosUpdated(List("<rig1>"))
+
+    val command = new IntoCommand
+    val catcher = new PrintCatcher
+    val setupTop2 = command.action(List("<rig2>"))(setupTop, catcher.println)
+
+    setupTop2.pos should equal(List("<rig1>", "<rig2>"))
+    catcher.output should include("Position: <rig1> - <rig2>")
+  }
+
+  test("Into - Can't go into a non-existent rig") {
+    val connsTop = Connection("<rig1> one out", "<top> top input")
+    val connsMid = Connection("<main.rig1:rig2> two out", "<main.rig1:mid> mid input")
+    val connsBottom = Connection("<main.rig1:main.rig2:free> three out", "<main.rig1:main.rig2:bottom> bottom input")
+
+    val setupTop = Setup(Set(connsTop, connsMid, connsBottom)).withPosUpdated(List("<rig1>"))
+
+    val command = new IntoCommand
+    val catcher = new PrintCatcher
+    val setupTop2 = command.action(List("<rig77>"))(setupTop, catcher.println)
+
+    setupTop2.pos should equal(List("<rig1>"))
+    catcher.output.lines.toList(0) should equal("No such rig: <rig77>")
+    catcher.output.lines.toList(1) should equal("Position: <rig1>")
+  }
+
+  test("Into - Can't go into non-existent rig at top level ") {
+    val connsTop = Connection("<rig1> one out", "<top> top input")
+    val connsMid = Connection("<main.rig1:rig2> two out", "<main.rig1:mid> mid input")
+    val connsBottom = Connection("<main.rig1:main.rig2:free> three out", "<main.rig1:main.rig2:bottom> bottom input")
+
+    val setupTop = Setup(Set(connsTop, connsMid, connsBottom))
+
+    val command = new IntoCommand
+    val catcher = new PrintCatcher
+    val setupTop2 = command.action(List("<rig77>"))(setupTop, catcher.println)
+
+    setupTop2.pos should equal(List())
+    catcher.output.lines.toList(0) should equal("No such rig: <rig77>")
+    catcher.output.lines.toList(1) should equal("Position: Top level")
+  }
+
+  test("Into - Handles bad arguments") {
+    val connsTop = Connection("<rig1> one out", "<top> top input")
+    val setupTop = Setup(Set(connsTop))
+
+    val command = new IntoCommand
+
+    val catcher1 = new PrintCatcher
+    command.action(List())(setupTop, catcher1.println)
+    catcher1.output.lines.toList(0) should equal("into: Too few arguments")
+    catcher1.output.lines.toList(1) should equal("Position: Top level")
+
+    val catcher2 = new PrintCatcher
+    command.action(List("a", "b"))(setupTop, catcher2.println)
+    catcher2.output.lines.toList(0) should equal("into: Too many arguments")
+    catcher2.output.lines.toList(1) should equal("Position: Top level")
+  }
+
+  // -------------------------------------------------------------------------------
+  //
+  // Snapshot
+  //
+  // -------------------------------------------------------------------------------
 
   test("Snapshot - Correct bls index for top level") {
 
@@ -457,84 +560,11 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
     setup.allSettings should equal (expectedSettings)
   }
 
-  test("Into - Can go into an empty rig") {
-    val connsTop = Connection("<rig1> one out", "<top> top input")
-    val connsMid = Connection("<main.rig1:rig2> two out", "<main.rig1:mid> mid input")
-    val connsBottom = Connection("<main.rig1:main.rig2:rig3> three out", "<main.rig1:main.rig2:bottom> bottom input")
-
-    val setupTop = Setup(Set(connsTop, connsMid, connsBottom)).withPosUpdated(List("<rig1>", "<rig2>"))
-
-    val command = new IntoCommand
-    val catcher = new PrintCatcher
-    val setupTop2 = command.action(List("<rig3>"))(setupTop, catcher.println)
-
-    setupTop2.pos should equal(List("<rig1>", "<rig2>", "<rig3>"))
-    catcher.output should include("Position: <rig1> - <rig2> - <rig3>")
-  }
-
-  test("Into - Can go into an already-present rig") {
-    val connsTop = Connection("<rig1> one out", "<top> top input")
-    val connsMid = Connection("<main.rig1:rig2> two out", "<main.rig1:mid> mid input")
-    val connsBottom = Connection("<main.rig1:main.rig2:free> three out", "<main.rig1:main.rig2:bottom> bottom input")
-
-    val setupTop = Setup(Set(connsTop, connsMid, connsBottom)).withPosUpdated(List("<rig1>"))
-
-    val command = new IntoCommand
-    val catcher = new PrintCatcher
-    val setupTop2 = command.action(List("<rig2>"))(setupTop, catcher.println)
-
-    setupTop2.pos should equal(List("<rig1>", "<rig2>"))
-    catcher.output should include("Position: <rig1> - <rig2>")
-  }
-
-  test("Into - Can't go into a non-existent rig") {
-    val connsTop = Connection("<rig1> one out", "<top> top input")
-    val connsMid = Connection("<main.rig1:rig2> two out", "<main.rig1:mid> mid input")
-    val connsBottom = Connection("<main.rig1:main.rig2:free> three out", "<main.rig1:main.rig2:bottom> bottom input")
-
-    val setupTop = Setup(Set(connsTop, connsMid, connsBottom)).withPosUpdated(List("<rig1>"))
-
-    val command = new IntoCommand
-    val catcher = new PrintCatcher
-    val setupTop2 = command.action(List("<rig77>"))(setupTop, catcher.println)
-
-    setupTop2.pos should equal(List("<rig1>"))
-    catcher.output.lines.toList(0) should equal("No such rig: <rig77>")
-    catcher.output.lines.toList(1) should equal("Position: <rig1>")
-  }
-
-  test("Into - Can't go into non-existent rig at top level ") {
-    val connsTop = Connection("<rig1> one out", "<top> top input")
-    val connsMid = Connection("<main.rig1:rig2> two out", "<main.rig1:mid> mid input")
-    val connsBottom = Connection("<main.rig1:main.rig2:free> three out", "<main.rig1:main.rig2:bottom> bottom input")
-
-    val setupTop = Setup(Set(connsTop, connsMid, connsBottom))
-
-    val command = new IntoCommand
-    val catcher = new PrintCatcher
-    val setupTop2 = command.action(List("<rig77>"))(setupTop, catcher.println)
-
-    setupTop2.pos should equal(List())
-    catcher.output.lines.toList(0) should equal("No such rig: <rig77>")
-    catcher.output.lines.toList(1) should equal("Position: Top level")
-  }
-
-  test("Into - Handles bad arguments") {
-    val connsTop = Connection("<rig1> one out", "<top> top input")
-    val setupTop = Setup(Set(connsTop))
-
-    val command = new IntoCommand
-
-    val catcher1 = new PrintCatcher
-    command.action(List())(setupTop, catcher1.println)
-    catcher1.output.lines.toList(0) should equal("into: Too few arguments")
-    catcher1.output.lines.toList(1) should equal("Position: Top level")
-
-    val catcher2 = new PrintCatcher
-    command.action(List("a", "b"))(setupTop, catcher2.println)
-    catcher2.output.lines.toList(0) should equal("into: Too many arguments")
-    catcher2.output.lines.toList(1) should equal("Position: Top level")
-  }
+  // -------------------------------------------------------------------------------
+  //
+  // Up
+  //
+  // -------------------------------------------------------------------------------
 
   test("Up - Can go up a level") {
     val connsTop = Connection("<rig1>#1.1", "<top>#20.2")

@@ -59,8 +59,8 @@ class ConsoleParser extends RegexParsers {
       new DumpCommand,
       new GraphCommand,
       new HelpCommand,
+      new InspectCommand,
       new IntoCommand,
-      new ShowCommand,
       new SnapshotCommand,
       new UpCommand)
 

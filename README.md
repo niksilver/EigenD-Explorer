@@ -49,15 +49,15 @@ Here is an example run...
     Examining <main:audio1>
     Examining <main:clicker1>
     ...
+    Examining <main:rig5>
+    Examining <main:keygroup1>
+    >>
 
-..which continues for a while. With the factory setups this takes a _very_ long time,
+This is a slow process, and with the factory setups this takes a _very_ long time,
 but you should see progress. Eventually you will get the prompt back and you can
 examine an agent, including its connections and any settings:
 
-    ....
-    Examining <main:rig5>
-    Examining <main:keygroup1>
-    >> show <clicker1>
+    >> inspect <clicker1>
     <talker3> key 15 action 1 trigger output --> #3.1 = n
                                                  audio output       --> <console_mixer1> mixer channel 24 left audio input
                                                  audio output       --> <console_mixer1> mixer channel 24 right audio input
@@ -65,9 +65,19 @@ examine an agent, including its connections and any settings:
     <metronome1> running output              --> running input = 0
                                                  status output      --> <talker3> key 15 action 1 status input
 
+The output above shows which ports on other agents go into ports in the selected
+agent, and what they in turn connect to. Ports are always given names if possible,
+and will be given the shortest unique name. But sometimes the names have to be long to
+ensure uniqueness, and sometimes (as with port 3.1 above) they don't have names,
+in which case you will see its port number instead.
+
+We can also see port `#3.1` is set to the value `n`, the port `bar beat input` is set to `0`,
+and `running input` is also set to `0`.
+
 Any agents at the current level (in this example, the top level) have a simple
 name, such as `<talker3>`. Agents at any other level will be given a fully-qualified
-name such as `<main.rig3:scaler1>`.
+name such as `<main.rig3:scaler1>` (for scaler 1 in rig 3) and `<main:clicker1>`
+(for clicker 1 at the top level).
 
 The `snapshot` command only snapshots the current level, so let's go into
 rig 3, snapshot it, and look at one of its agents:
@@ -90,7 +100,7 @@ rig 3, snapshot it, and look at one of its agents:
 Because we're now in rig 3 we can refer to its agents in their simple form, without
 qualification:
 
-    >> show <gain1>
+    >> inspect <gain1>
                                                  channel count = 2
     <sampler_oscillator1> left audio output  --> left audio input 1 = 0.0
                                                  left audio output 1       --> <summer1> left audio input 1

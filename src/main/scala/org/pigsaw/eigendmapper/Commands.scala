@@ -34,6 +34,102 @@ trait Command {
   def bcat(agent: String): BCat = new BCat(agent)
 }
 
+/**
+ * Dump the current setup
+ */
+class DumpCommand extends Command {
+
+  val command = "dump"
+
+  /**
+   * The dump action. Dump all the information about the current setup,
+   * in a pretty raw form.
+   */
+  def action(args: List[String])(setup: Setup, prln: PrintlnFn): Setup = {
+    prln("Port names:\n")
+    setup.allPortNames.toSeq.sortBy(_._1).
+      foreach { pn => prln(pn._1 + " -> " + pn._2) }
+
+    prln("\nSettings:\n")
+    setup.allSettings.toSeq.sortBy(_._1).
+      foreach { s => prln(s._1 + " -> " + s._2) }
+
+    prln("\nConnections:\n")
+    setup.allConns.toSeq.sortBy(_.master).
+      foreach { pn => prln(pn.master + " -> " + pn.slave) }
+
+    prln("\nPos: " + setup.pos.displayString)
+    setup
+  }
+}
+
+class GraphCommand extends Command {
+
+  val command = "graph"
+
+  def action(args: List[String])(setup: Setup, prln: PrintlnFn): Setup = {
+    args match {
+      case Nil => prln("graph: You need to specify something to graph")
+      case List("ports") => doGraph("ports", setup, prln)
+      case List("agents") => doGraph("agents", setup, prln)
+      case List(_) => prln("graph: Do not recognise what to graph")
+      case _ => prln("graph: Too many arguments")
+    }
+    setup
+  }
+
+  /**
+   * Output the gexf file.
+   * @param arg    What to graph, either "agents" or "ports"
+   * @param setup  The current setup to graph
+   * @param prln   The print output function
+   */
+  def doGraph(arg: String, setup: Setup, prln: PrintlnFn) {
+    import Graphable._
+
+    val filename = "C:\\cygwin\\home\\Nik\\graph\\output.gexf"
+    val out = new FileWriter(filename)
+    out write Graphable.gexfHeader
+
+    val localConns = setup.agentPortConnections
+    val agentConns = setup.agentAgentConnections
+
+    out write "<nodes>\n"
+
+    // Declare the agent nodes
+    localConns foreach { out write _._1.stringNodeXML + "\n" }
+
+    // Maybe declare the port nodes
+    arg match {
+      case "ports" => setup.ports foreach { out write _.portNodeXML + "\n" }
+      case "agents" => ; // Do nothing
+    }
+
+    out write "</nodes>\n"
+
+    out write "<edges>\n"
+
+    command match {
+      // When graphing ports: Write port-port edges and agent-port edges
+      case "ports" => {
+        setup.conns foreach { out write _.edgeXML + "\n" }
+        localConns foreach { out write GAgentPort(_).edgeXML + "\n" }
+      }
+      // When graphing agents: Write agent-agent-edges
+      case "agents" => {
+        agentConns foreach { out write GAgentAgent(_).edgeXML + "\n" }
+      }
+    }
+    out write "</edges>\n"
+
+    out write Graphable.gexfFooter
+    out.close
+
+    prln("Output to " + filename)
+  }
+
+}
+
 class HelpCommand extends Command {
 
   val command = "help"
@@ -41,12 +137,12 @@ class HelpCommand extends Command {
   def action(args: List[String])(state: Setup, prln: PrintlnFn): Setup = {
     prln("""Commands are:
         |dump      Dump the information known about the setup.
-        |help      Show this message
-        |into <rigN>  Go into a rig. E.g. into <rig3>
         |graph [agents|ports]  Dump a gexf format file of all the agent or
         |          port connections
-        |show <agentName>   Show the connections into and out of an agent.
+        |help      Show this message
+        |inspect <agentName>   Inspect an agent's settings and connections.
         |          The agent name includes angle brackets, e.g. <drummer1>
+        |into <rigN>  Go into a rig. E.g. into <rig3>
         |snapshot  Capture the state of all the agents' connections. Will not
         |          go into rigs and snapshot those. You need to do them individually.
         |up        Go up a level, out of this rig."""
@@ -57,27 +153,27 @@ class HelpCommand extends Command {
 }
 
 /**
- * Show an agent's connections.
+ * Inspect an agent's connections and settings.
  */
-class ShowCommand extends Command {
+class InspectCommand extends Command {
 
-  val command = "show"
+  val command = "inspect"
 
   /**
-   * The show action. Should have just one argument, which is the
-   * name of the agent to show.
+   * The inspect action. Should have just one argument, which is the
+   * name of the agent to inspect.
    */
   def action(args: List[String])(setup: Setup, prln: PrintlnFn): Setup = {
     args.length match {
-      case 0 => prln("show: No agent name given")
-      case 1 => doShow(args(0), setup, prln)
-      case _ => prln("show: Too many arguments, only one required")
+      case 0 => prln("inspect: No agent name given")
+      case 1 => doInspect(args(0), setup, prln)
+      case _ => prln("inspect: Too many arguments, only one required")
     }
 
     setup
   }
 
-  def doShow(agent: String, setup: Setup, prln: PrintlnFn) {
+  def doInspect(agent: String, setup: Setup, prln: PrintlnFn) {
     val pos = setup.pos
     val agentQual = agent.defaultQualifier(pos)
 
@@ -151,6 +247,34 @@ class ShowCommand extends Command {
 }
 
 /**
+ * Go into a rig
+ */
+class IntoCommand extends Command {
+
+  val command = "into"
+
+  def action(args: List[String])(setup: Setup, prln: PrintlnFn): Setup = {
+    val setup2 = args.length match {
+      case 0 => prln("into: Too few arguments"); setup
+      case 1 => doInto(args(0), setup, prln)
+      case _ => prln("into: Too many arguments"); setup
+    }
+    prln("Position: " + setup2.pos.displayString)
+    setup2
+  }
+
+  def doInto(rig: String, setup: Setup, prln: PrintlnFn): Setup = {
+    val pos = setup.pos
+    val targetPos = pos :+ rig
+    val rigQual = rig.qualified(pos)
+    if (setup.agents(pos) contains rigQual)
+      setup.withPosUpdated(targetPos)
+    else { prln("No such rig: " + rig); setup }
+  }
+
+}
+
+/**
  * Capture all the connections in a single setup
  */
 class SnapshotCommand extends Command {
@@ -194,101 +318,6 @@ class SnapshotCommand extends Command {
   }
 }
 
-class GraphCommand extends Command {
-
-  val command = "graph"
-
-  def action(args: List[String])(setup: Setup, prln: PrintlnFn): Setup = {
-    args match {
-      case Nil => prln("graph: You need to specify something to graph")
-      case List("ports") => doGraph("ports", setup, prln)
-      case List("agents") => doGraph("agents", setup, prln)
-      case List(_) => prln("graph: Do not recognise what to graph")
-      case _ => prln("graph: Too many arguments")
-    }
-    setup
-  }
-
-  /**
-   * Output the gexf file.
-   * @param arg    What to graph, either "agents" or "ports"
-   * @param setup  The current setup to graph
-   * @param prln   The print output function
-   */
-  def doGraph(arg: String, setup: Setup, prln: PrintlnFn) {
-    import Graphable._
-
-    val filename = "C:\\cygwin\\home\\Nik\\graph\\output.gexf"
-    val out = new FileWriter(filename)
-    out write Graphable.gexfHeader
-
-    val localConns = setup.agentPortConnections
-    val agentConns = setup.agentAgentConnections
-
-    out write "<nodes>\n"
-
-    // Declare the agent nodes
-    localConns foreach { out write _._1.stringNodeXML + "\n" }
-
-    // Maybe declare the port nodes
-    arg match {
-      case "ports" => setup.ports foreach { out write _.portNodeXML + "\n" }
-      case "agents" => ; // Do nothing
-    }
-
-    out write "</nodes>\n"
-
-    out write "<edges>\n"
-
-    command match {
-      // When graphing ports: Write port-port edges and agent-port edges
-      case "ports" => {
-        setup.conns foreach { out write _.edgeXML + "\n" }
-        localConns foreach { out write GAgentPort(_).edgeXML + "\n" }
-      }
-      // When graphing agents: Write agent-agent-edges
-      case "agents" => {
-        agentConns foreach { out write GAgentAgent(_).edgeXML + "\n" }
-      }
-    }
-    out write "</edges>\n"
-
-    out write Graphable.gexfFooter
-    out.close
-
-    prln("Output to " + filename)
-  }
-
-}
-
-/**
- * Go into a rig
- */
-class IntoCommand extends Command {
-
-  val command = "into"
-
-  def action(args: List[String])(setup: Setup, prln: PrintlnFn): Setup = {
-    val setup2 = args.length match {
-      case 0 => prln("into: Too few arguments"); setup
-      case 1 => doInto(args(0), setup, prln)
-      case _ => prln("into: Too many arguments"); setup
-    }
-    prln("Position: " + setup2.pos.displayString)
-    setup2
-  }
-
-  def doInto(rig: String, setup: Setup, prln: PrintlnFn): Setup = {
-    val pos = setup.pos
-    val targetPos = pos :+ rig
-    val rigQual = rig.qualified(pos)
-    if (setup.agents(pos) contains rigQual)
-      setup.withPosUpdated(targetPos)
-    else { prln("No such rig: " + rig); setup }
-  }
-
-}
-
 /**
  * Go up a loevel
  */
@@ -311,33 +340,4 @@ class UpCommand extends Command {
       setup.withPosUpdated(setup.pos.init)
   }
 
-}
-
-/**
- * Dump the current setup
- */
-class DumpCommand extends Command {
-
-  val command = "dump"
-
-  /**
-   * The dump action. Dump all the information about the current setup,
-   * in a pretty raw form.
-   */
-  def action(args: List[String])(setup: Setup, prln: PrintlnFn): Setup = {
-    prln("Port names:\n")
-    setup.allPortNames.toSeq.sortBy(_._1).
-      foreach { pn => prln(pn._1 + " -> " + pn._2) }
-
-    prln("\nSettings:\n")
-    setup.allSettings.toSeq.sortBy(_._1).
-      foreach { s => prln(s._1 + " -> " + s._2) }
-
-    prln("\nConnections:\n")
-    setup.allConns.toSeq.sortBy(_.master).
-      foreach { pn => prln(pn.master + " -> " + pn.slave) }
-
-    prln("\nPos: " + setup.pos.displayString)
-    setup
-  }
 }

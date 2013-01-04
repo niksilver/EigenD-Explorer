@@ -8,9 +8,9 @@ import org.scalatest.matchers.ShouldMatchers
 @RunWith(classOf[JUnitRunner])
 class ConsoleSuite extends FunSuite with ShouldMatchers {
   
-  test("ConsoleParser - Parses show <agent>") {
+  test("ConsoleParser - Parses inspect <agent>") {
     val parser = new ConsoleParser
-    val cmd: Option[Setup => Setup] = parser.parseLine("show <agent>")
+    val cmd: Option[Setup => Setup] = parser.parseLine("inspect <agent>")
     
     cmd should be ('defined)
   }
