@@ -21,14 +21,16 @@ class ConsoleSuite extends FunSuite with ShouldMatchers {
 
     cmd should be('defined)
   }
+  
+  test("ConsoleParser.filePrinter") {
+    val cp = new ConsoleParser
+    val fp = cp.filePrinter("myfile.txt")
+    
+    fp.isInstanceOf[FilePrinter] should be (true)
+    fp.filename should equal ("myfile.txt")
+  }
 
   test("ConsoleParser - Handles file output") {
-    
-//    // A setup which captures how it was created.
-//    class TestableSetup(
-//      val args: List[String],
-//      val prln: (Any) => Unit)
-//      extends Setup(Set())
 
     // The command used for testing; it outputs its args but doesn't do
     // anything with the setup it's given

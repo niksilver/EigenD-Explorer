@@ -137,16 +137,18 @@ class HelpCommand extends Command {
   def action(args: List[String])(state: Setup, prln: PrintlnFn): Setup = {
     prln("""Commands are:
         |dump      Dump the information known about the setup.
-        |graph [agents|ports]  Dump a gexf format file of all the agent or
-        |          port connections
+        |graph [agents|ports]  Output the agent or port connections in gexf format.
         |help      Show this message
         |inspect <agentName>   Inspect an agent's settings and connections.
         |          The agent name includes angle brackets, e.g. <drummer1>
-        |into <rigN>  Go into a rig. E.g. into <rig3>
+        |into <rigN>  Go into a rig. Example into <rig3>
         |snapshot  Capture the state of all the agents' connections. Will not
         |          go into rigs and snapshot those. You need to do them individually.
-        |up        Go up a level, out of this rig."""
-      .stripMargin)
+        |up        Go up a level, out of this rig.
+        |
+        |You can redirect the output of a command to a file by using > filename.txt
+        |after it. Example:
+        |    graph ports > factorysetup.gexf""".stripMargin)
     state
   }
 

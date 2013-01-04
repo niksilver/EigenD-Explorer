@@ -58,9 +58,8 @@ class ConsoleParser extends RegexParsers {
   /**
    * Printer to a named file
    */
-  def filePrinter(filename: String): FilePrinter = {
-    throw new Exception("Not yet implemented")
-  }
+  def filePrinter(filename: String): FilePrinter =
+    new FilePrinter(filename)
 
   val commands = List(
     new DumpCommand,
@@ -125,11 +124,11 @@ class ConsoleParser extends RegexParsers {
 /**
  * A printer to a named file.
  */
-class FilePrinter(filename: String) {
+class FilePrinter(val filename: String) {
   val out = new FileWriter(filename)
 
   def println(msg: Any) {
-    out write msg.toString
+    out write msg.toString + "\n"
   }
 
   def close = out.close
