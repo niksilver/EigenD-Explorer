@@ -166,7 +166,7 @@ class SetupSuite extends FunSuite with ShouldMatchers {
       Connection(c1, b),
       Connection(c2, b)))
 
-    val agAgConns = setup.agentAgentConnections
+    val agAgConns = setup.agentAgentConns
 
     agAgConns.size should equal(3)
     agAgConns should contain("<main:a>", "<main:b>")

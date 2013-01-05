@@ -90,16 +90,25 @@ class GraphCommand extends Command {
     prln(Graphable.gexfHeader)
 
     val apConns = agentPortConns(setup)
-    val agentConns = setup.agentAgentConnections
+    val paConns = portAgentConns(setup)
+    val aaConns = setup.agentAgentConns
+
+    // Make sure we name the port-port connections, too,
+    // so their XML IDs match the ones above
+    
+    val ppConns = setup.conns map { c => Connection(setup.portIDNamed(c.master), setup.portIDNamed(c.slave)) }
+
+    val ports = (apConns map { _._2 }) ++ (paConns map { _._1 })
+    val agents = aaConns flatMap { aa => List(aa._1, aa._2) }
 
     prln("<nodes>")
 
     // Declare the agent nodes
-    apConns foreach { ap => prln(ap._1.stringNodeXML) }
+    agents foreach { a => prln(a.stringNodeXML) }
 
     // If required declare the port nodes
     arg match {
-      case "ports" => setup.ports foreach { p => prln(p.portNodeXML) }
+      case "ports" => ports foreach { p => prln(p.portNodeXML) }
       case "agents" => ; // Do nothing
     }
 
@@ -108,14 +117,16 @@ class GraphCommand extends Command {
     prln("<edges>")
 
     arg match {
-      // When graphing ports: Write port-port edges and agent-port edges
+      // When graphing ports: Write port-port edges,
+      // agent-port edges, and port-agent edges
       case "ports" => {
-        setup.conns foreach { c => prln(c.edgeXML) }
+        ppConns foreach { c => prln(c.edgeXML) }
         apConns foreach { ap => prln(GAgentPort(ap).edgeXML) }
+        paConns foreach { pa => prln(GPortAgent(pa).edgeXML) }
       }
       // When graphing agents: Write agent-agent edges
       case "agents" => {
-        agentConns foreach { c => prln(GAgentAgent(c).edgeXML) }
+        aaConns foreach { aa => prln(GAgentAgent(aa).edgeXML) }
       }
     }
     prln("</edges>")

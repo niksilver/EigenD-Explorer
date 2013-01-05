@@ -8,6 +8,7 @@ object Graphable {
   implicit def connection2GraphableConnection(c: Connection) = new GConnection(c)
 
   def GAgentPort(ap: (String, String)) = new GAgentPort(ap)
+  def GPortAgent(pa: (String, String)) = new GPortAgent(pa)
   def GAgentAgent(aa: (String, String)) = new GAgentAgent(aa)
 
   val gexfHeader =
@@ -49,6 +50,15 @@ object Graphable {
     lazy val edgeXML: String = {
       val template = """<edge id="%s" source="%s" target="%s" weight="5" />"""
       template.format(GAgentPort(ap).xmlId, ap._1.stringXmlId, ap._2.portXmlId)
+    }
+  }
+
+  class GPortAgent(pa: (String, String)) {
+    lazy val xmlId: String = pa._1.portXmlId + pa._2.stringXmlId
+    
+    lazy val edgeXML: String = {
+      val template = """<edge id="%s" source="%s" target="%s" weight="5" />"""
+      template.format(GPortAgent(pa).xmlId, pa._1.portXmlId, pa._2.stringXmlId)
     }
   }
 
