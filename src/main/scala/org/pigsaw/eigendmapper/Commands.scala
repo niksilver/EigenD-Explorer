@@ -89,10 +89,10 @@ class GraphCommand extends Command {
 
     prln(Graphable.gexfHeader)
 
+    val ppConns = portPortConns(setup)
     val apConns = agentPortConns(setup)
     val paConns = portAgentConns(setup)
     val aaConns = agentAgentConns(setup)
-    val ppConns = portPortConns(setup)
 
     val ports = (apConns map { _._2 }) ++ (paConns map { _._1 })
     val agents = aaConns flatMap { aa => List(aa._1, aa._2) }
@@ -131,36 +131,6 @@ class GraphCommand extends Command {
   }
 
   /**
-   * Get a map from each agent at the current pos
-   * to all its ports which output. The ports will have names
-   * if possible, and both will be unqualified
-   */
-  def agentPortConns(s: Setup): Set[(String, String)] = {
-    val p = s.pos
-    for {
-      c <- s.allConns
-      if (c.master hasPos p)
-      agent = c.master.agent unqualifiedForPos p
-      portID = s.portIDNamed(c.master) unqualifiedForPos p
-    } yield (agent, portID)
-  }
-
-  /**
-   * Get a map from each port with an input, at the current pos,
-   * to its agent name. The ports will have names
-   * if possible, and both will be unqualified
-   */
-  def portAgentConns(s: Setup): Set[(String, String)] = {
-    val p = s.pos
-    for {
-      c <- s.allConns
-      if (c.slave hasPos p)
-      portID = s.portIDNamed(c.slave) unqualifiedForPos p
-      agent = c.slave.agent unqualifiedForPos p
-    } yield (portID, agent)
-  }
-
-  /**
    * Get connections involving any port at the current pos.
    * The ports will have names if possible, and will be
    * unqualified if at the current pos.
@@ -175,18 +145,30 @@ class GraphCommand extends Command {
   }
 
   /**
+   * Get a map from each agent to its port
+   * where the port is part of the port-port mapping at this pos.
+   * Agent names (and port IDs) will be unqualified if they are
+   * at the current pos.
+   */
+  def agentPortConns(s: Setup): Set[(String, String)] =
+    portPortConns(s) map { c => (c.master.agent, c.master) }
+
+  /**
+   * For every port in the port-port mapping at this pos,
+   * get a pair of the slave (end) port and its agent.
+   * Agent names (and port IDs) will be unqualified if they are
+   * at the current pos.
+   */
+  def portAgentConns(s: Setup): Set[(String, String)] =
+    portPortConns(s) map { c => (c.slave, c.slave.agent) }
+
+  /**
    * Get pairs of master and slave agent names.
    * Includes only pairs in which one is in the current rig.
    * Agent names in the current rig will be unqualified.
    */
-  def agentAgentConns(s: Setup): Set[(String, String)] = {
-    val p = s.pos
-    for {
-      c <- s.conns
-      master = c.master.agent unqualifiedForPos p
-      slave = c.slave.agent unqualifiedForPos p
-    } yield (master, slave)
-  }
+  def agentAgentConns(s: Setup): Set[(String, String)] =
+    portPortConns(s) map { c => (c.master.agent, c.slave.agent) }
 }
 
 class HelpCommand extends Command {

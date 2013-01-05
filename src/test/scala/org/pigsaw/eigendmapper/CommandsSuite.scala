@@ -52,94 +52,6 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
     catcher.output should include("Do not recognise what to graph")
   }
 
-  test("GraphCommand.agentPortConns - Basic test") {
-    val a1 = "<main:a>#1.1"
-    val a2 = "<main:a>#1.2"
-    val b1 = "<main:b>#1.1"
-    val b2 = "<main:b>#1.2"
-    val conns = Set(
-      Connection(a1, b1),
-      Connection(a2, b2))
-    val names = Map(
-        "<main:a>#1.1" -> "<main:a> a one one",
-        "<main:b>#1.1" -> "<main:b> b one one")
-
-    val setup = Setup().withConns(conns).withPortNames(names)
-
-    val cmd = new GraphCommand
-    val conns2 = cmd.agentPortConns(setup)
-
-    conns2.size should equal(2)
-    conns2 should contain("<a>" -> "<a> a one one")
-    conns2 should contain("<a>" -> "<a>#1.2")
-  }
-
-  test("GraphCommand.agentPortConns - Only outputs current rig") {
-    val a1 = "<main:a>#1.1"
-    val a2 = "<main.rig3:a>#1.2"
-    val b1 = "<main:b>#1.1"
-    val b2 = "<main.rig3:b>#1.2"
-    val conns = Set(
-      Connection(a1, b1),
-      Connection(a2, b2))
-    val names = Map(
-        "<main:a>#1.1" -> "<main:a> a one one",
-        "<main:b>#1.1" -> "<main:b> b one one")
-    val pos = List("<rig3>")
-
-    val setup = Setup().withConns(conns).withPortNames(names).withPosUpdated(pos)
-
-    val cmd = new GraphCommand
-    val conns2 = cmd.agentPortConns(setup)
-
-    conns2.size should equal(1)
-    conns2 should contain("<a>" -> "<a>#1.2")
-  }
-
-  test("GraphCommand.portAgentConns - Basic test") {
-    val a1 = "<main:a>#1.1"
-    val a2 = "<main:a>#1.2"
-    val b1 = "<main:b>#1.1"
-    val b2 = "<main:b>#1.2"
-    val conns = Set(
-      Connection(a1, b1),
-      Connection(a2, b2))
-    val names = Map(
-        "<main:a>#1.1" -> "<main:a> a one one",
-        "<main:b>#1.1" -> "<main:b> b one one")
-
-    val setup = Setup().withConns(conns).withPortNames(names)
-
-    val cmd = new GraphCommand
-    val conns2 = cmd.portAgentConns(setup)
-
-    conns2.size should equal(2)
-    conns2 should contain("<b> b one one" -> "<b>")
-    conns2 should contain("<b>#1.2" -> "<b>")
-  }
-
-  test("GraphCommand.portAgentConns - Only outputs current rig") {
-    val a1 = "<main:a>#1.1"
-    val a2 = "<main.rig3:a>#1.2"
-    val b1 = "<main:b>#1.1"
-    val b2 = "<main.rig3:b>#1.2"
-    val conns = Set(
-      Connection(a1, b1),
-      Connection(a2, b2))
-    val names = Map(
-        "<main:a>#1.1" -> "<main:a> a one one",
-        "<main:b>#1.1" -> "<main:b> b one one")
-    val pos = List("<rig3>")
-
-    val setup = Setup().withConns(conns).withPortNames(names).withPosUpdated(pos)
-
-    val cmd = new GraphCommand
-    val conns2 = cmd.portAgentConns(setup)
-
-    conns2.size should equal(1)
-    conns2 should contain("<b>#1.2" -> "<b>")
-  }
-
   test("GraphCommand.portPortConns - Basic test") {
     val a1 = "<main:a>#1.1"
     val a2 = "<main:a>#1.2"
@@ -204,6 +116,127 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
 
     conns2.size should equal (1)
     conns2 should contain (Connection("<a>#1.2", "<main.rig8:b>#1.2"))
+  }
+
+  test("GraphCommand.agentPortConns - Basic test") {
+    val a1 = "<main:a>#1.1"
+    val a2 = "<main:a>#1.2"
+    val b1 = "<main:b>#1.1"
+    val b2 = "<main:b>#1.2"
+    val conns = Set(
+      Connection(a1, b1),
+      Connection(a2, b2))
+    val names = Map(
+        "<main:a>#1.1" -> "<main:a> a one one",
+        "<main:b>#1.1" -> "<main:b> b one one")
+
+    val setup = Setup().withConns(conns).withPortNames(names)
+
+    val cmd = new GraphCommand
+    val conns2 = cmd.agentPortConns(setup)
+
+    conns2.size should equal(2)
+    conns2 should contain("<a>" -> "<a> a one one")
+    conns2 should contain("<a>" -> "<a>#1.2")
+  }
+
+  test("GraphCommand.agentPortConns - Only outputs current rig") {
+    val a1 = "<main:a>#1.1"
+    val a2 = "<main.rig3:a>#1.2"
+    val b1 = "<main:b>#1.1"
+    val b2 = "<main.rig3:b>#1.2"
+    val conns = Set(
+      Connection(a1, b1),
+      Connection(a2, b2))
+    val names = Map(
+        "<main:a>#1.1" -> "<main:a> a one one",
+        "<main:b>#1.1" -> "<main:b> b one one")
+    val pos = List("<rig3>")
+
+    val setup = Setup().withConns(conns).withPortNames(names).withPosUpdated(pos)
+
+    val cmd = new GraphCommand
+    val conns2 = cmd.agentPortConns(setup)
+
+    conns2.size should equal(1)
+    conns2 should contain("<a>" -> "<a>#1.2")
+  }
+
+  test("GraphCommand.agentPortConns - Includes agents with ports going into current rig") {
+    val a1 = "<main:a>#1.1"
+    val b1 = "<main.rig3:b>#1.1"
+    val conns = Set(
+      Connection(a1, b1))
+    val pos = List("<rig3>")
+
+    val setup = Setup().withConns(conns).withPosUpdated(pos)
+
+    val cmd = new GraphCommand
+    val conns2 = cmd.agentPortConns(setup)
+
+    conns2.size should equal(1)
+    conns2 should contain("<main:a>" -> "<main:a>#1.1")
+  }
+
+
+  test("GraphCommand.portAgentConns - Basic test") {
+    val a1 = "<main:a>#1.1"
+    val a2 = "<main:a>#1.2"
+    val b1 = "<main:b>#1.1"
+    val b2 = "<main:b>#1.2"
+    val conns = Set(
+      Connection(a1, b1),
+      Connection(a2, b2))
+    val names = Map(
+        "<main:a>#1.1" -> "<main:a> a one one",
+        "<main:b>#1.1" -> "<main:b> b one one")
+
+    val setup = Setup().withConns(conns).withPortNames(names)
+
+    val cmd = new GraphCommand
+    val conns2 = cmd.portAgentConns(setup)
+
+    conns2.size should equal(2)
+    conns2 should contain("<b> b one one" -> "<b>")
+    conns2 should contain("<b>#1.2" -> "<b>")
+  }
+
+  test("GraphCommand.portAgentConns - Only outputs current rig") {
+    val a1 = "<main:a>#1.1"
+    val a2 = "<main.rig3:a>#1.2"
+    val b1 = "<main:b>#1.1"
+    val b2 = "<main.rig3:b>#1.2"
+    val conns = Set(
+      Connection(a1, b1),
+      Connection(a2, b2))
+    val names = Map(
+        "<main:a>#1.1" -> "<main:a> a one one",
+        "<main:b>#1.1" -> "<main:b> b one one")
+    val pos = List("<rig3>")
+
+    val setup = Setup().withConns(conns).withPortNames(names).withPosUpdated(pos)
+
+    val cmd = new GraphCommand
+    val conns2 = cmd.portAgentConns(setup)
+
+    conns2.size should equal(1)
+    conns2 should contain("<b>#1.2" -> "<b>")
+  }
+
+  test("GraphCommand.portAgentConns - Includes agents with ports coming out of current rig") {
+    val a1 = "<main.rig3:a>#1.1"
+    val b1 = "<main:b>#1.1"
+    val conns = Set(
+      Connection(a1, b1))
+    val pos = List("<rig3>")
+
+    val setup = Setup().withConns(conns).withPosUpdated(pos)
+
+    val cmd = new GraphCommand
+    val conns2 = cmd.portAgentConns(setup)
+
+    conns2.size should equal(1)
+    conns2 should contain("<main:b>#1.1" -> "<main:b>")
   }
 
   test("GraphCommand.agentAgentConns - Basic test") {
