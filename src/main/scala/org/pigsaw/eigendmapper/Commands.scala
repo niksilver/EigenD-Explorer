@@ -87,45 +87,70 @@ class GraphCommand extends Command {
   def doGraph(arg: String, setup: Setup, prln: PrintlnFn) {
     import Graphable._
 
-    val filename = "C:\\cygwin\\home\\Nik\\graph\\output.gexf"
-    val out = new FileWriter(filename)
-    out write Graphable.gexfHeader
+    prln(Graphable.gexfHeader)
 
-    val localConns = setup.agentPortConnections
+    val apConns = agentPortConns(setup)
     val agentConns = setup.agentAgentConnections
 
-    out write "<nodes>\n"
+    prln("<nodes>")
 
     // Declare the agent nodes
-    localConns foreach { out write _._1.stringNodeXML + "\n" }
+    apConns foreach { ap => prln(ap._1.stringNodeXML) }
 
-    // Maybe declare the port nodes
+    // If required declare the port nodes
     arg match {
-      case "ports" => setup.ports foreach { out write _.portNodeXML + "\n" }
+      case "ports" => setup.ports foreach { p => prln(p.portNodeXML) }
       case "agents" => ; // Do nothing
     }
 
-    out write "</nodes>\n"
+    prln("</nodes>")
 
-    out write "<edges>\n"
+    prln("<edges>")
 
-    command match {
+    arg match {
       // When graphing ports: Write port-port edges and agent-port edges
       case "ports" => {
-        setup.conns foreach { out write _.edgeXML + "\n" }
-        localConns foreach { out write GAgentPort(_).edgeXML + "\n" }
+        setup.conns foreach { c => prln(c.edgeXML) }
+        apConns foreach { ap => prln(GAgentPort(ap).edgeXML) }
       }
-      // When graphing agents: Write agent-agent-edges
+      // When graphing agents: Write agent-agent edges
       case "agents" => {
-        agentConns foreach { out write GAgentAgent(_).edgeXML + "\n" }
+        agentConns foreach { c => prln(GAgentAgent(c).edgeXML) }
       }
     }
-    out write "</edges>\n"
+    prln("</edges>")
 
-    out write Graphable.gexfFooter
-    out.close
+    prln(Graphable.gexfFooter)
+  }
 
-    prln("Output to " + filename)
+  /**
+   * Get a map from each agent at the current pos
+   * to all its ports which output. The ports will have names
+   * if possible, and both will be unqualified
+   */
+  def agentPortConns(s: Setup): Set[(String, String)] = {
+    val p = s.pos
+    s.allConns filter { c =>
+      c.master.hasPos(p)
+    } map { c =>
+      val agent = c.master.agent.unqualifiedForPos(p)
+      val portID = s.portIDNamed(c.master).unqualifiedForPos(p)
+      (agent, portID) }
+  }
+
+  /**
+   * Get a map from each port with an input, at the current pos,
+   * to its agent name. The ports will have names
+   * if possible, and both will be unqualified
+   */
+  def portAgentConns(s: Setup): Set[(String, String)] = {
+    val p = s.pos
+    s.allConns filter { c =>
+      c.slave.hasPos(p)
+    } map { c =>
+      val portID = s.portIDNamed(c.slave).unqualifiedForPos(p)
+      val agent = c.slave.agent.unqualifiedForPos(p)
+      (portID, agent) }
   }
 
 }
@@ -139,16 +164,16 @@ class HelpCommand extends Command {
         |dump      Dump the information known about the setup.
         |graph [agents|ports]  Output the agent or port connections in gexf format.
         |help      Show this message
-        |inspect <agentName>   Inspect an agent's settings and connections.
-        |          The agent name includes angle brackets, e.g. <drummer1>
-        |into <rigN>  Go into a rig. Example into <rig3>
-        |snapshot  Capture the state of all the agents' connections. Will not
-        |          go into rigs and snapshot those. You need to do them individually.
+        |inspect <agentName>   Inspect an agent's settings and connections. The
+        |          agent name includes angle brackets. Example: inspect <drummer1>
+        |into <rigN>  Go into a rig. Example: into <rig3>
+        |snapshot  Capture the state of all the agents' connections and settings.
+        |          Will not go into rigs; you will need to do those individually.
         |up        Go up a level, out of this rig.
         |
         |You can redirect the output of a command to a file by using > filename.txt
-        |after it. Example:
-        |    graph ports > factorysetup.gexf""".stripMargin)
+        |after it, and you can use quote marks. Example:
+        |    graph ports > '/home/harpo/Factory Setup 1.gexf'""".stripMargin)
     state
   }
 
@@ -234,7 +259,7 @@ class InspectCommand extends Command {
     
     def formatOther(str: String) =
       if (str == "") ""
-      else cleaned(bestForm(str))
+      else bestForm(str).unqualifiedForPos(pos)
     
     val cols = (linksAll ++ settings) map { c => (formatOther(c._1), formatAgent(c._2), formatOther(c._3)) }
 

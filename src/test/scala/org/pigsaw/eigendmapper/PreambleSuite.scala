@@ -24,6 +24,16 @@ class PreambleSuite extends FunSuite with ShouldMatchers {
     assert(port.unqualified eq port)
   }
 
+  test("AgentOrPortID.unqualifiedForPos") {
+    "<rig1>".unqualifiedForPos(List("<rig3>")) should equal ("<rig1>")
+    
+    "<main:rig1>".unqualifiedForPos(List()) should equal ("<rig1>")
+    "<main:rig1>".unqualifiedForPos(List("<rig3>")) should equal ("<main:rig1>")
+    
+    "<main.rig3:cycler1>".unqualifiedForPos(List()) should equal ("<main.rig3:cycler1>")
+    "<main.rig3:cycler1>".unqualifiedForPos(List("<rig3>")) should equal ("<cycler1>")
+  }
+
   test("AgentOrPortID.hasPos") {
     "<delay1>".hasPos(List()) should equal(true)
     "<main:delay1>".hasPos(List()) should equal(true)

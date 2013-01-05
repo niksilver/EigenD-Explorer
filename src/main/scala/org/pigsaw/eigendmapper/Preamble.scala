@@ -66,6 +66,14 @@ object Preamble {
       else "<" + baseName + ">" + nodePart
 
     /**
+     * Get the agent or port ID with an unqualified version of the agent name,
+     * but only if it is at the given position.
+     */
+    def unqualifiedForPos(p: List[String]): String =
+      if (hasPos(p)) unqualified
+      else str
+
+    /**
      * If this agent or port ID is at the given pos.
      * An unqualified agent will have pos `List()`.
      */

@@ -18,7 +18,7 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
   // Graph
   //
   // -------------------------------------------------------------------------------
-  
+
   test("Graph - handles no arguments") {
     val setup = Setup()
 
@@ -50,6 +50,94 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
     (new GraphCommand).action(args)(setup, catcher.println)
 
     catcher.output should include("Do not recognise what to graph")
+  }
+
+  test("Graph.agentPortConns - Basic test") {
+    val a1 = "<main:a>#1.1"
+    val a2 = "<main:a>#1.2"
+    val b1 = "<main:b>#1.1"
+    val b2 = "<main:b>#1.2"
+    val conns = Set(
+      Connection(a1, b1),
+      Connection(a2, b2))
+    val names = Map(
+        "<main:a>#1.1" -> "<main:a> a one one",
+        "<main:b>#1.1" -> "<main:b> b one one")
+
+    val setup = Setup().withConns(conns).withPortNames(names)
+
+    val cmd = new GraphCommand
+    val conns2 = cmd.agentPortConns(setup)
+
+    conns2.size should equal(2)
+    conns2 should contain("<a>" -> "<a> a one one")
+    conns2 should contain("<a>" -> "<a>#1.2")
+  }
+
+  test("Graph.agentPortConns - Only outputs current rig") {
+    val a1 = "<main:a>#1.1"
+    val a2 = "<main.rig3:a>#1.2"
+    val b1 = "<main:b>#1.1"
+    val b2 = "<main.rig3:b>#1.2"
+    val conns = Set(
+      Connection(a1, b1),
+      Connection(a2, b2))
+    val names = Map(
+        "<main:a>#1.1" -> "<main:a> a one one",
+        "<main:b>#1.1" -> "<main:b> b one one")
+    val pos = List("<rig3>")
+
+    val setup = Setup().withConns(conns).withPortNames(names).withPosUpdated(pos)
+
+    val cmd = new GraphCommand
+    val conns2 = cmd.agentPortConns(setup)
+
+    conns2.size should equal(1)
+    conns2 should contain("<a>" -> "<a>#1.2")
+  }
+
+  test("Graph.portAgentConns - Basic test") {
+    val a1 = "<main:a>#1.1"
+    val a2 = "<main:a>#1.2"
+    val b1 = "<main:b>#1.1"
+    val b2 = "<main:b>#1.2"
+    val conns = Set(
+      Connection(a1, b1),
+      Connection(a2, b2))
+    val names = Map(
+        "<main:a>#1.1" -> "<main:a> a one one",
+        "<main:b>#1.1" -> "<main:b> b one one")
+
+    val setup = Setup().withConns(conns).withPortNames(names)
+
+    val cmd = new GraphCommand
+    val conns2 = cmd.portAgentConns(setup)
+
+    conns2.size should equal(2)
+    conns2 should contain("<b> b one one" -> "<b>")
+    conns2 should contain("<b>#1.2" -> "<b>")
+  }
+
+  test("Graph.portAgentConns - Only outputs current rig") {
+    val a1 = "<main:a>#1.1"
+    val a2 = "<main.rig3:a>#1.2"
+    val b1 = "<main:b>#1.1"
+    val b2 = "<main.rig3:b>#1.2"
+    val conns = Set(
+      Connection(a1, b1),
+      Connection(a2, b2))
+    val names = Map(
+        "<main:a>#1.1" -> "<main:a> a one one",
+        "<main:b>#1.1" -> "<main:b> b one one")
+    val pos = List("<rig3>")
+
+    val setup = Setup().withConns(conns).withPortNames(names).withPosUpdated(pos)
+
+    val cmd = new GraphCommand
+    val conns2 = cmd.portAgentConns(setup)
+
+    conns2.size should equal(1)
+    conns2 should contain("<b>#1.2" -> "<b>")
   }
 
   // -------------------------------------------------------------------------------
@@ -86,13 +174,13 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
     val conn2 = Connection("<prev>#3.4", "<curr>#1.2") // Won't have names
     val conn3 = Connection("<curr>#2.2", "<next>#4.4") // Will have names
     val conn4 = Connection("<curr>#2.3", "<next>#4.5") // Won't have names
-    
+
     val portNames = Map(
-        "<prev>#3.3" -> "<prev> three three",
-        "<curr>#1.1" -> "<curr> one one",
-        "<curr>#2.2" -> "<curr> two two",
-        "<next>#4.4" -> "<next> four four")
-    
+      "<prev>#3.3" -> "<prev> three three",
+      "<curr>#1.1" -> "<curr> one one",
+      "<curr>#2.2" -> "<curr> two two",
+      "<next>#4.4" -> "<next> four four")
+
     val setup = Setup(Set(conn1, conn2, conn3, conn4)).
       withPortNames(portNames)
 
@@ -101,20 +189,20 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
     (new InspectCommand).action(List("<curr>"))(setup, catcher.println)
 
     catcher.output should not include ("Unknown")
-    catcher.output should include ("<prev> three three --> one one")
-    catcher.output should include ("<prev>#3.4         --> #1.2")
-    catcher.output should include ("two two --> <next> four four")
-    catcher.output should include ("#2.3    --> <next>#4.5")
+    catcher.output should include("<prev> three three --> one one")
+    catcher.output should include("<prev>#3.4         --> #1.2")
+    catcher.output should include("two two --> <next> four four")
+    catcher.output should include("#2.3    --> <next>#4.5")
   }
 
   test("Inspect - Displays settings for ports with connections") {
     val conn1 = Connection("<prev>#3.3", "<curr>#1.1")
     val conn2 = Connection("<prev>#3.4", "<curr>#1.2")
-    
+
     val settings = Map(
-        "<prev>#3.3" -> "three three", // Should not show, as not current agent
-        "<curr>#1.2" -> "one two") 
-    
+      "<prev>#3.3" -> "three three", // Should not show, as not current agent
+      "<curr>#1.2" -> "one two")
+
     val setup = Setup(Set(conn1, conn2)).
       withSettings(settings)
 
@@ -123,17 +211,17 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
     (new InspectCommand).action(List("<curr>"))(setup, catcher.println)
 
     catcher.output should not include ("Unknown")
-    catcher.output should include ("<prev>#3.3 --> #1.1")
-    catcher.output should include ("<prev>#3.4 --> #1.2 = one two")
+    catcher.output should include("<prev>#3.3 --> #1.1")
+    catcher.output should include("<prev>#3.4 --> #1.2 = one two")
   }
 
   test("Inspect - Displays settings for ports with no connections") {
     val conn1 = Connection("<prev>#3.3", "<curr>#1.1")
     val conn2 = Connection("<prev>#3.4", "<curr>#1.2")
-    
+
     val settings = Map(
-        "<curr>#1.3" -> "one three") 
-    
+      "<curr>#1.3" -> "one three")
+
     val setup = Setup(Set(conn1, conn2)).
       withSettings(settings)
 
@@ -142,16 +230,16 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
     (new InspectCommand).action(List("<curr>"))(setup, catcher.println)
 
     catcher.output should not include ("Unknown")
-    catcher.output should include ("#1.3 = one three")
+    catcher.output should include("#1.3 = one three")
   }
 
   test("Inspect - Omits unlinked settings which are the empty string") {
     val conn1 = Connection("<prev>#3.3", "<curr>#1.1")
     val conn2 = Connection("<prev>#3.4", "<curr>#1.2")
-    
+
     val settings = Map(
-        "<curr>#1.3" -> "") 
-    
+      "<curr>#1.3" -> "")
+
     val setup = Setup(Set(conn1, conn2)).
       withSettings(settings)
 
@@ -166,10 +254,10 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
   test("Inspect - Omits linked settings which are the empty string") {
     val conn1 = Connection("<prev>#3.3", "<curr>#1.1")
     val conn2 = Connection("<prev>#3.4", "<curr>#1.2")
-    
+
     val settings = Map(
-        "<curr>#1.1" -> "") 
-    
+      "<curr>#1.1" -> "")
+
     val setup = Setup(Set(conn1, conn2)).
       withSettings(settings)
 
@@ -178,18 +266,18 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
     (new InspectCommand).action(List("<curr>"))(setup, catcher.println)
 
     catcher.output should not include ("Unknown")
-    catcher.output should include ("--> #1.1")
+    catcher.output should include("--> #1.1")
     catcher.output should not include ("--> #1.1 =")
   }
 
   test("Inspect - Omits linked and unlinked settings which are XML") {
     val conn1 = Connection("<prev>#3.3", "<curr>#1.1")
     val conn2 = Connection("<prev>#3.4", "<curr>#1.2")
-    
+
     val settings = Map(
-        "<curr>#1.2" -> "<widget name='my first widget'/>",
-        "<curr>#2.2" -> "<widget name='my second widget'/>") 
-    
+      "<curr>#1.2" -> "<widget name='my first widget'/>",
+      "<curr>#2.2" -> "<widget name='my second widget'/>")
+
     val setup = Setup(Set(conn1, conn2)).
       withSettings(settings)
 
@@ -198,7 +286,7 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
     (new InspectCommand).action(List("<curr>"))(setup, catcher.println)
 
     catcher.output should not include ("Unknown")
-    catcher.output should include ("--> #1.2")
+    catcher.output should include("--> #1.2")
     catcher.output should not include ("--> #1.2 =")
     catcher.output should not include ("#2.2")
   }
@@ -206,11 +294,11 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
   test("Inspect - Truncates decimal setting values to 3dp") {
     val conn1 = Connection("<prev>#3.3", "<curr>#1.1")
     val conn2 = Connection("<prev>#3.4", "<curr>#1.2")
-    
+
     val settings = Map(
-        "<curr>#1.1" -> "34.1234",
-        "<curr>#1.2" -> "-34.1234") 
-    
+      "<curr>#1.1" -> "34.1234",
+      "<curr>#1.2" -> "-34.1234")
+
     val setup = Setup(Set(conn1, conn2)).
       withSettings(settings)
 
@@ -219,16 +307,16 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
     (new InspectCommand).action(List("<curr>"))(setup, catcher.println)
 
     catcher.output should not include ("Unknown")
-    catcher.output should include ("--> #1.1 = 34.123")
+    catcher.output should include("--> #1.1 = 34.123")
     catcher.output should not include ("--> #1.1 = 34.1234")
-    catcher.output should include ("--> #1.2 = -34.123")
+    catcher.output should include("--> #1.2 = -34.123")
     catcher.output should not include ("--> #1.2 = -34.1234")
   }
 
   test("Inspect - Handles being in a rig") {
     val connTop = Connection("<rig1> one", "<fff> five")
     val connRig = Connection("<main.rig1:aaa> ayes", "<main.rig1:bbb> bees")
-    
+
     val setupTop = Setup(Set(connTop, connRig)).withPosUpdated(List("<rig1>"))
 
     val catcher = new PrintCatcher
@@ -243,7 +331,7 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
   test("Inspect - Allows qualified agent name") {
     val connTop = Connection("<rig1>#1.1", "<fff>#5.5")
     val connRig = Connection("<main.rig1:aaa>#2.2", "<main.rig1:bbb>#2.3")
-    
+
     val setupTop = Setup(Set(connTop, connRig)).withPosUpdated(List("<rig1>"))
 
     val catcher = new PrintCatcher
@@ -269,7 +357,7 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
   test("Inspect - Doesn't show different agent with same name in other rig") {
     val connTop = Connection("<rig1> one", "<aaa> top aye")
     val connRig = Connection("<main.rig1:aaa> ayes", "<main.rig1:bbb> bees")
-    
+
     val setupTop = Setup(Set(connTop, connRig)).withPosUpdated(List("<rig1>"))
 
     val catcher = new PrintCatcher
@@ -285,10 +373,10 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
   test("Inspect - Omits unlinked settings from other agents") {
     val conn1 = Connection("<prev>#3.3", "<curr>#1.1")
     val conn2 = Connection("<prev>#3.4", "<curr>#1.2")
-    
+
     val settings = Map(
-        "<other>#5.5" -> "some value") 
-    
+      "<other>#5.5" -> "some value")
+
     val setup = Setup(Set(conn1, conn2)).
       withSettings(settings)
 
@@ -297,8 +385,8 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
     (new InspectCommand).action(List("<curr>"))(setup, catcher.println)
 
     catcher.output should not include ("Unknown")
-    catcher.output should include ("--> #1.1")
-    catcher.output should include ("--> #1.2")
+    catcher.output should include("--> #1.1")
+    catcher.output should include("--> #1.2")
     catcher.output should not include ("#5.5")
   }
 
@@ -510,29 +598,30 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
     val catcher = new PrintCatcher
 
     val setup = command.action(List())(Setup(), catcher.println)
-    
-    setup.conns.size should equal (5)
+
+    setup.conns.size should equal(5)
     val processedPorts = setup.ports map setup.portIDNamed
-    
-    processedPorts should contain ("<main:ag1> one one")
-    processedPorts should contain ("<main:ag1>#1.2")
-    processedPorts should contain ("<main:ag1>#1.3")
-    processedPorts should contain ("<main:ag1>#1.4")
-    processedPorts should contain ("<main:ag1>#1.22")
-    
-    processedPorts should contain ("<main:ag2>#2.1")
-    processedPorts should contain ("<main:ag2> two two")
-    processedPorts should contain ("<main:ag2> two three")
-    processedPorts should contain ("<main:ag2>#2.4")
-    
+
+    processedPorts should contain("<main:ag1> one one")
+    processedPorts should contain("<main:ag1>#1.2")
+    processedPorts should contain("<main:ag1>#1.3")
+    processedPorts should contain("<main:ag1>#1.4")
+    processedPorts should contain("<main:ag1>#1.22")
+
+    processedPorts should contain("<main:ag2>#2.1")
+    processedPorts should contain("<main:ag2> two two")
+    processedPorts should contain("<main:ag2> two three")
+    processedPorts should contain("<main:ag2>#2.4")
+
     val processedConns = setup.conns map { c =>
-      Connection(setup.portIDNamed(c.master), setup.portIDNamed(c.slave)) }
-    
-    processedConns should contain (Connection("<main:ag1> one one", "<main:ag2>#2.1"))
-    processedConns should contain (Connection("<main:ag1>#1.2", "<main:ag2> two two"))
-    processedConns should contain (Connection("<main:ag1>#1.3", "<main:ag2> two three"))
-    processedConns should contain (Connection("<main:ag1>#1.4", "<main:ag2>#2.4"))
-    processedConns should contain (Connection("<main:ag2> two two", "<main:ag1>#1.22"))
+      Connection(setup.portIDNamed(c.master), setup.portIDNamed(c.slave))
+    }
+
+    processedConns should contain(Connection("<main:ag1> one one", "<main:ag2>#2.1"))
+    processedConns should contain(Connection("<main:ag1>#1.2", "<main:ag2> two two"))
+    processedConns should contain(Connection("<main:ag1>#1.3", "<main:ag2> two three"))
+    processedConns should contain(Connection("<main:ag1>#1.4", "<main:ag2>#2.4"))
+    processedConns should contain(Connection("<main:ag2> two two", "<main:ag1>#1.22"))
   }
 
   test("Snapshot - Captures Settings") {
@@ -562,13 +651,13 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
     val catcher = new PrintCatcher
 
     val setup = command.action(List())(Setup(), catcher.println)
-    
+
     val expectedSettings = Map(
-        "<main:ag1>#1" -> "n",
-        "<main:ag2>#2" -> "",
-        "<main:ag2>#2.2" -> "two words")
-    
-    setup.allSettings should equal (expectedSettings)
+      "<main:ag1>#1" -> "n",
+      "<main:ag2>#2" -> "",
+      "<main:ag2>#2.2" -> "two words")
+
+    setup.allSettings should equal(expectedSettings)
   }
 
   // -------------------------------------------------------------------------------

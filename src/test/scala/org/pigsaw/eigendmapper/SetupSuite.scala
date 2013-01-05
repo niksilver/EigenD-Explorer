@@ -174,25 +174,6 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     agAgConns should contain("<main:c>", "<main:b>")
   }
 
-  test("Agent-port connections") {
-    val a1 = "<main:a>#1.1"
-    val a2 = "<main:a>#1.2"
-    val b1 = "<main:b>#1.1"
-    val b2 = "<main:b>#1.2"
-
-    val setup = new Setup(Set(
-      Connection(a1, b1),
-      Connection(a2, b2)))
-
-    val conns2 = setup.agentPortConnections
-
-    conns2.size should equal(4)
-    conns2 should contain("<main:a>" -> a1)
-    conns2 should contain("<main:a>" -> a2)
-    conns2 should contain("<main:b>" -> b1)
-    conns2 should contain("<main:b>" -> b2)
-  }
-
   test("Port IDs are automatically qualified") {
     val aUnqual = "<a>#1.1"
     val aQual = "<main:a>#1.1"

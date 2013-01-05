@@ -13,7 +13,7 @@ object Graphable {
   val gexfHeader =
     """<?xml version="1.0" encoding="UTF-8"?>
       |    <gexf xmlns="http://www.gexf.net/1.2draft" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.gexf.net/1.2draft http://www.gexf.net/1.2draft/gexf.xsd" version="1.2">
-      |        <graph mode="static" defaultedgetype="directed">""".stripMargin + "\n"
+      |        <graph mode="static" defaultedgetype="directed">""".stripMargin
   val gexfFooter =
     """    </graph>
       |</gexf>""".stripMargin
