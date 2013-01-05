@@ -3,10 +3,16 @@ package org.pigsaw.eigendmapper
 import Preamble._
 
 object Graphable {
+  
+  val edgeXMLTemplate = """<edge id="%s" source="%s" target="%s" weight="%s" />"""
+  val portAgentEdgeWeight = 1
+  val agentAgentEdgeWeight = 1
+  val portPortEdgeWeight = 1
 
   implicit def string2Graphable(s: String) = new Graphable(s)
-  implicit def connection2GraphableConnection(c: Connection) = new GConnection(c)
+  implicit def connection2GPortPort(c: Connection) = new GPortPort(c)
 
+  def GPortPort(c: Connection) = new GPortPort(c)
   def GAgentPort(ap: (String, String)) = new GAgentPort(ap)
   def GPortAgent(pa: (String, String)) = new GPortAgent(pa)
   def GAgentAgent(aa: (String, String)) = new GAgentAgent(aa)
@@ -31,43 +37,36 @@ object Graphable {
     lazy val portXmlId: String = PortID(s).id.stringXmlId
 
     lazy val portNodeXML: String =
-      """<node id="%s" label="%s" />""".format(s.portXmlId, s.nodeLabel.xmlEscaped)
+      """<node id="%s" label="%s" />""".format(s.portXmlId, s.nodeLabelWithHash.xmlEscaped)
 
   }
 
-  class GConnection(c: Connection) {
+  class GPortPort(c: Connection) {
     lazy val xmlId: String = c.master.portXmlId + c.slave.portXmlId
 
     lazy val edgeXML: String = {
-      val template = """<edge id="%s" source="%s" target="%s" weight="1" />"""
-      template.format(c.xmlId, c.master.portXmlId, c.slave.portXmlId)
+      edgeXMLTemplate.format(GPortPort(c).xmlId, c.master.portXmlId, c.slave.portXmlId, portPortEdgeWeight)
     }
   }
 
   class GAgentPort(ap: (String, String)) {
     lazy val xmlId: String = ap._1.stringXmlId + ap._2.portXmlId
     
-    lazy val edgeXML: String = {
-      val template = """<edge id="%s" source="%s" target="%s" weight="5" />"""
-      template.format(GAgentPort(ap).xmlId, ap._1.stringXmlId, ap._2.portXmlId)
-    }
+    lazy val edgeXML: String =      
+      edgeXMLTemplate.format(GAgentPort(ap).xmlId, ap._1.stringXmlId, ap._2.portXmlId, portAgentEdgeWeight)
   }
 
   class GPortAgent(pa: (String, String)) {
     lazy val xmlId: String = pa._1.portXmlId + pa._2.stringXmlId
     
-    lazy val edgeXML: String = {
-      val template = """<edge id="%s" source="%s" target="%s" weight="5" />"""
-      template.format(GPortAgent(pa).xmlId, pa._1.portXmlId, pa._2.stringXmlId)
-    }
+    lazy val edgeXML: String =
+      edgeXMLTemplate.format(GPortAgent(pa).xmlId, pa._1.portXmlId, pa._2.stringXmlId, portAgentEdgeWeight)
   }
 
   class GAgentAgent(aa: (String, String)) {
     lazy val xmlId: String = aa._1.stringXmlId + aa._2.stringXmlId
 
-    lazy val edgeXML: String = {
-      val template = """<edge id="%s" source="%s" target="%s" weight="3" />"""
-      template.format(GAgentAgent(aa).xmlId, aa._1.stringXmlId, aa._2.stringXmlId)
-    }
+    lazy val edgeXML: String =
+      edgeXMLTemplate.format(GAgentAgent(aa).xmlId, aa._1.stringXmlId, aa._2.stringXmlId, agentAgentEdgeWeight)
   }  
 }

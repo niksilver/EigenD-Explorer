@@ -39,17 +39,17 @@ class GraphableSuite extends FunSuite with ShouldMatchers {
   
   test("Agent-agent edge XML") {
     val agentAgent = GAgentAgent("<alpha>" -> "<beta>")
-    agentAgent.edgeXML should equal ("""<edge id="_alpha__beta_" source="_alpha_" target="_beta_" weight="3" />""")
+    agentAgent.edgeXML should equal ("""<edge id="_alpha__beta_" source="_alpha_" target="_beta_" weight="1" />""")
   }
   
   test("Agent-port edge XML") {
     val agentPort = GAgentPort("<alpha>" -> "<alpha>#4.5")
-    agentPort.edgeXML should equal ("""<edge id="_alpha__alpha__4.5" source="_alpha_" target="_alpha__4.5" weight="5" />""")
+    agentPort.edgeXML should equal ("""<edge id="_alpha__alpha__4.5" source="_alpha_" target="_alpha__4.5" weight="1" />""")
   }
   
   test("Port-agent edge XML") {
     val portAgent = GPortAgent("<alpha>#4.5" -> "<alpha>")
-    portAgent.edgeXML should equal ("""<edge id="_alpha__4.5_alpha_" source="_alpha__4.5" target="_alpha_" weight="5" />""")
+    portAgent.edgeXML should equal ("""<edge id="_alpha__4.5_alpha_" source="_alpha__4.5" target="_alpha_" weight="1" />""")
   }
   
   test("Port XML id") {
@@ -61,7 +61,7 @@ class GraphableSuite extends FunSuite with ShouldMatchers {
   }
   
   test("Port node XML") {
-    "<alpha>#4.5".portNodeXML should equal ("""<node id="_alpha__4.5" label="4.5" />""")
+    "<alpha>#4.5".portNodeXML should equal ("""<node id="_alpha__4.5" label="#4.5" />""")
     "<alpha> light out".portNodeXML should equal ("""<node id="_alpha__light_out" label="light out" />""")
   }
   

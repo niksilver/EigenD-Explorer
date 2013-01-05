@@ -116,7 +116,7 @@ class GraphCommand extends Command {
       // When graphing ports: Write port-port edges,
       // agent-port edges, and port-agent edges
       case "ports" => {
-        ppConns foreach { c => prln(c.edgeXML) }
+        ppConns foreach { c => prln(GPortPort(c).edgeXML) }
         apConns foreach { ap => prln(GAgentPort(ap).edgeXML) }
         paConns foreach { pa => prln(GPortAgent(pa).edgeXML) }
       }
