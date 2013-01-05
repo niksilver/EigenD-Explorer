@@ -87,13 +87,6 @@ class Setup private(private val portNames0: Map[String, String],
     conns flatMap { c => List(c.master, c.slave) }
 
   /**
-   * Get a map from each agent to each agent (strings, including
-   * angle brackets.)
-   */
-  lazy val agentAgentConns: Set[(String, String)] =
-    conns map { c => (c.master.agent, c.slave.agent) }
-
-  /**
    * Make an unqualified version of a set of connections, in which
    * every port of the form ID &lt;main:agentnameN&gt; is changed to
    * its shorter form of &lt;agentnameN&gt;.

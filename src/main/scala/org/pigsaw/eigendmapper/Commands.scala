@@ -137,12 +137,12 @@ class GraphCommand extends Command {
    */
   def agentPortConns(s: Setup): Set[(String, String)] = {
     val p = s.pos
-    s.allConns filter { c =>
-      c.master.hasPos(p)
-    } map { c =>
-      val agent = c.master.agent.unqualifiedForPos(p)
-      val portID = s.portIDNamed(c.master).unqualifiedForPos(p)
-      (agent, portID) }
+    (for {
+      c <- s.allConns
+      if (c.master hasPos p)
+      agent = c.master.agent unqualifiedForPos p
+      portID = s.portIDNamed(c.master) unqualifiedForPos p
+    } yield (agent, portID))
   }
 
   /**
@@ -152,12 +152,12 @@ class GraphCommand extends Command {
    */
   def portAgentConns(s: Setup): Set[(String, String)] = {
     val p = s.pos
-    s.allConns filter { c =>
-      c.slave.hasPos(p)
-    } map { c =>
-      val portID = s.portIDNamed(c.slave).unqualifiedForPos(p)
-      val agent = c.slave.agent.unqualifiedForPos(p)
-      (portID, agent) }
+    for {
+      c <- s.allConns
+      if (c.slave hasPos p)
+      portID = s.portIDNamed(c.slave) unqualifiedForPos p
+      agent = c.slave.agent unqualifiedForPos p
+    } yield (portID, agent)
   }
 
   /**
