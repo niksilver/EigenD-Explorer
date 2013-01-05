@@ -137,12 +137,12 @@ class GraphCommand extends Command {
    */
   def agentPortConns(s: Setup): Set[(String, String)] = {
     val p = s.pos
-    (for {
+    for {
       c <- s.allConns
       if (c.master hasPos p)
       agent = c.master.agent unqualifiedForPos p
       portID = s.portIDNamed(c.master) unqualifiedForPos p
-    } yield (agent, portID))
+    } yield (agent, portID)
   }
 
   /**

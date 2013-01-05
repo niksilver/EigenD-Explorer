@@ -172,18 +172,6 @@ class PreambleSuite extends FunSuite with ShouldMatchers {
     PortID("<rig3>#4.5.6").nodeLabelWithHash should equal("#4.5.6")
   }
 
-  test("PortID - Make it the best format, using cname if possible") {
-    val map = Map(
-      "1" -> "one input",
-      "2.3" -> "two output")
-
-    PortID("<cycler1>#1").bestForm(map) should equal("<cycler1> one input")
-    PortID("<cycler1>#2.3").bestForm(map) should equal("<cycler1> two output")
-
-    PortID("<cycler1>#1.1").bestForm(map) should equal("<cycler1>#1.1")
-    PortID("<cycler1>#2").bestForm(map) should equal("<cycler1>#2")
-  }
-
   test("Pos.qualifier") {
     List().qualifier should equal("main:")
     List("<rig1>").qualifier should equal("main.rig1:")
