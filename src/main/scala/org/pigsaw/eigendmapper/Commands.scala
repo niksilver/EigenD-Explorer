@@ -52,7 +52,7 @@ class DumpCommand extends Command {
 
     prln("\nSettings:\n")
     setup.allSettings.toSeq.sortBy(_._1).
-      foreach { s => prln(s._1 + " -> " + s._2) }
+      foreach { s => prln(s._1 + " = " + s._2) }
 
     prln("\nConnections:\n")
     setup.allConns.toSeq.sortBy(_.master).
@@ -91,12 +91,8 @@ class GraphCommand extends Command {
 
     val apConns = agentPortConns(setup)
     val paConns = portAgentConns(setup)
-    val aaConns = setup.agentAgentConns
-
-    // Make sure we name the port-port connections, too,
-    // so their XML IDs match the ones above
-    
-    val ppConns = setup.conns map { c => Connection(setup.portIDNamed(c.master), setup.portIDNamed(c.slave)) }
+    val aaConns = agentAgentConns(setup)
+    val ppConns = portPortConns(setup)
 
     val ports = (apConns map { _._2 }) ++ (paConns map { _._1 })
     val agents = aaConns flatMap { aa => List(aa._1, aa._2) }
@@ -164,6 +160,33 @@ class GraphCommand extends Command {
       (portID, agent) }
   }
 
+  /**
+   * Get connections involving any port at the current pos.
+   * The ports will have names if possible, and will be
+   * unqualified if at the current pos.
+   */
+  def portPortConns(s: Setup): Set[Connection] = {
+    val p = s.pos
+    for {
+      c <- s.conns
+      master2 = s.portIDNamed(c.master) unqualifiedForPos p
+      slave2 = s.portIDNamed(c.slave) unqualifiedForPos p
+    } yield Connection(master2, slave2)
+  }
+
+  /**
+   * Get pairs of master and slave agent names.
+   * Includes only pairs in which one is in the current rig.
+   * Agent names in the current rig will be unqualified.
+   */
+  def agentAgentConns(s: Setup): Set[(String, String)] = {
+    val p = s.pos
+    for {
+      c <- s.conns
+      master = c.master.agent unqualifiedForPos p
+      slave = c.slave.agent unqualifiedForPos p
+    } yield (master, slave)
+  }
 }
 
 class HelpCommand extends Command {
