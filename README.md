@@ -135,6 +135,6 @@ There's also a `help` command.
 
 ## Download links
 
-* [Version 0.8](https://s3-eu-west-1.amazonaws.com/niksilver.public/EigenD+Explorer/eigend-explorer-0.8.jar) - 6 January 2012
+* [Version 0.8](https://s3-eu-west-1.amazonaws.com/niksilver.public/eigend-explorer/eigend-explorer-0.8.jar) - 6 January 2012
 
     First public release.
