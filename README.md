@@ -13,7 +13,7 @@ fixes or feature requests please don't expect me to act on them.
 1. [Install Java](http://www.java.com/en/download/index.jsp)
 1. [Install Scala](http://www.scala-lang.org/downloads).
 I'm using Scala 2.9.2, but it should work with slightly older versions, too.
-1. [Download the latest version)[#download-links], which will be a jar file.
+1. [Download the latest version of EigenD Explorer](#download-links), which will be a jar file.
 1. Unzip the jar.
 1. Edit the top-level file `application.conf` so that (a) the number of 
 console columns (characters on a line) matches your console, and (b) the
@@ -136,4 +136,5 @@ There's also a `help` command.
 ## Download links
 
 * [Version 0.8](https://s3-eu-west-1.amazonaws.com/niksilver.public/EigenD+Explorer/eigend-explorer-0.8.jar) - 6 January 2012
+
     First public release.
