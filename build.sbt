@@ -1,6 +1,6 @@
 name := "EigenD Explorer"
 
-version := "1.0"
+version := "0.8"
 
 // Override the default artifact name
 
