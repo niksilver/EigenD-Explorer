@@ -77,7 +77,7 @@ class DumpCommand extends Command {
     setup.allConns.toSeq.sortBy(_.master).
       foreach { pn => prln(pn.master + " -> " + pn.slave) }
 
-    prln("\nPos: " + setup.pos.displayString)
+    prln("\nPosition: " + setup.pos.displayString)
     setup
   }
 }

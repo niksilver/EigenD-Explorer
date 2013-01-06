@@ -29,6 +29,7 @@ object Console {
     val ul = new UserLine(">> ")
 
     outputConfig
+    println("There is a help command")
 
     if (EigenD.bin.nonEmpty && Config.consoleCols.nonEmpty)
       actLoop(Setup())
