@@ -9,12 +9,15 @@ artifactName in (Compile, packageBin) := {
   artifact.name + "-" + module.revision + "." + artifact.extension
 }
 
-// Include libraries in the runtime jar
+// Include libraries and licence info in the runtime jar
 
 mappings in (Compile, packageBin) <++= baseDirectory map { base =>
   Seq(
     (base / "lib" / "config-1.0.0.jar") -> "lib/config-1.0.0.jar",
-    (base / "lib" / "jline-1.0.jar")    -> "lib/jline-1.0.jar"
+    (base / "lib" / "jline-1.0.jar")    -> "lib/jline-1.0.jar",
+    (base / "LICENSES" / "jline-licence.txt" ) -> "LICENSES/jline-licence.txt",
+    (base / "LICENSES" / "config-licence.txt" ) -> "LICENSES/config-licence.txt",
+    (base / "LICENSES" / "eigend-explorer-licence.txt" ) -> "LICENSES/eigend-explorer-licence.txt"
   )
 }
 
