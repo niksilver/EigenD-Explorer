@@ -11,8 +11,6 @@ fixes or feature requests please don't expect me to act on them.
 ## Installation
 
 1. [Install Java](http://www.java.com/en/download/index.jsp)
-1. [Install Scala](http://www.scala-lang.org/downloads).
-I'm using Scala 2.9.2, but it should work with slightly older versions, too.
 1. [Download the latest version of EigenD Explorer](#download-links), which will be a jar file.
 1. Unzip the jar.
 1. Edit the top-level file `application.conf` so that (a) the number of 
@@ -24,9 +22,9 @@ the `application.conf` file itself.
 ## Running the application
 
 To run the application (and assuming your jar file is called
-`eigend-explorer-1.0.jar`) then simply run
+`eigend-explorer-0.8.jar`) then simply run
 
-    scala eigend-explorer-1.0.jar
+    java -jar eigend-explorer-0.8.jar
 
 ## Using the application
 
@@ -37,7 +35,7 @@ out of the current rig or down `into` another rig.
 
 Here is an example run with Factory Setup 1 on the Pico...
 
-    > scala eigend-explorer-1.0.jar
+    > java -jar eigend-explorer-0.8.jar
     Working to 120 console columns
     Found EigenD bin folder C:/Program Files (x86)/Eigenlabs/release-2.0.72-stable/bin
     >> 
@@ -135,6 +133,16 @@ There's also a `help` command.
 
 ## Download links
 
-* [Version 0.8](https://s3-eu-west-1.amazonaws.com/niksilver.public/eigend-explorer/eigend-explorer-0.8.jar) - 6 January 2012
+* [Version 0.8](https://s3-eu-west-1.amazonaws.com/niksilver.public/eigend-explorer/eigend-explorer-0.8.jar) - 8 January 2012
 
     First public release.
+
+## Licences
+
+EigenD Explorer is licensed under
+[the GPL v3](http://www.gnu.org/licenses/gpl.html).
+It uses JLine 1.0 licenced under
+[the BSD 2 clause licence](http://opensource.org/licenses/bsd-license.php)
+and Typesafe's Config 1.0.0, which is licensed under
+[the Apache 2.0](http://www.apache.org/licenses/LICENSE-2.0.html).
+See the LICENCES directory in the source for details.

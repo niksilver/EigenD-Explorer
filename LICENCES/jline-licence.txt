@@ -1,7 +1,7 @@
-This application uses JLine 1.0.0, protected under
+This application uses JLine 1.0, protected under
 http://www.opensource.org/licenses/bsd-license.php
 
-JLine 1.0.0
+JLine 1.0
 
 Copyright (c) 2007, the original authors
 All rights reserved.
