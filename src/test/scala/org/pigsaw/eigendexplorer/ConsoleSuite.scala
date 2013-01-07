@@ -17,10 +17,10 @@
  *  along with EigenD Explorer.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.pigsaw.eigendmapper
+package org.pigsaw.eigendexplorer
 
-import org.scalatest.FunSuite
 import org.junit.runner.RunWith
+import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.matchers.ShouldMatchers
 

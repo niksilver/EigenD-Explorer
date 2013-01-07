@@ -17,7 +17,7 @@
  *  along with EigenD Explorer.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.pigsaw.eigendmapper
+package org.pigsaw.eigendexplorer
 
 import com.typesafe.config.ConfigFactory
 import com.typesafe.config.ConfigException

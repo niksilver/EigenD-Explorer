@@ -17,17 +17,23 @@
  *  along with EigenD Explorer.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.pigsaw.eigendmapper
+package org.pigsaw.eigendexplorer
 
-import jline.ConsoleReader
+import org.junit.runner.RunWith
+import org.scalatest.FunSuite
+import org.scalatest.junit.JUnitRunner
+import org.scalatest.matchers.ShouldMatchers
 
-class UserLine(prompt: String) {
-  def line: Option[String] = UserLine.reader.readLine(prompt) match {
-    case null => None
-    case line => Some(line)
+@RunWith(classOf[JUnitRunner])
+class ConfigSuite extends FunSuite with ShouldMatchers {
+
+  test("Has appropriate config") {
+    Config.consoleCols should equal (Some(120))
+    Config.doesNotExist should equal (None)
+    
+    Config.eigenDBin should be ('defined)
+    Config.eigenDBin.get(0) should include ("Program Files/Eigenlabs")
+    Config.eigenDBin.get(1) should include ("Program Files (x86)/Eigenlabs")
   }
-}
 
-object UserLine {
-  val reader = new ConsoleReader()
 }

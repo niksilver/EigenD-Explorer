@@ -17,14 +17,14 @@
  *  along with EigenD Explorer.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.pigsaw.eigendmapper
+package org.pigsaw.eigendexplorer
 
 import org.scalatest.FunSuite
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.matchers.ShouldMatchers
 
-import org.pigsaw.eigendmapper.Graphable._
+import Graphable._
 
 @RunWith(classOf[JUnitRunner])
 class GraphableSuite extends FunSuite with ShouldMatchers {

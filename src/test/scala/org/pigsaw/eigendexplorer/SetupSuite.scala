@@ -17,14 +17,14 @@
  *  along with EigenD Explorer.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.pigsaw.eigendmapper
+package org.pigsaw.eigendexplorer
 
 import org.scalatest.FunSuite
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.matchers.ShouldMatchers
-import org.pigsaw.eigendmapper.Preamble._
-import com.sun.org.apache.xalan.internal.xsltc.compiler.WithParam
+
+import Preamble._
 
 @RunWith(classOf[JUnitRunner])
 class SetupSuite extends FunSuite with ShouldMatchers {
