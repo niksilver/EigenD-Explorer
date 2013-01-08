@@ -196,19 +196,35 @@ class HelpCommand extends Command {
 
   def action(args: List[String])(state: Setup, prln: PrintlnFn): Setup = {
     prln("""Commands are:
-        |dump      Dump the information known about the setup.
-        |graph [agents|ports]  Output the agent or port connections in gexf format.
-        |help      Show this message
-        |inspect <agentName>   Inspect an agent's settings and connections. The
-        |          agent name includes angle brackets. Example: inspect <drummer1>
-        |into <rigN>  Go into a rig. Example: into <rig3>
-        |snapshot  Capture the state of all the agents' connections and settings.
-        |          Will not go into rigs; you will need to do those individually.
-        |up        Go up a level, out of this rig.
         |
-        |You can redirect the output of a command to a file by using > filename.txt
-        |after it, and you can use quote marks. Example:
-        |    graph ports > '/home/harpo/Factory Setup 1.gexf'""".stripMargin)
+        |dump
+        |        Dump the information known about the setup.
+        |
+        |graph agents
+        |graph ports
+        |        Output the agent or port connections in gexf format. Most useful
+        |        with file redirection (see below).
+        |
+        |help
+        |        Show this message
+        |
+        |inspect <agentName>
+        |        Inspect an agent's settings and connections. The agent name includes
+        |        angle brackets. Example: inspect <drummer1>
+        |
+        |into <rigN>
+        |        Go into a rig. Example: into <rig3>
+        |
+        |snapshot
+        |        Capture the state of all the agents' connections and settings. Will
+        |        not go into rigs; you will need to snapshot those individually.
+        |
+        |up
+        |        Go up a level, out of this rig.
+        |
+        |You can redirect the output of a command to a file by using > filename.ext
+        |after it, and you can use quote marks to include spaces. Example:
+        |    graph ports > '/home/anna/Factory Setup 1.gexf'""".stripMargin)
     state
   }
 
