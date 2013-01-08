@@ -6,17 +6,33 @@ name := "EigenD Explorer"
 
 version := "0.8"
 
-unmanagedResources in Compile <++= baseDirectory map { base =>
-  Seq(
-     (base / "LICENCE" / "jline-licence.txt")
-  )
-}
+unmanagedResourceDirectories in (Compile) <+= baseDirectory ({ base =>
+  base / "LICENCES"
+})
+
+//dependencyClasspath in assembly <<= (dependencyClasspath in assembly, baseDirectory) map { (dcp, bd) =>
+//  println("** " + dcp.files)
+//  println("** " + bd)
+//  val out = dcp :+ Attributed.blank(bd / "LICENCE" / "jline-licence.txt")
+//  println("@@ " + out.files)
+//  out
+//}
+//dependencyClasspath <++= baseDirectory map { base =>
+//  Seq(
+//     (base / "LICENCE"),
+//     (base / "LICENCE" / "jline-licence.txt")
+//  )
+//}
+
 
 // ------------------------------------------------
 
 // For sbt-assembly
 
 assemblySettings
+
+// During testing only, skip the Scala jar
+// assembleArtifact in packageScala := false
 
 // Skip the test during assembly
 
@@ -43,7 +59,10 @@ jarName in assembly <<= (artifact, version) { (artifact, version) =>
 
 // Include libraries and licence info in the runtime jar
 
-//mappings in (Compile, packageBin) <++= baseDirectory map { base =>
+//assembledMappings in assembly <<= (assembledMappings in assembly, baseDirectory) map { (a, b) =>
+//  { f: java.io.File =>
+//    //....
+//  }
 //  Seq(
 //    // (base / "lib" / "config-1.0.0.jar") -> "lib/config-1.0.0.jar",
 //    // (base / "lib" / "jline-1.0.jar")    -> "lib/jline-1.0.jar",
@@ -52,6 +71,16 @@ jarName in assembly <<= (artifact, version) { (artifact, version) =>
 //    (base / "LICENSES" / "eigend-explorer-licence.txt" ) -> "LICENSES/eigend-explorer-licence.txt"
 //  )
 //}
+
+mappings in (Compile, packageBin) <++= baseDirectory map { base =>
+  Seq(
+    // (base / "lib" / "config-1.0.0.jar") -> "lib/config-1.0.0.jar",
+    // (base / "lib" / "jline-1.0.jar")    -> "lib/jline-1.0.jar",
+    (base / "LICENcES" / "jline-licence.txt" ) -> "LICENcES/jline-licence.txt",
+    (base / "LICENcES" / "config-licence.txt" ) -> "LICENcES/config-licence.txt",
+    (base / "LICENcES" / "eigend-explorer-licence.txt" ) -> "LICENcES/eigend-explorer-licence.txt"
+  )
+}
 
 // How to get a complete stack trace from scalatest
 // testOptions in Test += Tests.Argument("-oF")

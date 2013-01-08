@@ -5,7 +5,7 @@ This is a tool to explore the connections and settings in
 don't know what EigenD is then you won't be interested in this.
 
 I wrote this entirely for myself, and will continue to play with it only
-as long it interests me, while I am interested in hearing about any bug
+as long it interests me. So although I am interested in hearing about any bug
 fixes or feature requests please don't expect me to act on them.
 
 ## Installation
