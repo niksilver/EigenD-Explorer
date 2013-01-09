@@ -17,7 +17,7 @@ If not, then get it from the
 
 ## Running the application
 
-To run the application (and for this example you will assume your jar
+To run the application (and for this example we will assume your jar
 file is called `eigend-explorer-0.8.jar`) then simply run
 
     java -jar eigend-explorer-0.8.jar
@@ -39,9 +39,13 @@ application's console width then again see the
 
 ## Using the application
 
-The general mode of operation is: (i) `snapshot` the top level EigenD
-setup, (ii) go `into` a rig of interest, then (iii) `inspect` one of the
-agents. You can browse around as you like, occasionally going `up` a level
+The general mode of operation is:
+(i) `snapshot` the top level EigenD setup, then
+(ii) `inspect` one of the agents.
+Sometimes you might like to
+(iii) go `into` a rig of interest,
+(iv) `snapshot` its agents, and so on.
+You can browse around as you like, occasionally going `up` a level
 out of the current rig or down `into` another rig.
 
 Here is an example run with Factory Setup 1 on the Pico...
