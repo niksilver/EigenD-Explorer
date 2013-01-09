@@ -12,12 +12,6 @@ fixes or feature requests please don't expect me to act on them.
 
 1. [Install Java](http://www.java.com/en/download/index.jsp)
 1. [Download the latest version of EigenD Explorer](#download-links), which will be a jar file.
-1. Unzip the jar.
-1. Edit the top-level file `application.conf` so that (a) the number of 
-console columns (characters on a line) matches your console, and (b) the
-location of your EigenD `bin` directory is included. Details are given in
-the `application.conf` file itself.
-1. Zip the jar back up.
 
 ## Running the application
 
@@ -25,6 +19,16 @@ To run the application (and assuming your jar file is called
 `eigend-explorer-0.8.jar`) then simply run
 
     java -jar eigend-explorer-0.8.jar
+
+With luck you will find that the application is already configured to work with
+your system by finding your EigenD `bin` directory.
+If so then you will get a `>>` prompt. If not then it will
+exit and tell you, and you should then refer to the
+[configuration section below](#configuration).
+
+The application is also configured for a console 120 characters wide, although
+it won't exit if your console is a different width. If you'd like to change that,
+then again see the [configuration section below](#configuration).
 
 ## Using the application
 
@@ -136,6 +140,15 @@ There's also a `help` command.
 * [Version 0.8](https://s3-eu-west-1.amazonaws.com/niksilver.public/eigend-explorer/eigend-explorer-0.8.jar) - 8 January 2012
 
     First public release.
+
+## Configuration
+
+1. Unzip the jar.
+1. Edit the top-level file `application.conf` so that (a) the number of 
+console columns (characters on a line) matches your console, and (b) the
+location of your EigenD `bin` directory is included. Details are given in
+the `application.conf` file itself.
+1. Zip the jar back up.
 
 ## Licences
 

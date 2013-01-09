@@ -32,8 +32,7 @@ class ConfigSuite extends FunSuite with ShouldMatchers {
     Config.doesNotExist should equal (None)
     
     Config.eigenDBin should be ('defined)
-    Config.eigenDBin.get(0) should include ("Program Files/Eigenlabs")
-    Config.eigenDBin.get(1) should include ("Program Files (x86)/Eigenlabs")
+    Config.eigenDBin.get should contain ("C:/Program Files (x86)/Eigenlabs/release-2.0.72-stable/bin")
   }
 
 }

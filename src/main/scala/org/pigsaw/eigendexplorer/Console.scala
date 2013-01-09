@@ -29,10 +29,11 @@ object Console {
     val ul = new UserLine(">> ")
 
     outputConfig
-    println("There is a help command")
 
-    if (EigenD.bin.nonEmpty && Config.consoleCols.nonEmpty)
+    if (EigenD.bin.nonEmpty && Config.consoleCols.nonEmpty) {
+      println("There is a help command")
       actLoop(Setup())
+    }
     else
       println("Exiting. Please make corrections in application.conf")
 
