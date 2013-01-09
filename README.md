@@ -148,9 +148,10 @@ There's also a `help` command.
 
 ## Download links
 
-* [Version 0.8.1](https://s3-eu-west-1.amazonaws.com/niksilver.public/eigend-explorer/eigend-explorer-0.8..1jar) - 9 January 2012
+* [Version 0.8.1](https://s3-eu-west-1.amazonaws.com/niksilver.public/eigend-explorer/eigend-explorer-0.8.1.jar) - 9 January 2012
 
     Added additional config lines for (some?) Mac installations of EigenD. Reduced jar size a bit.
+
 
 * [Version 0.8](https://s3-eu-west-1.amazonaws.com/niksilver.public/eigend-explorer/eigend-explorer-0.8.jar) - 8 January 2012
 
