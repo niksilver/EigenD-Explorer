@@ -10,25 +10,32 @@ fixes or feature requests please don't expect me to act on them.
 
 ## Installation
 
-1. [Install Java](http://www.java.com/en/download/index.jsp)
+1. Make sure you have Java installed. You will need version 1.6 or later.
+If not, then get it from the
+[Java download page](http://www.java.com/en/download/index.jsp).
 1. [Download the latest version of EigenD Explorer](#download-links), which will be a jar file.
 
 ## Running the application
 
-To run the application (and assuming your jar file is called
-`eigend-explorer-0.8.jar`) then simply run
+To run the application (and for this example you will assume your jar
+file is called `eigend-explorer-0.8.jar`) then simply run
 
     java -jar eigend-explorer-0.8.jar
 
 With luck you will find that the application is already configured to work with
-your system by finding your EigenD `bin` directory.
-If so then you will get a `>>` prompt. If not then it will
+your system so that it automatically finds your EigenD `bin` directory.
+If so then you will get a `>>` prompt, and you can jump straight to the
+section on [using the application](#using-the-application).
+If not then it will
 exit and tell you, and you should then refer to the
-[configuration section below](#configuration).
+[configuration section](#configuration), far below.
 
-The application is also configured for a console 120 characters wide, although
-it won't exit if your console is a different width. If you'd like to change that,
-then again see the [configuration section below](#configuration).
+The application is also configured for a console 120 characters wide,
+so you might want to stretch your console window accordingly. If your
+console is a different width then the application will still run, although
+some of the output may look a bit funny. If you'd like to change the
+application's console width then again see the
+[configuration section below](#configuration).
 
 ## Using the application
 
@@ -143,12 +150,16 @@ There's also a `help` command.
 
 ## Configuration
 
+This is how to change the default configuration
+
 1. Unzip the jar.
-1. Edit the top-level file `application.conf` so that (a) the number of 
-console columns (characters on a line) matches your console, and (b) the
-location of your EigenD `bin` directory is included. Details are given in
-the `application.conf` file itself.
-1. Zip the jar back up.
+1. Find the top-level file called `application.conf`
+1. Change any of the settings you see there.
+The most important change you're likely to want is to
+include the location of your EigenD `bin` directory.
+Details are given in the `application.conf` file itself.
+1. Save and close `application.conf`.
+1. Zip the jar up again.
 
 ## Licences
 
