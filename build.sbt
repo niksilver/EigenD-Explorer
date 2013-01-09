@@ -4,7 +4,7 @@ import AssemblyKeys._
 
 name := "EigenD Explorer"
 
-version := "0.8"
+version := "0.8.1"
 
 unmanagedResourceDirectories in (Compile) <+= baseDirectory ({ base =>
   base / "LICENCES"
@@ -40,22 +40,23 @@ jarName in assembly <<= (artifact, version) { (artifact, version) =>
 assembledMappings in assembly <<= (assembledMappings in assembly) map { asm =>
   import java.util.regex.Pattern
   val omissions = Seq(
-    "scala.xml."
+    "scala.actors.",
+    "scala.concurrent.",
+    "scala.parallel.",
+    "scala.swing.",
+    "scala.testing.",
+    "scala.text.",
+    "scala.util.automata.",
+    "scala.util.continuations.",
+    "scala.util.grammar.",
+    "scala.util.logging.",
+    "scala.util.regexp."
   )
   val omPatterns = omissions map { pkg => pkg + ".*.class" }
-  println("omissions is " + omissions)
-  println("omPatterns is " + omPatterns)
-  def toRemove(s: String) = {
-    if (omPatterns exists { pat => Pattern.matches(pat, s) }) {
-      println("Omitting "+ (s))
-      true
-    }
-    else
-      false
-  }
-  def removeOmissions(s: Seq[(File,String)]): Seq[(File,String)] = {
+  def toRemove(s: String) =
+    omPatterns exists { pat => Pattern.matches(pat, s) }
+  def removeOmissions(s: Seq[(File,String)]): Seq[(File,String)] =
     s filterNot { fs => toRemove(fs._2) }
-  }
   { f: File =>
     removeOmissions(asm(f))
   }
