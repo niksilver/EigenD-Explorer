@@ -127,6 +127,22 @@ class PreambleSuite extends FunSuite with ShouldMatchers {
     "main.rig3:summer1>".isAgent should equal(false)
   }
 
+  test("AgentName.isRig") {
+    "<rig1>".isRig should equal(true)
+    "<main:rig1>".isRig should equal(true)
+    "<main.rig3:rig3>".isRig should equal(true)
+
+    "<main.rig3:summer1>".isRig should equal(false)
+
+    "rig1".isRig should equal(false)
+    "<rig1".isRig should equal(false)
+    "rig1>".isRig should equal(false)
+    "<rig>1".isRig should equal(false)
+    
+    "<main:rig1".isRig should equal(false)
+    "main.rig3:rig1>".isRig should equal(false)
+  }
+
   test("Pos.index") {
     Pos().index should equal("<main>")
     Pos("<rig1>").index should equal("<main.rig1:main>")

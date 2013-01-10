@@ -631,6 +631,16 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
     command.action(List("a", "b"))(setupTop, catcher2.println)
     catcher2.output.lines.toList(0) should equal("into: Too many arguments")
     catcher2.output.lines.toList(1) should equal("Position: Top level")
+
+    val catcher3 = new PrintCatcher
+    command.action(List("<top>"))(setupTop, catcher3.println)
+    catcher3.output.lines.toList(0) should equal("into: <top> is not a rig")
+    catcher3.output.lines.toList(1) should equal("Position: Top level")
+
+    val catcher4 = new PrintCatcher
+    command.action(List("<rig1"))(setupTop, catcher4.println)
+    catcher4.output.lines.toList(0) should include("into: Bad rig name")
+    catcher4.output.lines.toList(1) should equal("Position: Top level")
   }
 
   // -------------------------------------------------------------------------------

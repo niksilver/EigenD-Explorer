@@ -143,7 +143,7 @@ object Preamble {
     /**
      * True if this agent is a rig
      */
-    def isRig: Boolean = Pattern.matches("<rig\\d+>", name.unqualified)
+    def isRig: Boolean = Pattern.matches("<([^>]*:)?rig\\d+>", name)
   }
 
   implicit def String2AgentName(s: String): AgentName = new AgentName(s)

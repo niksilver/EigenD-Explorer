@@ -245,7 +245,7 @@ class InspectCommand extends Command {
     args.length match {
       case 0 => prln("inspect: No agent name given")
       case 1 => if (args(0).isAgent) doInspect(args(0), setup, prln)
-        else prln("Bad agent name. Names should be similar to <clicker1>.")
+      else prln("Bad agent name. Names should be similar to <clicker1>.")
       case _ => prln("inspect: Too many arguments, only one required")
     }
 
@@ -271,18 +271,18 @@ class InspectCommand extends Command {
 
     val linksFrom =
       setup.allConns filter { c => c.master.agent == agentQual } map { c => ("", c.master, c.slave) }
-    
+
     val linksTo =
       setup.allConns filter { c => c.slave.agent == agentQual } map { c => (c.master, c.slave, "") }
-    
+
     val linksAll = linksFrom ++ linksTo
-    
+
     def isLinked(portID: String) =
       linksAll exists { _._2 == portID }
-    
+
     def omitValue(v: String): Boolean =
       (v == "" || (v.startsWith("<") && v.contains(">")))
-    
+
     def tidyValue(v: String): String = {
       // Truncate decimals at 3dp
       val Decimal = """(-?\d+\.)(\d\d\d)\d*""".r
@@ -292,26 +292,29 @@ class InspectCommand extends Command {
       }
       tidy1
     }
-    
+
     val settings = setup.allSettings filter {
-      kv => kv._1.agent == agentQual } filterNot {
-      kv => isLinked(kv._1) || omitValue(kv._2) } map {
-      kv => ("", kv._1, "")}
-    
+      kv => kv._1.agent == agentQual
+    } filterNot {
+      kv => isLinked(kv._1) || omitValue(kv._2)
+    } map {
+      kv => ("", kv._1, "")
+    }
+
     def formatAgent(portID: String) = {
       val optSetting = setup.allSettings.get(portID)
       val agentBest = bestForm(portID).nodeLabelWithHash
       // Add the setting if it exists and is not the empty stringg
       optSetting match {
         case Some(value) => agentBest + (if (omitValue(value)) "" else " = " + tidyValue(value))
-        case None        => agentBest
+        case None => agentBest
       }
     }
-    
+
     def formatOther(str: String) =
       if (str == "") ""
       else bestForm(str).unqualifiedForPos(pos)
-    
+
     val cols = (linksAll ++ settings) map { c => (formatOther(c._1), formatAgent(c._2), formatOther(c._3)) }
 
     if (cols.size == 0)
@@ -335,7 +338,12 @@ class IntoCommand extends Command {
   def action(args: List[String])(setup: Setup, prln: PrintlnFn): Setup = {
     val setup2 = args.length match {
       case 0 => prln("into: Too few arguments"); setup
-      case 1 => doInto(args(0), setup, prln)
+      case 1 => {
+        val arg = args(0)
+        if (arg.isRig) doInto(args(0), setup, prln)
+        else if (arg.isAgent) { prln("into: " + arg + " is not a rig"); setup }
+        else { prln("into: Bad rig name. Should be of the form <rig3>"); setup }
+      }
       case _ => prln("into: Too many arguments"); setup
     }
     prln("Position: " + setup2.pos.displayString)
