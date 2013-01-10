@@ -38,27 +38,8 @@ jarName in assembly <<= (artifact, version) { (artifact, version) =>
 }
 
 assembledMappings in assembly <<= (assembledMappings in assembly) map { asm =>
-  import java.util.regex.Pattern
-  val omissions = Seq(
-    "scala.actors.",
-    "scala.concurrent.",
-    "scala.parallel.",
-    "scala.swing.",
-    "scala.testing.",
-    "scala.text.",
-    "scala.util.automata.",
-    "scala.util.continuations.",
-    "scala.util.grammar.",
-    "scala.util.logging.",
-    "scala.util.regexp."
-  )
-  val omPatterns = omissions map { pkg => pkg + ".*.class" }
-  def toRemove(s: String) =
-    omPatterns exists { pat => Pattern.matches(pat, s) }
-  def removeOmissions(s: Seq[(File,String)]): Seq[(File,String)] =
-    s filterNot { fs => toRemove(fs._2) }
   { f: File =>
-    removeOmissions(asm(f))
+    ClassOmission.removeOmissions(asm(f))
   }
 }
 
