@@ -125,7 +125,7 @@ object Preamble {
   /**
    * The name of an agent, including the angle brackets.
    */
-  case class AgentName(name: String) {
+  case class Agent(name: String) {
     /**
      * Get the name without the angle brackets (if any).
      */
@@ -146,7 +146,7 @@ object Preamble {
     def isRig: Boolean = Pattern.matches("<([^>]*:)?rig\\d+>", name)
   }
 
-  implicit def String2AgentName(s: String): AgentName = new AgentName(s)
+  implicit def String2AgentName(s: String): Agent = new Agent(s)
 
   /**
    * A port ID, which consists of the agent name and either the
@@ -215,7 +215,7 @@ object Preamble {
       if (p.isEmpty)
         "main:"
       else
-        (p map { "main." + AgentName(_).withoutBrackets + ":" }) mkString
+        (p map { "main." + Agent(_).withoutBrackets + ":" }) mkString
 
     def displayString: String =
       if (p.isEmpty) "Top level"

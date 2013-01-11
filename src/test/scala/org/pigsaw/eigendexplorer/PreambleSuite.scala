@@ -86,10 +86,10 @@ class PreambleSuite extends FunSuite with ShouldMatchers {
   }
 
   test("AgentName.withoutBrackets") {
-    AgentName("<one>").withoutBrackets should equal("one")
-    AgentName("one>").withoutBrackets should equal("one")
-    AgentName("<one").withoutBrackets should equal("one")
-    AgentName("one").withoutBrackets should equal("one")
+    Agent("<one>").withoutBrackets should equal("one")
+    Agent("one>").withoutBrackets should equal("one")
+    Agent("<one").withoutBrackets should equal("one")
+    Agent("one").withoutBrackets should equal("one")
   }
 
   test("AgentName.qualified") {
