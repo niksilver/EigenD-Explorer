@@ -29,105 +29,88 @@ import org.scalatest.matchers.ShouldMatchers
 @RunWith(classOf[JUnitRunner])
 class PreambleSuite extends FunSuite with ShouldMatchers {
 
-  test("AgentOrPortID - constructor") {
-    // These should simply not throw MatchErrors
-    AgentOrPortID("<rig1>").unqualified
-    AgentOrPortID("<main:rig1>").unqualified
-    AgentOrPortID("<main.rig3:cycler1>").unqualified
-    AgentOrPortID("<main.rig3:main.rig4:cycler1>#34.5").unqualified
-  }
-
-  test("AgentOrPortID - object preservation") {
-    val port = "<rig1>#3.2"
-
-    assert(port.unqualified eq port)
-  }
-
-  test("AgentOrPortID.unqualifiedForPos") {
-    "<rig1>".unqualifiedForPos(List("<rig3>")) should equal ("<rig1>")
-    
-    "<main:rig1>".unqualifiedForPos(List()) should equal ("<rig1>")
-    "<main:rig1>".unqualifiedForPos(List("<rig3>")) should equal ("<main:rig1>")
-    
-    "<main.rig3:cycler1>".unqualifiedForPos(List()) should equal ("<main.rig3:cycler1>")
-    "<main.rig3:cycler1>".unqualifiedForPos(List("<rig3>")) should equal ("<cycler1>")
-  }
-
-  test("AgentOrPortID.hasPos") {
-    "<delay1>".hasPos(List()) should equal(true)
-    "<main:delay1>".hasPos(List()) should equal(true)
-    
-    "<delay1>".hasPos(List("<rig1>")) should equal(false)
-    "<main:delay1>".hasPos(List("<rig1>")) should equal(false)
-
-    "<main.rig1:delay1>".hasPos(List()) should equal(false)
-    "<main.rig1:delay1>".hasPos(List("<rig1>")) should equal(true)
-
-    // And the same with ports...
-
-    "<delay1>#3.2".hasPos(List()) should equal(true)
-    "<delay1>#3.2".hasPos(List("<rig1>")) should equal(false)
-    "<main.rig1:delay1>#3.2".hasPos(List()) should equal(false)
-    "<main.rig1:delay1>#3.2".hasPos(List("<rig1>")) should equal(true)
-  }
-  
-  test("AgentOrPortID.pos") {
-    "<delay1>".pos should equal (List())
-    "<main:delay1>".pos should equal (List())
-    "<main.rig1:delay1>".pos should equal (List("<rig1>"))
-    "<main.rig1:main.rig2:delay1>".pos should equal (List("<rig1>", "<rig2>"))
-
-    // And the same with ports...
-
-    "<delay1>#3.2".pos should equal (List())
-    "<main:delay1>#3.2".pos should equal (List())
-    "<main.rig1:delay1>#3.2".pos should equal (List("<rig1>"))
-    "<main.rig1:main.rig2:delay1>#3.2".pos should equal (List("<rig1>", "<rig2>"))
-  }
-
-  test("AgentName.withoutBrackets") {
+  test("Agent.withoutBrackets") {
     Agent("<one>").withoutBrackets should equal("one")
     Agent("one>").withoutBrackets should equal("one")
     Agent("<one").withoutBrackets should equal("one")
     Agent("one").withoutBrackets should equal("one")
   }
 
-  test("AgentName.qualified") {
-    "<summer1>".qualified(List()) should equal("<main:summer1>")
-    "<summer1>".qualified(List("<rig1>")) should equal("<main.rig1:summer1>")
-    "<summer1>".qualified(List("<rig1>", "<rig2>")) should equal("<main.rig1:main.rig2:summer1>")
+  test("Agent.qualified") {
+    Agent("<summer1>").qualified(Pos()) should equal (Agent("<main:summer1>"))
+    Agent("<summer1>").qualified(Pos("<rig1>")) should equal (Agent("<main.rig1:summer1>"))
+    Agent("<summer1>").qualified(Pos("<rig1>", "<rig2>")) should equal (Agent("<main.rig1:main.rig2:summer1>"))
   }
 
-  test("AgentName.defaultQualifier") {
-    "<summer1>".defaultQualifier(List()) should equal("<main:summer1>")
-    "<summer1>".defaultQualifier(List("<rig1>")) should equal("<main.rig1:summer1>")
-    "<summer1>".defaultQualifier(List("<rig1>", "<rig2>")) should equal("<main.rig1:main.rig2:summer1>")
+  test("Agent.defaultQualifier") {
+    Agent("<summer1>").defaultQualifier(Pos()) should equal (Agent("<main:summer1>"))
+    Agent("<summer1>").defaultQualifier(Pos("<rig1>")) should equal (Agent("<main.rig1:summer1>"))
+    Agent("<summer1>").defaultQualifier(Pos("<rig1>", "<rig2>")) should equal (Agent("<main.rig1:main.rig2:summer1>"))
 
-    "<main.rig1:summer1>".defaultQualifier(List()) should equal("<main.rig1:summer1>")
-    "<main:summer1>".defaultQualifier(List("<rig1>")) should equal("<main:summer1>")
+    Agent("<main.rig1:summer1>").defaultQualifier(Pos()) should equal (Agent("<main.rig1:summer1>"))
+    Agent("<main:summer1>").defaultQualifier(Pos("<rig1>")) should equal (Agent("<main:summer1>"))
   }
 
-  test("AgentName.unqualified") {
-    "<summer1>".unqualified should equal("<summer1>")
-    "<main.rig1:summer1>".unqualified should equal("<summer1>")
-    "<main.rig1:main.rig2:summer1>".unqualified should equal("<summer1>")
+  test("Agent.unqualified") {
+    Agent("<summer1>").unqualified should equal (Agent("<summer1>"))
+    Agent("<main.rig1:summer1>").unqualified should equal (Agent("<summer1>"))
+    Agent("<main.rig1:main.rig2:summer1>").unqualified should equal (Agent("<summer1>"))
   }
 
-  test("AgentName.isAgent") {
-    "<summer1>".isAgent should equal(true)
-    "<main:summer1>".isAgent should equal(true)
-    "<main.rig3:summer1>".isAgent should equal(true)
+  test("Agent.unqualified - object preservation") {
+    val ag = Agent("<rig1>")
 
-    "summer1".isAgent should equal(false)
-    "<summer1".isAgent should equal(false)
-    "summer1>".isAgent should equal(false)
-    "<summer>1".isAgent should equal(false)
+    assert(ag.unqualified eq ag)
+  }
+
+  test("Agent.unqualifiedForPos") {
+    Agent("<rig1>").unqualifiedForPos(Pos("<rig3>")) should equal (Agent("<rig1>"))
     
-    "<main:summer1".isAgent should equal(false)
-    "main.rig3:summer1>".isAgent should equal(false)
+    Agent("<main:rig1>").unqualifiedForPos(Pos()) should equal (Agent("<rig1>"))
+    Agent("<main:rig1>").unqualifiedForPos(Pos("<rig3>")) should equal (Agent("<main:rig1>"))
+    
+    Agent("<main.rig3:cycler1>").unqualifiedForPos(Pos()) should equal (Agent("<main.rig3:cycler1>"))
+    Agent("<main.rig3:cycler1>").unqualifiedForPos(Pos("<rig3>")) should equal (Agent("<cycler1>"))
   }
 
-  test("AgentName.isRig") {
+  test("Agent.hasPos") {
+    Agent("<delay1>").hasPos(Pos()) should equal(true)
+    Agent("<main:delay1>").hasPos(Pos()) should equal(true)
+    
+    Agent("<delay1>").hasPos(Pos("<rig1>")) should equal(false)
+    Agent("<main:delay1>").hasPos(Pos("<rig1>")) should equal(false)
+
+    Agent("<main.rig1:delay1>").hasPos(Pos()) should equal(false)
+    Agent("<main.rig1:delay1>").hasPos(Pos("<rig1>")) should equal(true)
+  }
+  
+  test("Agent.pos") {
+    Agent("<delay1>").pos should equal (Pos())
+    Agent("<main:delay1>").pos should equal (Pos())
+    Agent("<main.rig1:delay1>").pos should equal (Pos("<rig1>"))
+    Agent("<main.rig1:main.rig2:delay1>").pos should equal (Pos("<rig1>", "<rig2>"))
+  }
+
+  test("Agent.toString") {
+    Agent("<rig1>").toString should equal ("<rig1>")
+    Agent("<main:rig1>").toString should equal ("<main:rig1>")
+  }
+
+  test("Agent.isAgent") {
+    Agent.isAgent("<summer1>") should equal (true)
+    Agent.isAgent("<main:summer1>") should equal (true)
+    Agent.isAgent("<main.rig3:summer1>") should equal (true)
+
+    Agent.isAgent("summer1") should equal (false)
+    Agent.isAgent("<summer1") should equal (false)
+    Agent.isAgent("summer1>") should equal (false)
+    Agent.isAgent("<summer>1") should equal (false)
+    
+    Agent.isAgent("<main:summer1") should equal (false)
+    Agent.isAgent("main.rig3:summer1>") should equal (false)
+  }
+
+  test("Agent.isRig") {
     "<rig1>".isRig should equal(true)
     "<main:rig1>".isRig should equal(true)
     "<main.rig3:rig3>".isRig should equal(true)
@@ -143,16 +126,102 @@ class PreambleSuite extends FunSuite with ShouldMatchers {
     "main.rig3:rig1>".isRig should equal(false)
   }
 
+  test("Agent.toString") {
+    Agent("<rig1>").toString should equal ("<rig1>")
+    Agent("<main:rig1>").toString should equal ("<main:rig1>")
+  }
+
   test("Pos.index") {
     Pos().index should equal("<main>")
     Pos("<rig1>").index should equal("<main.rig1:main>")
     Pos("<rig1>", "<rig2>").index should equal("<main.rig1:main.rig2:main>")
   }
 
+  test("Pos.:+") {
+    Pos() :+ "<rig1>" should equal (Pos("<rig1>"))
+    Pos("<rig1>") :+ "<rig2>" should equal (Pos("<rig1>", "<rig2>"))
+    Pos("<rig1>", "<rig2>") :+ "<rig3>" should equal (Pos("<rig1>", "<rig2>", "<rig3>"))
+  }
+
+  test("Pos.parent") {
+    evaluating {
+    	Pos().parent
+    } should produce [Exception]
+    Pos("<rig1>").parent should equal (Pos())
+    Pos("<rig1>", "<rig2>").parent should equal (Pos("<rig1>"))
+  }
+
+  test("Pos.last") {
+    evaluating {
+    	Pos().last
+    } should produce [Exception]
+    Pos("<rig1>").last should equal (Agent("<rig1>"))
+    Pos("<rig1>", "<rig2>").last should equal (Agent("<rig2>"))
+  }
+
+  test("Pos.topLevel") {
+    Pos().topLevel should equal (true)
+    Pos("<rig1>").topLevel should equal (false)
+    Pos("<rig1>", "<rig2>").topLevel should equal (false)
+  }
+
+  test("Pos.notTopLevel") {
+    Pos().notTopLevel should equal (false)
+    Pos("<rig1>").notTopLevel should equal (true)
+    Pos("<rig1>", "<rig2>").notTopLevel should equal (true)
+  }
+
   test("Pos.displayString") {
     Pos().displayString should equal("Top level")
     Pos("<rig1>").displayString should equal("<rig1>")
     Pos("<rig1>", "<rig2>").displayString should equal("<rig1> - <rig2>")
+  }
+
+  test("Pos.length") {
+    Pos().length should equal (0)
+    Pos("<rig1>").length should equal (1)
+    Pos("<rig1>", "<rig2>").length should equal (2)
+  }
+
+  test("PortID.constructor") {
+    // These should simply not throw MatchErrors
+    PortID("<rig1>#1.1").unqualified
+    PortID("<main:rig1>#1.1").unqualified
+    PortID("<main.rig3:cycler1>#1.1").unqualified
+    PortID("<main.rig3:main.rig4:cycler1>#34.5").unqualified
+  }
+
+  test("PortID.defaultQualifier") {
+    PortID("<summer1>#3.4.5").defaultQualifier(Pos()) should equal (PortID("<main:summer1>#3.4.5"))
+    PortID("<summer1>#3.4.5").defaultQualifier(Pos("<rig1>")) should equal (PortID("<main.rig1:summer1>#3.4.5"))
+    PortID("<summer1>#3.4.5").defaultQualifier(Pos("<rig1>", "<rig2>")) should equal (PortID("<main.rig1:main.rig2:summer1>#3.4.5"))
+
+    PortID("<main.rig1:summer1>#3.4.5").defaultQualifier(Pos()) should equal (PortID("<main.rig1:summer1>#3.4.5"))
+    PortID("<main:summer1>#3.4.5").defaultQualifier(Pos("<rig1>")) should equal (PortID("<main:summer1>#3.4.5"))
+  }
+
+  test("PortID.unqualifiedForPos") {
+    PortID("<rig1>#1.1").unqualifiedForPos(Pos("<rig3>")) should equal (Agent("<rig1>#1.1"))
+    
+    PortID("<main:rig1>#1.1").unqualifiedForPos(Pos()) should equal (PortID("<rig1>#1.1"))
+    PortID("<main:rig1>#1.1").unqualifiedForPos(Pos("<rig3>")) should equal (PortID("<main:rig1>#1.1"))
+    
+    PortID("<main.rig3:cycler1>#1.1").unqualifiedForPos(Pos()) should equal (PortID("<main.rig3:cycler1>#1.1"))
+    PortID("<main.rig3:cycler1>#1.1").unqualifiedForPos(Pos("<rig3>")) should equal (PortID("<cycler1>#1.1"))
+  }
+
+  test("PortID.hasPos") {
+    PortID("<delay1>#3.2").hasPos(Pos()) should equal(true)
+    PortID("<delay1>#3.2").hasPos(Pos("<rig1>")) should equal(false)
+    PortID("<main.rig1:delay1>#3.2").hasPos(Pos()) should equal(false)
+    PortID("<main.rig1:delay1>#3.2").hasPos(Pos("<rig1>")) should equal(true)
+  }
+  
+  test("PortID.pos") {
+    PortID("<delay1>#3.2").pos should equal (Pos())
+    PortID("<main:delay1>#3.2").pos should equal (Pos())
+    PortID("<main.rig1:delay1>#3.2").pos should equal (Pos("<rig1>"))
+    PortID("<main.rig1:main.rig2:delay1>#3.2").pos should equal (Pos("<rig1>", "<rig2>"))
   }
 
   test("PortID - Equality") {
@@ -163,6 +232,10 @@ class PreambleSuite extends FunSuite with ShouldMatchers {
     p1 should equal(p1)
     p1 should equal(p2)
     p1 should not equal (p3)
+  }
+
+  test("PortID.toString") {
+    PortID("<main.rig3>#4.5").toString should equal ("<main:rig3>#4.5")
   }
 
   test("PortID - Bad input") {
@@ -190,11 +263,17 @@ class PreambleSuite extends FunSuite with ShouldMatchers {
     PortID("<main1.rig1:agent1/1>#1.2.3").agent should equal("<main1.rig1:agent1/1>")
   }
 
+  test("PortID.unqualified - object preservation") {
+    val port = PortID("<rig1>#3.2")
+
+    assert(port.unqualified eq port)
+  }
+
   test("PortID - Convert to format with unqualified agent name") {
-    "<a>#1.1".unqualified should equal("<a>#1.1")
-    "<main:b>#1.2".unqualified should equal("<b>#1.2")
-    "<main.rig3:summer1>#1.2".unqualified should equal("<summer1>#1.2")
-    "<main.rig1:main.rig2:c>#1.2".unqualified should equal("<c>#1.2")
+    PortID("<a>#1.1").unqualified should equal (PortID("<a>#1.1"))
+    PortID("<main:b>#1.2").unqualified should equal (PortID("<b>#1.2"))
+    PortID("<main.rig3:summer1>#1.2").unqualified should equal (PortID("<summer1>#1.2"))
+    PortID("<main.rig1:main.rig2:c>#1.2").unqualified should equal (PortID("<c>#1.2"))
   }
 
   test("PortID.nodeLabel") {
@@ -207,28 +286,33 @@ class PreambleSuite extends FunSuite with ShouldMatchers {
     PortID("<rig3>#4.5.6").nodeLabelWithHash should equal("#4.5.6")
   }
 
+  test("PortID.toString") {
+    PortID("<main.rig3>#4.5").toString should equal ("<main:rig3>#4.5")
+    PortID("<main.rig3> beat output").toString should equal ("<main:rig3> beat output")
+  }
+
   test("Pos.qualifier") {
-    List().qualifier should equal("main:")
-    List("<rig1>").qualifier should equal("main.rig1:")
-    List("<rig1>", "<rig2>").qualifier should equal("main.rig1:main.rig2:")
+    Pos().qualifier should equal("main:")
+    Pos("<rig1>").qualifier should equal("main.rig1:")
+    Pos("<rig1>", "<rig2>").qualifier should equal("main.rig1:main.rig2:")
   }
 
   test("Pos.hasPos") {
-    val portTop = "<rig1>#1.1"
-    val portRigA = "<main.rig1:ag22>#2.2"
-    val portRigB = "<main.rig1:main.rig2:ag33>#3.3"
+    val portTop = PortID("<rig1>#1.1")
+    val portRigA = PortID("<main.rig1:ag22>#2.2")
+    val portRigB = PortID("<main.rig1:main.rig2:ag33>#3.3")
 
-    portTop.hasPos(List()) should be (true)
-    portTop.hasPos(List("<rig1>")) should be (false)
-    portTop.hasPos(List("<rig1>", "<rig2>")) should be (false)
+    portTop.hasPos(Pos()) should be (true)
+    portTop.hasPos(Pos("<rig1>")) should be (false)
+    portTop.hasPos(Pos("<rig1>", "<rig2>")) should be (false)
 
-    portRigA.hasPos(List()) should be (false)
-    portRigA.hasPos(List("<rig1>")) should be (true)
-    portRigA.hasPos(List("<rig1>", "<rig2>")) should be (false)
+    portRigA.hasPos(Pos()) should be (false)
+    portRigA.hasPos(Pos("<rig1>")) should be (true)
+    portRigA.hasPos(Pos("<rig1>", "<rig2>")) should be (false)
 
-    portRigB.hasPos(List()) should be (false)
-    portRigB.hasPos(List("<rig1>")) should be (false)
-    portRigB.hasPos(List("<rig1>", "<rig2>")) should be (true)    
+    portRigB.hasPos(Pos()) should be (false)
+    portRigB.hasPos(Pos("<rig1>")) should be (false)
+    portRigB.hasPos(Pos("<rig1>", "<rig2>")) should be (true)    
   }
   
   test("lessThanStringElt") {

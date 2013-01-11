@@ -19,11 +19,12 @@
 
 package org.pigsaw.eigendexplorer
 
-import org.scalatest.FunSuite
-
 import org.junit.runner.RunWith
+import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.matchers.ShouldMatchers
+
+import Preamble._
 
 @RunWith(classOf[JUnitRunner])
 class BCatSuite extends FunSuite with ShouldMatchers {
@@ -321,9 +322,9 @@ class BCatSuite extends FunSuite with ShouldMatchers {
     val settings = bcat.settings
 
     settings.size should equal(3)
-    settings should contain(("<metronome1>#3.3" -> "0.0"))
-    settings should contain(("<metronome1>#4" -> "some value with spaces"))
-    settings should contain(("<metronome1>#5.6.7" -> "y"))
+    settings should contain (PortID("<metronome1>#3.3") -> "0.0")
+    settings should contain (PortID("<metronome1>#4") -> "some value with spaces")
+    settings should contain (PortID("<metronome1>#5.6.7") -> "y")
   }
 
   test("Settings - Names node IDs correctly even if in a rig") {
@@ -338,7 +339,7 @@ class BCatSuite extends FunSuite with ShouldMatchers {
     val settings = bcat.settings
 
     settings.size should equal(1)
-    settings should contain(("<metronome1>#3.3" -> "0.0"))
+    settings should contain (PortID("<metronome1>#3.3") -> "0.0")
   }
 
   test("Settings - Will not use port names") {
@@ -360,9 +361,9 @@ class BCatSuite extends FunSuite with ShouldMatchers {
     val settings = bcat.settings
 
     settings.size should equal(3)
-    settings should contain(("<metronome1>#3.3" -> "0.0"))
-    settings should contain(("<metronome1>#4" -> "some value with spaces"))
-    settings should contain(("<metronome1>#5.6.7" -> "y"))
+    settings should contain (PortID("<metronome1>#3.3") -> "0.0")
+    settings should contain (PortID("<metronome1>#4") -> "some value with spaces")
+    settings should contain (PortID("<metronome1>#5.6.7") -> "y")
   }
 
 }

@@ -66,15 +66,15 @@ class DumpCommand extends Command {
    */
   def action(args: List[String])(setup: Setup, prln: PrintlnFn): Setup = {
     prln("Port names:\n")
-    setup.allPortNames.toSeq.sortBy(_._1).
+    setup.allPortNames.toSeq.sortBy(_._1.toString).
       foreach { pn => prln(pn._1 + " -> " + pn._2) }
 
     prln("\nSettings:\n")
-    setup.allSettings.toSeq.sortBy(_._1).
+    setup.allSettings.toSeq.sortBy(_._1.toString).
       foreach { s => prln(s._1 + " = " + s._2) }
 
     prln("\nConnections:\n")
-    setup.allConns.toSeq.sortBy(_.master).
+    setup.allConns.toSeq.sortBy(_.master.toString).
       foreach { pn => prln(pn.master + " -> " + pn.slave) }
 
     prln("\nPosition: " + setup.pos.displayString)
@@ -169,7 +169,7 @@ class GraphCommand extends Command {
    * Agent names (and port IDs) will be unqualified if they are
    * at the current pos.
    */
-  def agentPortConns(s: Setup): Set[(String, String)] =
+  def agentPortConns(s: Setup): Set[(Agent, PortID)] =
     portPortConns(s) map { c => (c.master.agent, c.master) }
 
   /**
@@ -178,7 +178,7 @@ class GraphCommand extends Command {
    * Agent names (and port IDs) will be unqualified if they are
    * at the current pos.
    */
-  def portAgentConns(s: Setup): Set[(String, String)] =
+  def portAgentConns(s: Setup): Set[(PortID, Agent)] =
     portPortConns(s) map { c => (c.slave, c.slave.agent) }
 
   /**
@@ -186,7 +186,7 @@ class GraphCommand extends Command {
    * Includes only pairs in which one is in the current rig.
    * Agent names in the current rig will be unqualified.
    */
-  def agentAgentConns(s: Setup): Set[(String, String)] =
+  def agentAgentConns(s: Setup): Set[(Agent, Agent)] =
     portPortConns(s) map { c => (c.master.agent, c.slave.agent) }
 }
 
@@ -244,7 +244,7 @@ class InspectCommand extends Command {
   def action(args: List[String])(setup: Setup, prln: PrintlnFn): Setup = {
     args.length match {
       case 0 => prln("inspect: No agent name given")
-      case 1 => if (args(0).isAgent) doInspect(args(0), setup, prln)
+      case 1 => if (Agent.isAgent(args(0))) doInspect(Agent(args(0)), setup, prln)
       else prln("Bad agent name. Names should be similar to <clicker1>.")
       case _ => prln("inspect: Too many arguments, only one required")
     }
@@ -252,32 +252,36 @@ class InspectCommand extends Command {
     setup
   }
 
-  def doInspect(agent: String, setup: Setup, prln: PrintlnFn) {
+  def doInspect(agent: Agent, setup: Setup, prln: PrintlnFn) {
     val pos = setup.pos
     val agentQual = agent.defaultQualifier(pos)
 
     // If a port ID is in this rig then it doesn't need to
     // qualified. Otherwise, leave is qualified.
 
-    def cleaned(portID: String) =
+    def cleaned(portID: PortID): PortID =
       if (portID.pos == setup.pos) portID.unqualified
       else portID
 
     // Map a port ID to its best form, meaning its node ID becomes
     // a name if there is one available.
 
-    def bestForm(portID: String): String =
+    def bestForm(portID: PortID): PortID =
       setup.portIDNamed(portID)
 
-    val linksFrom =
-      setup.allConns filter { c => c.master.agent == agentQual } map { c => ("", c.master, c.slave) }
+    val linksFrom: Set[(String, String, String)] =
+      setup.allConns filter {
+        c => c.master.agent == agentQual } map {
+        c => ("", c.master.toString, c.slave.toString) }
 
-    val linksTo =
-      setup.allConns filter { c => c.slave.agent == agentQual } map { c => (c.master, c.slave, "") }
+    val linksTo: Set[(String, String, String)] =
+      setup.allConns filter {
+        c => c.slave.agent == agentQual } map {
+        c => (c.master.toString, c.slave.toString, "") }
 
     val linksAll = linksFrom ++ linksTo
 
-    def isLinked(portID: String) =
+    def isLinked(portID: PortID) =
       linksAll exists { _._2 == portID }
 
     def omitValue(v: String): Boolean =
@@ -293,27 +297,27 @@ class InspectCommand extends Command {
       tidy1
     }
 
-    val settings = setup.allSettings filter {
-      kv => kv._1.agent == agentQual
-    } filterNot {
-      kv => isLinked(kv._1) || omitValue(kv._2)
-    } map {
-      kv => ("", kv._1, "")
+    val settings: Set[(String, String, String)] = {
+      for {
+        (port, v) <- setup.allSettings.toSet
+        if port.agent == agentQual
+        if !isLinked(port) && !omitValue(v)
+      } yield ("", port.toString, "")
     }
 
-    def formatAgent(portID: String) = {
+    def formatAgent(portID: String): String = {
       val optSetting = setup.allSettings.get(portID)
       val agentBest = bestForm(portID).nodeLabelWithHash
-      // Add the setting if it exists and is not the empty stringg
+      // Add the setting if it exists and is not the empty string
       optSetting match {
         case Some(value) => agentBest + (if (omitValue(value)) "" else " = " + tidyValue(value))
         case None => agentBest
       }
     }
 
-    def formatOther(str: String) =
+    def formatOther(str: PortID): String =
       if (str == "") ""
-      else bestForm(str).unqualifiedForPos(pos)
+      else bestForm(str).unqualifiedForPos(pos).toString
 
     val cols = (linksAll ++ settings) map { c => (formatOther(c._1), formatAgent(c._2), formatOther(c._3)) }
 
@@ -340,8 +344,8 @@ class IntoCommand extends Command {
       case 0 => prln("into: Too few arguments"); setup
       case 1 => {
         val arg = args(0)
-        if (arg.isRig) doInto(args(0), setup, prln)
-        else if (arg.isAgent) { prln("into: " + arg + " is not a rig"); setup }
+        if (arg.isRig) doInto(Agent(args(0)), setup, prln)
+        else if (Agent.isAgent(arg)) { prln("into: " + arg + " is not a rig"); setup }
         else { prln("into: Bad rig name. Should be of the form <rig3>"); setup }
       }
       case _ => prln("into: Too many arguments"); setup
@@ -350,7 +354,7 @@ class IntoCommand extends Command {
     setup2
   }
 
-  def doInto(rig: String, setup: Setup, prln: PrintlnFn): Setup = {
+  def doInto(rig: Agent, setup: Setup, prln: PrintlnFn): Setup = {
     val pos = setup.pos
     val targetPos = pos :+ rig
     val rigQual = rig.qualified(pos)
@@ -381,9 +385,12 @@ class SnapshotCommand extends Command {
 
     // Update a setup with the results of bcat on a single agent
     def updateWithBCat(ag: String, s: Setup): Setup = {
-      val agQual = ag.qualified(pos)
+      val agQual = Agent(ag).qualified(pos).toString
       val bcat = this.bcat(agQual) returnedAfter { bc => prln("Examining " + bc.agent) }
-      val portNames = bcat.nodeIDNames map { pn => (agQual + "#" + pn._1, agQual + " " + pn._2) }
+      val portNames = bcat.nodeIDNames map { pn =>
+        val pnFrom = PortID(agQual + "#" + pn._1)
+        val pnTo = PortID(agQual + " " + pn._2)
+        (pnFrom, pnTo) }
       s.withPortNames(portNames).
         withSettings(bcat.settings).
         withConns(bcat.connections)
@@ -395,7 +402,7 @@ class SnapshotCommand extends Command {
       case ag :: tail => updateForAgents(tail, updateWithBCat(ag, s))
     }
 
-    val portIsAtPos = { portID: String => portID.hasPos(pos) }
+    val portIsAtPos = { portID: PortID => portID.hasPos(pos) }
     val connIsAtPos = { conn: Connection => conn.hasPos(pos) }
     val baseSetup = setup.
       withPortNamesRemoved(portIsAtPos).
@@ -422,9 +429,9 @@ class UpCommand extends Command {
   }
 
   def doUp(setup: Setup, prln: PrintlnFn): Setup = {
-    if (setup.pos.isEmpty) { prln("Already at top level"); setup }
+    if (setup.pos.topLevel) { prln("Already at top level"); setup }
     else
-      setup.withPosUpdated(setup.pos.init)
+      setup.withPosUpdated(setup.pos.parent)
   }
 
 }

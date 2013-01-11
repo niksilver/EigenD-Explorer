@@ -40,11 +40,36 @@ object Preamble {
   implicit def Any2ButFirstPrintable[A](a: =>A) = new ButFirstPrintable(a)
 
   /**
-   * A wrapper for methods appropriate to both agents and port IDs.
+   * Methods appropriate to both agents and port IDs.
    */
-  case class AgentOrPortID(str: String) {
-    import AgentOrPortID._
+  trait AgentOrPortID {
+    /**
+     * The type of this: either an agent or port ID.
+     */
+    type T
+    
+    /**
+     * The string representation, such as `<summer1>` or `<gain2>#15.4`.
+     */
+    val str: String
+    
+    /**
+     * Make one of these from a string
+     */
+    def make(s: String): T
+    
+    /**
+     * Return this, but of the right type.
+     */
+    def same: T
 
+    // Groups are:
+    //   full agent name with angle brackets,
+    //   qualifier with colon (or null),
+    //   base name
+    //   node part including separator (or empty), e.g. "#34.2" or " beat input" 
+    private val AgentOrPortIDRE = """(<([^>]*:)?([^>]*)>)(.*)""".r
+    
     lazy private val AgentOrPortIDRE(agent, qualOrNull, baseName, nodePart) = str
 
     /**
@@ -63,69 +88,66 @@ object Preamble {
      * "<ag1>" + List("<rig1>", "<rig2>") => <main.rig1:main.rig2:ag1>
      * }}}
      */
-    def qualified(pos: List[String]): String =
-      "<" + pos.qualifier + baseName + ">" + nodePart
+    def qualified(pos: Pos): T =
+      make("<" + pos.qualifier + baseName + ">" + nodePart)
 
     /**
      * If this agent or port ID has no explicit qualifier then default it
      * to the one given.
      */
-    def defaultQualifier(pos: List[String]): String =
+    def defaultQualifier(pos: Pos): T =
       if (qualifier == "")
-        "<" + pos.qualifier + baseName + ">" + nodePart
+        make("<" + pos.qualifier + baseName + ">" + nodePart)
       else
-        str
+        same
 
     /**
      * Get the agent or port ID with an unqualified version of the agent name, which means
      * without all the rig position information.
      */
-    def unqualified: String =
-      if (qualifier == "") str
-      else "<" + baseName + ">" + nodePart
+    def unqualified: T =
+      if (qualifier == "") same
+      else make("<" + baseName + ">" + nodePart)
 
     /**
      * Get the agent or port ID with an unqualified version of the agent name,
      * but only if it is at the given position.
      */
-    def unqualifiedForPos(p: List[String]): String =
+    def unqualifiedForPos(p: Pos): T =
       if (hasPos(p)) unqualified
-      else str
+      else same
 
     /**
      * If this agent or port ID is at the given pos.
      * An unqualified agent will have pos `List()`.
      */
-    def hasPos(p: List[String]): Boolean =
-      (qualifier == "" && p.isEmpty) ||
+    def hasPos(p: Pos): Boolean =
+      (qualifier == "" && p.topLevel) ||
         (qualifier == p.qualifier)
 
     /**
      * The pos of this agent or port ID
      */
-    def pos: List[String] =
+    def pos: Pos =
       qualifier match {
         case "" => List()
         case "main:" => List()
-        case q => q split ":" map { "<" + _.drop(5) + ">" } toList
+        case q => q split ":" map { e => Agent("<" + e.drop(5) + ">") } toList
       }
   }
 
-  object AgentOrPortID {
-    // Groups are:
-    //   full agent name with angle brackets,
-    //   qualifier with colon (or null),
-    //   base name
-    //   node part including separator (or empty), e.g. "#34.2" or " beat input" 
-    private val AgentOrPortIDRE = """(<([^>]*:)?([^>]*)>)(.*)""".r
-  }
-
-  implicit def String2AgentOrPortID(s: String): AgentOrPortID = new AgentOrPortID(s)
+  //implicit def String2AgentOrPortID(s: String): AgentOrPortID = new AgentOrPortID(s)
 
   /**
    * The name of an agent, including the angle brackets.
    */
-  case class Agent(name: String) {
+  case class Agent(name: String) extends AgentOrPortID {
+    
+    val str = name
+    type T = Agent
+    def make(s: String) = new Agent(s)
+    def same = this
+    
     /**
      * Get the name without the angle brackets (if any).
      */
@@ -133,17 +155,36 @@ object Preamble {
       val strip1 = name.dropWhile(_ == '<')
       if (strip1.endsWith(">")) strip1.init else strip1
     }
-    
+
     /**
-     * True if the name is a well-formed agent name,
-     * including the angle brackets.
+     * Get the agent with an unqualified version of the agent name, which means
+     * without all the rig position information.
+     
+    def unqualified: Agent =
+      if (qualifier == "") this
+      else Agent("<" + baseName + ">")
      */
-    def isAgent = Pattern.matches("<([^>]*:)?([^>]*)>", name)
 
     /**
      * True if this agent is a rig
      */
-    def isRig: Boolean = Pattern.matches("<([^>]*:)?rig\\d+>", name)
+    def isRig: Boolean = Agent.isRig(name)
+  }
+  
+  /**
+   * Methods for testing strings for agent properties
+   */
+  object Agent {
+    /**
+     * True if the name is a well-formed agent name,
+     * including the angle brackets.
+     */
+    def isAgent(name: String) = Pattern.matches("<([^>]*:)?([^>]*)>", name)
+
+    /**
+     * True if this string is an agent that's a rig
+     */
+    def isRig(name: String): Boolean = Pattern.matches("<([^>]*:)?rig\\d+>", name)
   }
 
   implicit def String2AgentName(s: String): Agent = new Agent(s)
@@ -154,15 +195,22 @@ object Preamble {
    * `<name1>#12.34.45` or `<name1> beat bar input`.
    * @throws IllegalArgumentException  If the agent and/or label cannot be extracted.
    */
-  case class PortID(id: String) {
+  case class PortID(id: String) extends AgentOrPortID {
     import PortID._
+
+    val str = id
+    type T = PortID
+    def make(s: String) = new PortID(s)
+    def same = this
+
+    private val PortIDRE = """(<[^>]*>)([# ])(.+)""".r
 
     private val PortIDRE(agent0, sep0, label0) = id
 
     /**
      * Get the agent name, including the angle brackets.
      */
-    val agent: String = agent0
+    val agent: Agent = agent0
 
     /**
      * Get the node label (the node ID or the node CName).
@@ -179,33 +227,76 @@ object Preamble {
      */
     def nodeLabelWithHash: String =
       (if (sep0 == "#") "#" else "") + label0
-  }
 
-  object PortID {
-    private val PortIDRE = """(<[^>]*>)([# ])(.+)""".r
+    /**
+     * Get the port ID with an unqualified version of the agent name, which means
+     * without all the rig position information.
+     
+    def unqualified: PortID =
+      if (qualifier == "") this
+      else PortID("<" + baseName + ">" + nodePart)
+     */
+      
+    /**
+     * If this port ID has no explicit qualifier then default it
+     * to the one given.
+    def defaultQualifier(pos: Pos): PortID =
+      if (qualifier == "")
+        PortID("<" + pos.qualifier + baseName + ">" + nodePart)
+      else
+        this
+     */
+
   }
 
   implicit def string2PortID(id: String) = new PortID(id)
 
   /**
    * A position in a rig hierarchy in which we're currently
-   * interested. An empty list means the top level; `List("<&lt;rig3>")`
+   * interested. An empty sequence means the top level; `("<rig3>")`
    * means rig3 within the top level, and so on.
    */
-  case class Pos(p: String*) {
+  case class Pos(p: Agent*) {
     /**
      * Convert a pos to an index specification for the bls command:
      * {{{
-     * List()                   => <main>
-     * List("<rig1>")           => <main.rig1:main>
-     * List("<rig1>", "<rig2>") => <main.rig1:main.rig2:main>
+     * ()                   => <main>
+     * ("<rig1>")           => <main.rig1:main>
+     * ("<rig1>", "<rig2>") => <main.rig1:main.rig2:main>
      * }}}
      */
     def index: String = {
-      def insertMains(s: String) = "." + s.withoutBrackets + ":main"
+      def insertMains(s: Agent) = "." + s.withoutBrackets + ":main"
       "<main" + (p map insertMains).mkString + ">"
     }
+    
+    /**
+     * Append another rig to this pos, to make a new pos one level deeper
+     */
+    def :+(rig: Agent): Pos = Pos((p.toList :+ rig): _*)
 
+    /**
+     * True if this pos represents the top level (length = 0).
+     */
+    def topLevel: Boolean = p.isEmpty
+
+    /**
+     * True if this pos represents something below the top level (length >= 1).
+     */
+    def notTopLevel: Boolean = p.nonEmpty
+
+    /**
+     * Get the parent pos of this one. Will throw an exception if it's
+     * the top level pos.
+     */
+    def parent: Pos = Pos(p.init: _*)
+
+    /**
+     * Get the last (lowest-leve) agent in the pos sequence.
+     * Will throw an exception if this is the top level pos.
+     */
+    def last: Agent = p.last
+    
     /**
      * The qualifier needed in an agent for this pos.
      * E.g. `List("<rig1>")` yields `"main.rig1:"`
@@ -215,15 +306,16 @@ object Preamble {
       if (p.isEmpty)
         "main:"
       else
-        (p map { "main." + Agent(_).withoutBrackets + ":" }) mkString
+        (p map { "main." + _.withoutBrackets + ":" }) mkString
 
     def displayString: String =
       if (p.isEmpty) "Top level"
       else p.mkString(" - ")
 
+    def length: Int = p.length
   }
 
-  implicit def ListString2Pos(p: List[String]): Pos = Pos(p: _*)
+  implicit def ListString2Pos(p: List[Agent]): Pos = Pos(p: _*)
 
   /**
    * An ordering on elements of a string, or ints.

@@ -24,8 +24,18 @@ import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.matchers.ShouldMatchers
 
+import Preamble._
+
 @RunWith(classOf[JUnitRunner])
 class CommandsSuite extends FunSuite with ShouldMatchers {
+  
+  // Some convenience implicits to make writing tests easier
+  
+  implicit def mapStringString2MapPortIDPortID(m: Map[String, String]) =
+    m map { p => (PortID(p._1), PortID(p._2)) }
+  
+  implicit def mapStringString2MapPortIDString(m: Map[String, String]) =
+    m map { p => (PortID(p._1), p._2) }
 
   class PrintCatcher {
     var output = ""
@@ -104,7 +114,7 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
     val names = Map(
         "<main:a>#1.1" -> "<main:a> a one one",
         "<main:b>#1.1" -> "<main:b> b one one")
-    val pos = List("<rig3>")
+    val pos = Pos("<rig3>")
 
     val setup = Setup().withConns(conns).withPortNames(names).withPosUpdated(pos)
 
@@ -126,7 +136,7 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
     val names = Map(
         "<main:a>#1.1" -> "<main:a> a one one",
         "<main:b>#1.1" -> "<main:b> b one one")
-    val pos = List("<rig3>")
+    val pos = Pos("<rig3>")
 
     val setup = Setup().withConns(conns).withPortNames(names).withPosUpdated(pos)
 
@@ -155,8 +165,8 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
     val conns2 = cmd.agentPortConns(setup)
 
     conns2.size should equal(2)
-    conns2 should contain("<a>" -> "<a> a one one")
-    conns2 should contain("<a>" -> "<a>#1.2")
+    conns2 should contain (Agent("<a>") -> PortID("<a> a one one"))
+    conns2 should contain (Agent("<a>") -> PortID("<a>#1.2"))
   }
 
   test("GraphCommand.agentPortConns - Only outputs current rig") {
@@ -170,7 +180,7 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
     val names = Map(
         "<main:a>#1.1" -> "<main:a> a one one",
         "<main:b>#1.1" -> "<main:b> b one one")
-    val pos = List("<rig3>")
+    val pos = Pos("<rig3>")
 
     val setup = Setup().withConns(conns).withPortNames(names).withPosUpdated(pos)
 
@@ -178,7 +188,7 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
     val conns2 = cmd.agentPortConns(setup)
 
     conns2.size should equal(1)
-    conns2 should contain("<a>" -> "<a>#1.2")
+    conns2 should contain (Agent("<a>") -> PortID("<a>#1.2"))
   }
 
   test("GraphCommand.agentPortConns - Includes agents with ports going into current rig") {
@@ -186,7 +196,7 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
     val b1 = "<main.rig3:b>#1.1"
     val conns = Set(
       Connection(a1, b1))
-    val pos = List("<rig3>")
+    val pos = Pos("<rig3>")
 
     val setup = Setup().withConns(conns).withPosUpdated(pos)
 
@@ -194,7 +204,7 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
     val conns2 = cmd.agentPortConns(setup)
 
     conns2.size should equal(1)
-    conns2 should contain("<main:a>" -> "<main:a>#1.1")
+    conns2 should contain (Agent("<main:a>") -> PortID("<main:a>#1.1"))
   }
 
 
@@ -216,8 +226,8 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
     val conns2 = cmd.portAgentConns(setup)
 
     conns2.size should equal(2)
-    conns2 should contain("<b> b one one" -> "<b>")
-    conns2 should contain("<b>#1.2" -> "<b>")
+    conns2 should contain (PortID("<b> b one one") -> Agent("<b>"))
+    conns2 should contain (PortID("<b>#1.2") -> Agent("<b>"))
   }
 
   test("GraphCommand.portAgentConns - Only outputs current rig") {
@@ -231,7 +241,7 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
     val names = Map(
         "<main:a>#1.1" -> "<main:a> a one one",
         "<main:b>#1.1" -> "<main:b> b one one")
-    val pos = List("<rig3>")
+    val pos = Pos("<rig3>")
 
     val setup = Setup().withConns(conns).withPortNames(names).withPosUpdated(pos)
 
@@ -239,7 +249,7 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
     val conns2 = cmd.portAgentConns(setup)
 
     conns2.size should equal(1)
-    conns2 should contain("<b>#1.2" -> "<b>")
+    conns2 should contain (PortID("<b>#1.2") -> Agent("<b>"))
   }
 
   test("GraphCommand.portAgentConns - Includes agents with ports coming out of current rig") {
@@ -247,7 +257,7 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
     val b1 = "<main:b>#1.1"
     val conns = Set(
       Connection(a1, b1))
-    val pos = List("<rig3>")
+    val pos = Pos("<rig3>")
 
     val setup = Setup().withConns(conns).withPosUpdated(pos)
 
@@ -255,7 +265,7 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
     val conns2 = cmd.portAgentConns(setup)
 
     conns2.size should equal(1)
-    conns2 should contain("<main:b>#1.1" -> "<main:b>")
+    conns2 should contain (PortID("<main:b>#1.1") -> Agent("<main:b>"))
   }
 
   test("GraphCommand.agentAgentConns - Basic test") {
@@ -276,7 +286,7 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
     val conns2 = cmd.agentAgentConns(setup)
 
     conns2.size should equal (1)
-    conns2 should contain (("<a>", "<b>"))
+    conns2 should contain (Agent("<a>"), Agent("<b>"))
   }
   
   test("GraphCommand.agentAgentConns - Only outputs current rig") {
@@ -287,7 +297,7 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
     val conns = Set(
       Connection(a1, b1),
       Connection(b2, c2))
-    val pos = List("<rig3>")
+    val pos = Pos("<rig3>")
       
     val setup = Setup().withConns(conns).withPosUpdated(pos)
 
@@ -295,7 +305,7 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
     val conns2 = cmd.agentAgentConns(setup)
 
     conns2.size should equal (1)
-    conns2 should contain (("<a>", "<main:b>"))
+    conns2 should contain (Agent("<a>"), Agent("<main:b>"))
   }
   
   // -------------------------------------------------------------------------------
@@ -475,7 +485,7 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
     val connTop = Connection("<rig1> one", "<fff> five")
     val connRig = Connection("<main.rig1:aaa> ayes", "<main.rig1:bbb> bees")
 
-    val setupTop = Setup(Set(connTop, connRig)).withPosUpdated(List("<rig1>"))
+    val setupTop = Setup(Set(connTop, connRig)).withPosUpdated(Pos("<rig1>"))
 
     val catcher = new PrintCatcher
 
@@ -490,7 +500,7 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
     val connTop = Connection("<rig1>#1.1", "<fff>#5.5")
     val connRig = Connection("<main.rig1:aaa>#2.2", "<main.rig1:bbb>#2.3")
 
-    val setupTop = Setup(Set(connTop, connRig)).withPosUpdated(List("<rig1>"))
+    val setupTop = Setup(Set(connTop, connRig)).withPosUpdated(Pos("<rig1>"))
 
     val catcher = new PrintCatcher
 
@@ -516,7 +526,7 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
     val connTop = Connection("<rig1> one", "<aaa> top aye")
     val connRig = Connection("<main.rig1:aaa> ayes", "<main.rig1:bbb> bees")
 
-    val setupTop = Setup(Set(connTop, connRig)).withPosUpdated(List("<rig1>"))
+    val setupTop = Setup(Set(connTop, connRig)).withPosUpdated(Pos("<rig1>"))
 
     val catcher = new PrintCatcher
 
@@ -559,13 +569,13 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
     val connsMid = Connection("<main.rig1:rig2> two out", "<main.rig1:mid> mid input")
     val connsBottom = Connection("<main.rig1:main.rig2:rig3> three out", "<main.rig1:main.rig2:bottom> bottom input")
 
-    val setupTop = Setup(Set(connsTop, connsMid, connsBottom)).withPosUpdated(List("<rig1>", "<rig2>"))
+    val setupTop = Setup(Set(connsTop, connsMid, connsBottom)).withPosUpdated(Pos("<rig1>", "<rig2>"))
 
     val command = new IntoCommand
     val catcher = new PrintCatcher
     val setupTop2 = command.action(List("<rig3>"))(setupTop, catcher.println)
 
-    setupTop2.pos should equal(List("<rig1>", "<rig2>", "<rig3>"))
+    setupTop2.pos should equal (Pos("<rig1>", "<rig2>", "<rig3>"))
     catcher.output should include("Position: <rig1> - <rig2> - <rig3>")
   }
 
@@ -574,13 +584,13 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
     val connsMid = Connection("<main.rig1:rig2> two out", "<main.rig1:mid> mid input")
     val connsBottom = Connection("<main.rig1:main.rig2:free> three out", "<main.rig1:main.rig2:bottom> bottom input")
 
-    val setupTop = Setup(Set(connsTop, connsMid, connsBottom)).withPosUpdated(List("<rig1>"))
+    val setupTop = Setup(Set(connsTop, connsMid, connsBottom)).withPosUpdated(Pos("<rig1>"))
 
     val command = new IntoCommand
     val catcher = new PrintCatcher
     val setupTop2 = command.action(List("<rig2>"))(setupTop, catcher.println)
 
-    setupTop2.pos should equal(List("<rig1>", "<rig2>"))
+    setupTop2.pos should equal (Pos("<rig1>", "<rig2>"))
     catcher.output should include("Position: <rig1> - <rig2>")
   }
 
@@ -589,15 +599,15 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
     val connsMid = Connection("<main.rig1:rig2> two out", "<main.rig1:mid> mid input")
     val connsBottom = Connection("<main.rig1:main.rig2:free> three out", "<main.rig1:main.rig2:bottom> bottom input")
 
-    val setupTop = Setup(Set(connsTop, connsMid, connsBottom)).withPosUpdated(List("<rig1>"))
+    val setupTop = Setup(Set(connsTop, connsMid, connsBottom)).withPosUpdated(Pos("<rig1>"))
 
     val command = new IntoCommand
     val catcher = new PrintCatcher
     val setupTop2 = command.action(List("<rig77>"))(setupTop, catcher.println)
 
-    setupTop2.pos should equal(List("<rig1>"))
-    catcher.output.lines.toList(0) should equal("No such rig: <rig77>")
-    catcher.output.lines.toList(1) should equal("Position: <rig1>")
+    setupTop2.pos should equal (Pos("<rig1>"))
+    catcher.output.lines.toList(0) should equal ("No such rig: <rig77>")
+    catcher.output.lines.toList(1) should equal ("Position: <rig1>")
   }
 
   test("Into - Can't go into non-existent rig at top level ") {
@@ -674,7 +684,7 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
 
     val command = new SnapshotCommand {
       var capturedIndex = "not yet set"
-      var capturedAgents = collection.mutable.Set[String]()
+      var capturedAgents = collection.mutable.Set[Agent]()
       override def bls(index: String): BLs = new BLs(index) {
         capturedIndex = index
         override def text: Stream[String] = Stream("<too>", "<mid>")
@@ -690,18 +700,18 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
 
     val catcher = new PrintCatcher
 
-    val setup = Setup(Set(connsTop, connsRig)).withPosUpdated(List("<rig1>"))
+    val setup = Setup(Set(connsTop, connsRig)).withPosUpdated(Pos("<rig1>"))
     val setupV2 = command.action(List())(setup, catcher.println)
 
-    command.capturedIndex should equal("<main.rig1:main>")
-    command.capturedAgents should equal(Set("<main.rig1:too>", "<main.rig1:mid>"))
+    command.capturedIndex should equal ("<main.rig1:main>")
+    command.capturedAgents should equal (Set(Agent("<main.rig1:too>"), Agent("<main.rig1:mid>")))
   }
 
   test("Snapshot - Preserves other setup data") {
     val connsTop = Connection("<main:rig1> one out", "<main:top> top input")
     val connsRig = Connection("<main.rig1:too> two out", "<main.rig1:mid> mid input")
 
-    val setupTop = Setup(Set(connsTop, connsRig)).withPosUpdated(List("<rig1>"))
+    val setupTop = Setup(Set(connsTop, connsRig)).withPosUpdated(Pos("<rig1>"))
 
     val connsRigV2 = Connection("<main.rig1:too> two out2", "<main.rig1:mid> mid input2")
 
@@ -731,7 +741,7 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
 
     val command = new SnapshotCommand {
       var capturedIndex = "not yet set"
-      var capturedAgents = collection.mutable.Set[String]()
+      var capturedAgents = collection.mutable.Set[Agent]()
       override def bls(index: String): BLs = new BLs(index) {
         capturedIndex = index
         override def text: Stream[String] = Stream("<ag1>", "<ag2>")
@@ -770,33 +780,33 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
     setup.conns.size should equal(5)
     val processedPorts = setup.ports map setup.portIDNamed
 
-    processedPorts should contain("<main:ag1> one one")
-    processedPorts should contain("<main:ag1>#1.2")
-    processedPorts should contain("<main:ag1>#1.3")
-    processedPorts should contain("<main:ag1>#1.4")
-    processedPorts should contain("<main:ag1>#1.22")
+    processedPorts should contain (PortID("<main:ag1> one one"))
+    processedPorts should contain (PortID("<main:ag1>#1.2"))
+    processedPorts should contain (PortID("<main:ag1>#1.3"))
+    processedPorts should contain (PortID("<main:ag1>#1.4"))
+    processedPorts should contain (PortID("<main:ag1>#1.22"))
 
-    processedPorts should contain("<main:ag2>#2.1")
-    processedPorts should contain("<main:ag2> two two")
-    processedPorts should contain("<main:ag2> two three")
-    processedPorts should contain("<main:ag2>#2.4")
+    processedPorts should contain (PortID("<main:ag2>#2.1"))
+    processedPorts should contain (PortID("<main:ag2> two two"))
+    processedPorts should contain (PortID("<main:ag2> two three"))
+    processedPorts should contain (PortID("<main:ag2>#2.4"))
 
     val processedConns = setup.conns map { c =>
       Connection(setup.portIDNamed(c.master), setup.portIDNamed(c.slave))
     }
 
-    processedConns should contain(Connection("<main:ag1> one one", "<main:ag2>#2.1"))
-    processedConns should contain(Connection("<main:ag1>#1.2", "<main:ag2> two two"))
-    processedConns should contain(Connection("<main:ag1>#1.3", "<main:ag2> two three"))
-    processedConns should contain(Connection("<main:ag1>#1.4", "<main:ag2>#2.4"))
-    processedConns should contain(Connection("<main:ag2> two two", "<main:ag1>#1.22"))
+    processedConns should contain (Connection("<main:ag1> one one", "<main:ag2>#2.1"))
+    processedConns should contain (Connection("<main:ag1>#1.2", "<main:ag2> two two"))
+    processedConns should contain (Connection("<main:ag1>#1.3", "<main:ag2> two three"))
+    processedConns should contain (Connection("<main:ag1>#1.4", "<main:ag2>#2.4"))
+    processedConns should contain (Connection("<main:ag2> two two", "<main:ag1>#1.22"))
   }
 
   test("Snapshot - Captures Settings") {
 
     val command = new SnapshotCommand {
       var capturedIndex = "not yet set"
-      var capturedAgents = collection.mutable.Set[String]()
+      var capturedAgents = collection.mutable.Set[Agent]()
       override def bls(index: String): BLs = new BLs(index) {
         capturedIndex = index
         override def text: Stream[String] = Stream("<ag1>", "<ag2>")
@@ -838,13 +848,13 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
     val connsTop = Connection("<rig1>#1.1", "<top>#20.2")
     val connsBot = Connection("<main.rig1:rig2>#2.3", "<main.rig1:mid>#14.3")
 
-    val setup1 = Setup(Set(connsTop, connsBot)).withPosUpdated(List("<rig1>"))
+    val setup1 = Setup(Set(connsTop, connsBot)).withPosUpdated(Pos("<rig1>"))
 
     val command = new UpCommand
     val catcher = new PrintCatcher
     val setup2 = command.action(List())(setup1, catcher.println)
 
-    setup2.pos should equal(List())
+    setup2.pos should equal (Pos())
     catcher.output should include("Position: Top level")
   }
 
@@ -858,24 +868,24 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
     val catcher = new PrintCatcher
     val setup2 = command.action(List())(setup1, catcher.println)
 
-    setup2.pos should equal(List())
-    catcher.output should include("Already at top level")
-    catcher.output should include("Position: Top level")
+    setup2.pos should equal (Pos())
+    catcher.output should include ("Already at top level")
+    catcher.output should include ("Position: Top level")
   }
 
   test("Up - Rejects too many arguments") {
     val connsTop = Connection("<rig1>#1.1", "<top>#20.2")
     val connsBot = Connection("<main.rig1:rig2>#2.3", "<main.rig1:mid>#14.3")
 
-    val setup1 = Setup(Set(connsTop, connsBot)).withPosUpdated(List("<rig1>"))
+    val setup1 = Setup(Set(connsTop, connsBot)).withPosUpdated(Pos("<rig1>"))
 
     val command = new UpCommand
     val catcher = new PrintCatcher
     val setup2 = command.action(List("something"))(setup1, catcher.println)
 
-    setup2.pos should equal(List("<rig1>"))
-    catcher.output should include("up: Does not take arguments")
-    catcher.output should include("Position: <rig1>")
+    setup2.pos should equal (Pos("<rig1>"))
+    catcher.output should include ("up: Does not take arguments")
+    catcher.output should include ("Position: <rig1>")
   }
 
 }

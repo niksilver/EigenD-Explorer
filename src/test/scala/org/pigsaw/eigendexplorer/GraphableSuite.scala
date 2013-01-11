@@ -24,6 +24,7 @@ import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.matchers.ShouldMatchers
 
+import Preamble._
 import Graphable._
 
 @RunWith(classOf[JUnitRunner])
@@ -42,37 +43,37 @@ class GraphableSuite extends FunSuite with ShouldMatchers {
   }
   
   test("Agent-port XML id") {
-    val agentPort = GAgentPort("<alpha>" -> "<alpha>#4.5")
+    val agentPort = GAgentPort(("<alpha>", "<alpha>#4.5"))
     agentPort.xmlId should equal ("_alpha__alpha__4.5")
   }
   
   test("Port-agent XML id") {
-    val portAgent = GPortAgent("<alpha>#4.5" -> "<alpha>")
+    val portAgent = GPortAgent(("<alpha>#4.5", "<alpha>"))
     portAgent.xmlId should equal ("_alpha__4.5_alpha_")
   }
   
   test("Agent-agent XML id") {
-    val agentAgent = GAgentAgent("<alpha>" -> "<beta>")
+    val agentAgent = GAgentAgent(("<alpha>", "<beta>"))
     agentAgent.xmlId should equal ("_alpha__beta_")
   }
   
   test("Agent-agent edge XML") {
-    val agentAgent = GAgentAgent("<alpha>" -> "<beta>")
+    val agentAgent = GAgentAgent(("<alpha>", "<beta>"))
     agentAgent.edgeXML should equal ("""<edge id="_alpha__beta_" source="_alpha_" target="_beta_" weight="1" />""")
   }
   
   test("Agent-port edge XML") {
-    val agentPort = GAgentPort("<alpha>" -> "<alpha>#4.5")
+    val agentPort = GAgentPort(("<alpha>", "<alpha>#4.5"))
     agentPort.edgeXML should equal ("""<edge id="_alpha__alpha__4.5" source="_alpha_" target="_alpha__4.5" weight="1" />""")
   }
   
   test("Port-agent edge XML") {
-    val portAgent = GPortAgent("<alpha>#4.5" -> "<alpha>")
+    val portAgent = GPortAgent(("<alpha>#4.5", "<alpha>"))
     portAgent.edgeXML should equal ("""<edge id="_alpha__4.5_alpha_" source="_alpha__4.5" target="_alpha_" weight="1" />""")
   }
   
   test("Port XML id") {
-    "<alpha>#4.5".portXmlId should equal ("_alpha__4.5")
+    PortID("<alpha>#4.5").portXmlId should equal ("_alpha__4.5")
   }
   
   test("Connection XML id") {
@@ -80,8 +81,8 @@ class GraphableSuite extends FunSuite with ShouldMatchers {
   }
   
   test("Port node XML") {
-    "<alpha>#4.5".portNodeXML should equal ("""<node id="_alpha__4.5" label="#4.5" />""")
-    "<alpha> light out".portNodeXML should equal ("""<node id="_alpha__light_out" label="light out" />""")
+    PortID("<alpha>#4.5").portNodeXML should equal ("""<node id="_alpha__4.5" label="#4.5" />""")
+    PortID("<alpha> light out").portNodeXML should equal ("""<node id="_alpha__light_out" label="light out" />""")
   }
   
   test("Connection edge XML") {

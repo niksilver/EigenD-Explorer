@@ -29,6 +29,14 @@ import Preamble._
 @RunWith(classOf[JUnitRunner])
 class SetupSuite extends FunSuite with ShouldMatchers {
   
+  // Some convenience implicits to make writing tests easier
+  
+  implicit def mapStringString2MapPortIDPortID(m: Map[String, String]) =
+    m map { p => (PortID(p._1), PortID(p._2)) }
+  
+  implicit def mapStringString2MapPortIDString(m: Map[String, String]) =
+    m map { p => (PortID(p._1), p._2) }
+  
   test("conns - Just gets top level if at top level") {
     val connTop = Connection("<main:rig1>#1.1", "<main:ag1>#1.1")
     val connRig = Connection("<main.rig1:ag22>#2.2", "<main.rig1:ag23>#2.3")
@@ -44,7 +52,7 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     
     val setup = Setup(Set(connTop, connRig))
     
-    setup.conns(List("<rig1>")) should equal (Set(connRig))
+    setup.conns(Pos("<rig1>")) should equal (Set(connRig))
   }
   
   test("conns - Without an argument gives connections at pos") {
@@ -54,7 +62,7 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     val setup1 = Setup(Set(connTop, connRig)).withPosUpdated(List())
     setup1.conns should equal (Set(connTop))
     
-    val setup2 = setup1.withPosUpdated(List("<rig1>"))
+    val setup2 = setup1.withPosUpdated(Pos("<rig1>"))
     setup2.conns should equal (Set(connRig))
   }
   
@@ -73,8 +81,8 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     val setup = Setup(Set(connTop, connRig)).
       withPortNamesReplaced(portNames)
     
-    setup.conns(List()) should equal (Set(connTopQual))
-    setup.conns(List("<rig1>")) should equal (Set(connRig))
+    setup.conns(Pos()) should equal (Set(connTopQual))
+    setup.conns(Pos("<rig1>")) should equal (Set(connRig))
   }
   
   test("allConns - Gets all connections, fully qualified") {
@@ -91,7 +99,7 @@ class SetupSuite extends FunSuite with ShouldMatchers {
   test("allConns - Defaults to correct rig/pos") {
     val conn = Connection("<rig1>#1.1", "<ag1>#1.1")
     
-    val setup = Setup(Set(conn)).withPosUpdated(List("<rig8>"))
+    val setup = Setup(Set(conn)).withPosUpdated(Pos("<rig8>"))
     
     setup.allConns should equal (Set(Connection("<main:rig1>#1.1", "<main:ag1>#1.1")))
   }
@@ -133,10 +141,10 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     val settings = Map(
         "<aaa>#1.1" -> "my triple a value",
         "<main:bbb>#2.2" -> "two dot two")
-    val setup = Setup().withPosUpdated(List("<rig1>")).withSettingsReplaced(settings)
+    val setup = Setup().withPosUpdated(Pos("<rig1>")).withSettingsReplaced(settings)
     
-    setup.allSettings should contain (("<main.rig1:aaa>#1.1" -> "my triple a value"))
-    setup.allSettings should contain (("<main:bbb>#2.2" -> "two dot two"))
+    setup.allSettings should contain (PortID("<main.rig1:aaa>#1.1") -> "my triple a value")
+    setup.allSettings should contain (PortID("<main:bbb>#2.2") -> "two dot two")
   }
   
   test("Agents") {
@@ -151,15 +159,15 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     val agents = setup.agents
 
     agents.size should equal(3)
-    agents should contain("<main:a>")
-    agents should contain("<main:b>")
-    agents should contain("<main:c>")
+    agents should contain (Agent("<main:a>"))
+    agents should contain (Agent("<main:b>"))
+    agents should contain (Agent("<main:c>"))
   }
 
   test("Ports") {
-    val a = "<main:a>#1.1"
-    val b = "<main:b>#1.2"
-    val c = "<main:c>#1.3"
+    val a = PortID("<main:a>#1.1")
+    val b = PortID("<main:b>#1.2")
+    val c = PortID("<main:c>#1.3")
 
     val setup = new Setup(Set(
       Connection(a, b),
@@ -168,9 +176,9 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     val ports = setup.ports
 
     ports.size should equal(3)
-    ports should contain(a)
-    ports should contain(b)
-    ports should contain(c)
+    ports should contain (a)
+    ports should contain (b)
+    ports should contain (c)
   }
 
   test("Port IDs are automatically qualified") {
@@ -207,9 +215,9 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     val setup = Setup(Set(conn1, conn2))
 
     setup.rigs.size should equal(3)
-    setup.rigs should contain("<rig3>")
-    setup.rigs should contain("<rig5>")
-    setup.rigs should contain("<rig7>")
+    setup.rigs should contain (Agent("<rig3>"))
+    setup.rigs should contain (Agent("<rig5>"))
+    setup.rigs should contain (Agent("<rig7>"))
   }
 
   test("Rigs - Detects disconnected rigs") {
@@ -218,8 +226,8 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     val connRigB = Connection("<main.rig1:main.rig2:ag9>#9.9", "<main.rig1:main.rig2:other> other")
     val setup = Setup(Set(conn1, connRigA, connRigB))
 
-    setup.rigs should equal (Set("<rig1>"))
-    setup.rigs(List("<rig1>")) should equal (Set("<rig2>"))
+    setup.rigs should equal (Set(Agent("<rig1>")))
+    setup.rigs(Pos("<rig1>")) should equal (Set(Agent("<rig2>")))
   }
   
   test("Rigs - Defaults to current pos") {
@@ -229,7 +237,7 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     val setup1 = Setup(Set(connTop, connRig)).withPosUpdated(List())
     setup1.rigs should equal (Set("<rig1>"))
     
-    val setup2 = setup1.withPosUpdated(List("<rig1>"))
+    val setup2 = setup1.withPosUpdated(Pos("<rig1>"))
     setup2.rigs should equal (Set("<rig2>"))
   }
   
@@ -239,7 +247,7 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     
     setup.pos should equal (List())
     
-    val setupV2 = setup.withPosUpdated(List("<rig1>"))
+    val setupV2 = setup.withPosUpdated(Pos("<rig1>"))
     
     setupV2.pos should equal (List("<rig1>"))
     setupV2.allConns should equal (Set(conn))
@@ -270,7 +278,7 @@ class SetupSuite extends FunSuite with ShouldMatchers {
         "<main:rig2>#2.2" -> "<main:rig2> twotwo",
         "<main:ag2>#2.2" -> "<main:ag2> agtwo agtwo")
     
-    val setup1 = Setup().withPosUpdated(List("<rig2>")).withPortNamesReplaced(portNames1)
+    val setup1 = Setup().withPosUpdated(Pos("<rig2>")).withPortNamesReplaced(portNames1)
     
     setup1.allPortNames should equal (
         Map(
@@ -288,7 +296,7 @@ class SetupSuite extends FunSuite with ShouldMatchers {
 
     val setup1 = Setup().withPortNames(portNames)
     
-    val test = { portID: String => portID.unqualified startsWith "<ag" }
+    val test = { portID: PortID => portID.unqualified.toString startsWith "<ag" }
     val setup2 = setup1.withPortNamesRemoved(test)
     
     val expectedPortNames = Map(
@@ -304,7 +312,7 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     // The unqualified port names should default to the current pos
     // which is initially the top level.
     
-    val setup1 = Setup(Set(conn)).withPosUpdated(List("<rig9>"))
+    val setup1 = Setup(Set(conn)).withPosUpdated(Pos("<rig9>"))
     val setup2 = setup1.withPortNamesRemoved({ _ => true })
     
     val expectedConn = Connection("<main:rig1>#1.1", "<main:ag1>#1.1")
@@ -344,7 +352,7 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     
     setup1.allPortNames should equal (portNames1)
     
-    val setup2 = setup1.withPosUpdated(List("<rig9>")).withPortNames(portNames2)
+    val setup2 = setup1.withPosUpdated(Pos("<rig9>")).withPortNames(portNames2)
     
     setup2.allPortNames should equal (portNames1 ++ portNames2Qual)
   }
@@ -374,7 +382,7 @@ class SetupSuite extends FunSuite with ShouldMatchers {
         "<main:rig2>#2.2" -> "twotwo",
         "<main:ag2>#2.2" -> "agtwo agtwo")
     
-    val setup1 = Setup().withPosUpdated(List("<rig2>")).withSettingsReplaced(settings1)
+    val setup1 = Setup().withPosUpdated(Pos("<rig2>")).withSettingsReplaced(settings1)
     
     setup1.allSettings should equal (
         Map(
@@ -392,7 +400,7 @@ class SetupSuite extends FunSuite with ShouldMatchers {
 
     val setup1 = Setup().withSettingsReplaced(settings)
     
-    val test = { portID: String => portID.unqualified startsWith "<ag" }
+    val test = { portID: PortID => portID.unqualified.toString startsWith "<ag" }
     val setup2 = setup1.withSettingsRemoved(test)
     
     val expectedSettings = Map(
@@ -434,7 +442,7 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     
     setup1.allSettings should equal (settings1)
     
-    val setup2 = setup1.withPosUpdated(List("<rig9>")).withSettings(settings2)
+    val setup2 = setup1.withPosUpdated(Pos("<rig9>")).withSettings(settings2)
     
     setup2.allSettings should equal (settings1 ++ settings2Qual)
   }
@@ -462,7 +470,7 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     val connTopA = Connection("<main:rig1>#1.1", "<main:ag1>#1.1")
     val connRigA = Connection("<main.rig1:ag22>#2.2", "<main.rig1:ag23>#2.3")
 
-    val setupA = Setup(Set(connTopA, connRigA)).withPosUpdated(List("<rig1>"))
+    val setupA = Setup(Set(connTopA, connRigA)).withPosUpdated(Pos("<rig1>"))
     
     // Check the conns went in okay
     
@@ -498,7 +506,7 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     val conn1 = Connection("<main:rig1>#1.1", "<main:ag1>#1.1")
     val conn2 = Connection("<main:ag1>#1.1", "<main:big1>#1.1")
     
-    val setup1 = Setup(Set(conn1, conn2)).withPosUpdated(List("<rig1>"))
+    val setup1 = Setup(Set(conn1, conn2)).withPosUpdated(Pos("<rig1>"))
     
     val conn3 = Connection("<big1>#1.1", "<main:cog1>#1.1")
     val conn4 = Connection("<main:cog11>#1.1", "<dig1>#1.1")
@@ -518,7 +526,7 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     // which is initially the top level.
     
     val setup1 = Setup().withConns(Set(conn))
-    val setup2 = setup1.withPosUpdated(List("<rig9>"))
+    val setup2 = setup1.withPosUpdated(Pos("<rig9>"))
     
     val expectedConn = Connection("<main:rig1>#1.1", "<main:ag1>#1.1")
     
@@ -537,7 +545,7 @@ class SetupSuite extends FunSuite with ShouldMatchers {
     
     setup1.allConns should equal (Set(conn1, conn2, conn3, conn4))
     
-    val removeMasterIgs = { c: Connection => c.master.unqualified contains "ig" }
+    val removeMasterIgs = { c: Connection => c.master.unqualified.toString contains "ig" }
     val setup2 = setup1.withConnsRemoved(removeMasterIgs)
     
     setup2.allConns should equal (Set(conn2, conn4))
@@ -570,8 +578,8 @@ class SetupSuite extends FunSuite with ShouldMatchers {
   test("Equals - with pos") {
     val setupBasic1 = new Setup(Set())
     val setupBasic2 = new Setup(Set())
-    val setupWithPos1 = Setup().withPosUpdated(List("<rig1>"))
-    val setupWithPos2 = Setup().withPosUpdated(List("<rig1>"))
+    val setupWithPos1 = Setup().withPosUpdated(Pos("<rig1>"))
+    val setupWithPos2 = Setup().withPosUpdated(Pos("<rig1>"))
     
     setupBasic1 should equal (setupBasic2)
     setupWithPos1 should equal (setupWithPos2)

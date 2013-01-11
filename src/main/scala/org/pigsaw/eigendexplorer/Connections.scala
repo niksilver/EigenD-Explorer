@@ -27,7 +27,7 @@ import Preamble._
  * @param master  The port the connection is from.
  * @param slave  The port the connection is to.
  */
-case class Connection(val master: String, val slave: String) {
+case class Connection(val master: PortID, val slave: PortID) {
   /**
    * Generate an unqualified version of this connection. I.e. If the id of either
    * the master or the slave is of the form &lt;<main:agentnameN&gt; then it's
@@ -44,7 +44,7 @@ case class Connection(val master: String, val slave: String) {
    * Default the qualifier, in both the master and the slave, to be the given
    * pos if there is no explicit qualifier already
    */
-  def defaultQualifier(p: List[String]) =
+  def defaultQualifier(p: Pos) =
     if (master.qualifier != "" && slave.qualifier != "")
       this
     else
@@ -53,11 +53,11 @@ case class Connection(val master: String, val slave: String) {
   /**
    * Get the agent names embedded in the master and slave port ids.
    */
-  def agents: Set[String] = Set() + master.agent + slave.agent
+  def agents: Set[Agent] = Set() + master.agent + slave.agent
   
   /**
    * See if one port in this connection has the given position
    */
-  def hasPos(p: List[String]): Boolean =
-    (master.hasPos(p)) || (slave.hasPos(p))
+  def hasPos(p: Pos): Boolean =
+    (master hasPos p) || (slave hasPos p)
 }

@@ -24,6 +24,8 @@ import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.matchers.ShouldMatchers
 
+import Preamble._
+
 @RunWith(classOf[JUnitRunner])
 class ConnectionSuite extends FunSuite with ShouldMatchers {
 
@@ -69,13 +71,13 @@ class ConnectionSuite extends FunSuite with ShouldMatchers {
   }
   
   test("Connection.hasPos") {
-    Connection("<a>#3.2", "<b> beat input").hasPos(List()) should equal (true)
-    Connection("<a>#3.2", "<b> beat input").hasPos(List("<rig1>")) should equal (false)
+    Connection("<a>#3.2", "<b> beat input").hasPos(Pos()) should equal (true)
+    Connection("<a>#3.2", "<b> beat input").hasPos(Pos("<rig1>")) should equal (false)
     
-    Connection("<main.rig1:a>#3.2", "<b> beat input").hasPos(List()) should equal (true)
-    Connection("<main.rig1:a>#3.2", "<b> beat input").hasPos(List("<rig1>")) should equal (true)
-    Connection("<a>#3.2", "<main.rig1:b> beat input").hasPos(List("<rig1>")) should equal (true)
+    Connection("<main.rig1:a>#3.2", "<b> beat input").hasPos(Pos()) should equal (true)
+    Connection("<main.rig1:a>#3.2", "<b> beat input").hasPos(Pos("<rig1>")) should equal (true)
+    Connection("<a>#3.2", "<main.rig1:b> beat input").hasPos(Pos("<rig1>")) should equal (true)
 
-    Connection("<main.rig1:a>#3.2", "<main.rig1:b> beat input").hasPos(List()) should equal (false)
+    Connection("<main.rig1:a>#3.2", "<main.rig1:b> beat input").hasPos(Pos()) should equal (false)
   }
 }

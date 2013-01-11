@@ -80,7 +80,7 @@ class BLs(index: String) {
  * A bcat command with the agent name.
  * @param agent  The agent name, including angle brackets and ordinal.
  */
-class BCat(val agent: String) {
+class BCat(val agent: Agent) {
   type Dict = Map[String, List[String]]
 
   /**
@@ -240,7 +240,7 @@ class BCat(val agent: String) {
    * Get the settings in this agent. Each key value pair is the port ID
    * and its value.
    */
-  lazy val settings: Map[String, String] = {
+  lazy val settings: Map[PortID, String] = {
     for {
       (stateNodeID, stateValue) <- state
       if stateNodeID.endsWith(".254")
@@ -248,7 +248,7 @@ class BCat(val agent: String) {
       // from 1.2.3.254 to 1.2.3
       setNode = stateNodeID.dropRight(4)
       strValue <- stateValue.stringValue.seq
-      portID = agent.unqualified + "#" + setNode
+      portID = PortID(agent.unqualified + "#" + setNode)
     } yield (portID -> strValue)
   }
 }
