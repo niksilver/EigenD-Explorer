@@ -19,8 +19,6 @@
 
 package org.pigsaw.eigendexplorer
 
-import java.util.regex.Pattern
-
 object Preamble {
 
   /**
@@ -208,12 +206,12 @@ object Preamble {
      * True if the name is a well-formed agent name,
      * including the angle brackets.
      */
-    def matchesAgent: Boolean = Pattern.matches("<([^>]*:)?([^>]*)>", str)
+    def matchesAgent: Boolean = str.matches("<([^>]*:)?([^>]*)>")
 
     /**
      * True if this string is an agent that's a rig
      */
-    def matchesRig: Boolean = Pattern.matches("<([^>]*:)?rig\\d+>", str)
+    def matchesRig: Boolean = str.matches("<([^>]*:)?rig\\d+>")
 
     /**
      * See how many times a string occurs inside this.

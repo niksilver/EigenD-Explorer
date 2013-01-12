@@ -19,8 +19,6 @@
 
 package org.pigsaw.eigendexplorer
 
-import java.util.regex.Pattern
-
 import Preamble._
 
 /**
