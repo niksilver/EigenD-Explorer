@@ -67,7 +67,7 @@ class ConnectionSuite extends FunSuite with ShouldMatchers {
     val a = "<a>#1.1"
     val b = "<b>#1.2"
     
-    Connection(a, b).agents should equal (Set("<a>", "<b>"))
+    Connection(a, b).agents should equal (Set(Agent("<a>"), Agent("<b>")))
   }
   
   test("Connection.hasPos") {

@@ -126,11 +126,6 @@ class PreambleSuite extends FunSuite with ShouldMatchers {
     "main.rig3:rig1>".isRig should equal(false)
   }
 
-  test("Agent.toString") {
-    Agent("<rig1>").toString should equal ("<rig1>")
-    Agent("<main:rig1>").toString should equal ("<main:rig1>")
-  }
-
   test("Pos.index") {
     Pos().index should equal("<main>")
     Pos("<rig1>").index should equal("<main.rig1:main>")
@@ -201,7 +196,7 @@ class PreambleSuite extends FunSuite with ShouldMatchers {
   }
 
   test("PortID.unqualifiedForPos") {
-    PortID("<rig1>#1.1").unqualifiedForPos(Pos("<rig3>")) should equal (Agent("<rig1>#1.1"))
+    PortID("<rig1>#1.1").unqualifiedForPos(Pos("<rig3>")) should equal (PortID("<rig1>#1.1"))
     
     PortID("<main:rig1>#1.1").unqualifiedForPos(Pos()) should equal (PortID("<rig1>#1.1"))
     PortID("<main:rig1>#1.1").unqualifiedForPos(Pos("<rig3>")) should equal (PortID("<main:rig1>#1.1"))
@@ -234,10 +229,6 @@ class PreambleSuite extends FunSuite with ShouldMatchers {
     p1 should not equal (p3)
   }
 
-  test("PortID.toString") {
-    PortID("<main.rig3>#4.5").toString should equal ("<main:rig3>#4.5")
-  }
-
   test("PortID - Bad input") {
     // General bad format
     intercept[MatchError] { PortID("something") }
@@ -259,8 +250,8 @@ class PreambleSuite extends FunSuite with ShouldMatchers {
   }
 
   test("PortID - Extract agent name") {
-    PortID("<agent1>#1.2.3").agent should equal("<agent1>")
-    PortID("<main1.rig1:agent1/1>#1.2.3").agent should equal("<main1.rig1:agent1/1>")
+    PortID("<agent1>#1.2.3").agent should equal (Agent("<agent1>"))
+    PortID("<main1.rig1:agent1/1>#1.2.3").agent should equal (Agent("<main1.rig1:agent1/1>"))
   }
 
   test("PortID.unqualified - object preservation") {
@@ -287,8 +278,8 @@ class PreambleSuite extends FunSuite with ShouldMatchers {
   }
 
   test("PortID.toString") {
-    PortID("<main.rig3>#4.5").toString should equal ("<main:rig3>#4.5")
-    PortID("<main.rig3> beat output").toString should equal ("<main:rig3> beat output")
+    PortID("<main:rig3>#4.5").toString should equal ("<main:rig3>#4.5")
+    PortID("<main:rig3> beat output").toString should equal ("<main:rig3> beat output")
   }
 
   test("Pos.qualifier") {

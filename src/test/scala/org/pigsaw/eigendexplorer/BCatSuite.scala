@@ -233,6 +233,18 @@ class BCatSuite extends FunSuite with ShouldMatchers {
     bcat.qualifiedNodeIDName("3.1.2.3.4.1", 3) should equal("b or c 1 de or fg hi and jk 1")
   }
 
+  test("qualifiedNodeIDName - At top (.) level") {
+    val output = """. {cordinal:1,cname:top}
+      """.stripMargin
+
+    val bcat = new BCat("<rig3>") {
+      override def text: Stream[String] = output.lines.toStream
+    }
+
+    bcat.qualifiedNodeIDName(".", 0) should equal("")
+    bcat.qualifiedNodeIDName(".", 1) should equal("top 1")
+  }
+
   test("qualifiedNodeIDName - Skips nodes which don't have names") {
     val output = """3.1 {cordinal:1,cname:one}
       |3.1.2.3 {cname:b or c,cordinal:1}
@@ -260,7 +272,8 @@ class BCatSuite extends FunSuite with ShouldMatchers {
     //   3.1.2.3.4.1 - A deep name which is unique only by going two steps up
     //   3.1.2.5.4.1 - The same deep name which is unique only by going two steps up
 
-    val output = """3.1 {cordinal:1,cname:one}
+    val output = """. {cname:ag1,slave:}
+      |3.1 {cordinal:1,cname:one}
       |3.1.2 {cname:a and b}
       |3.1.2.3 {cname:b or c,cordinal:1}
       |3.1.2.3.4 {cname:de or fg}
@@ -277,6 +290,7 @@ class BCatSuite extends FunSuite with ShouldMatchers {
     bcat.nodeIDNames should contain(("3.1.2" -> "a and b"))
     bcat.nodeIDNames should contain(("3.1.2.3.4.1" -> "b or c 1 de or fg hi and jk 1"))
     bcat.nodeIDNames should contain(("3.1.2.5.4.1" -> "b or c 2 de or fg hi and jk 1"))
+    bcat.nodeIDNames should contain(("." -> "ag1"))
   }
 
   test("nodeIDNames - Handles non-unique (c)names in dict") {
@@ -297,6 +311,46 @@ class BCatSuite extends FunSuite with ShouldMatchers {
 
     bcat.nodeIDNames should contain(("3.1.2.3" -> "#3.1.2.3 one 1 aa bb 1"))
     bcat.nodeIDNames should contain(("3.1.2.5" -> "#3.1.2.5 one 1 aa bb 1"))
+  }
+
+  test("nodeIDNames, etc - Handles dotted names") {
+    val output = """. {cname:ag1,slave:}
+          |1 {cname:one}
+          |1.254 n""".stripMargin
+
+    val bcat = new BCat("<rig3>") {
+      override def text: Stream[String] = output.lines.toStream
+    }
+
+    bcat.unqualifiedNodeIDNames should contain (("." -> "ag1"))
+    bcat.simplestUniqueName(".") should equal ("ag1")
+    bcat.nodeIDNames should contain(("." -> "ag1"))
+  }
+
+  test("nodeIDNames, etc - Dotted names non-empty even if no others exist") {
+    val output = """. {cname:ag1,slave:}
+          """.stripMargin
+
+    val bcat = new BCat("<rig3>") {
+      override def text: Stream[String] = output.lines.toStream
+    }
+
+    bcat.unqualifiedNodeIDNames should contain (("." -> "ag1"))
+    bcat.simplestUniqueName(".") should equal ("ag1")
+    bcat.nodeIDNames should contain(("." -> "ag1"))
+  }
+
+  test("nodeIDNames, etc - Ordinary node ID names non-empty even if no others exist") {
+    val output = """3 {cname:three,slave:}
+          """.stripMargin
+
+    val bcat = new BCat("<rig3>") {
+      override def text: Stream[String] = output.lines.toStream
+    }
+
+    bcat.unqualifiedNodeIDNames should contain (("3" -> "three"))
+    bcat.simplestUniqueName("3") should equal ("three")
+    bcat.nodeIDNames should contain(("3" -> "three"))
   }
 
   /*test("Real bcat output") {

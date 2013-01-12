@@ -197,7 +197,7 @@ class BCat(val agent: Agent) {
    * is unique.
    */
   def simplestUniqueName(nodeID: String): String =
-    simplestUniqueName(nodeID, 0)
+    simplestUniqueName(nodeID, 1)
 
   private def simplestUniqueName(nodeID: String, steps: Int): String = {
     // The number of elements in the node ID.

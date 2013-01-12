@@ -621,7 +621,7 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
     val catcher = new PrintCatcher
     val setupTop2 = command.action(List("<rig77>"))(setupTop, catcher.println)
 
-    setupTop2.pos should equal(List())
+    setupTop2.pos should equal(Pos())
     catcher.output.lines.toList(0) should equal("No such rig: <rig77>")
     catcher.output.lines.toList(1) should equal("Position: Top level")
   }
@@ -730,9 +730,9 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
     val catcher = new PrintCatcher
     val setupTop2 = command.action(List())(setupTop, catcher.println)
 
-    setupTop2.conns(List()) should equal(Set(connsTop))
-    setupTop2.rigs(List()) should equal(Set("<rig1>"))
-    setupTop2.pos should equal(List("<rig1>"))
+    setupTop2.conns(List()) should equal (Set(connsTop))
+    setupTop2.rigs(List()) should equal (Set(Agent("<rig1>")))
+    setupTop2.pos should equal (Pos("<rig1>"))
 
     setupTop2.conns should equal(Set(connsRigV2))
   }
@@ -821,21 +821,22 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
           |2 {comment:next_line_ends_with_one_space}
           |2.254 
           |2.2.254 two words""".stripMargin
-        override def text: Stream[String] =
-          (if (agent == "<main:ag1>") ag1Text else ag2Text).lines.toStream
+        override def text: Stream[String] = { println("****----- agent is " + agent)
+          (if (agent == "<main:ag1>") ag1Text else ag2Text).lines.toStream }
       }
     }
 
     val catcher = new PrintCatcher
 
+    println("************** In captures settings test....")
     val setup = command.action(List())(Setup(), catcher.println)
 
-    val expectedSettings = Map(
+    val expectedSettings = mapStringString2MapPortIDString(Map(
       "<main:ag1>#1" -> "n",
       "<main:ag2>#2" -> "",
-      "<main:ag2>#2.2" -> "two words")
+      "<main:ag2>#2.2" -> "two words"))
 
-    setup.allSettings should equal(expectedSettings)
+    setup.allSettings should equal (expectedSettings)
   }
 
   // -------------------------------------------------------------------------------

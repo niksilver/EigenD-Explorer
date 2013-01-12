@@ -134,6 +134,11 @@ object Preamble {
         case "main:" => List()
         case q => q split ":" map { e => Agent("<" + e.drop(5) + ">") } toList
       }
+    
+    /**
+     * The underlying string, no decoration
+     */
+    override def toString = str
   }
 
   //implicit def String2AgentOrPortID(s: String): AgentOrPortID = new AgentOrPortID(s)
