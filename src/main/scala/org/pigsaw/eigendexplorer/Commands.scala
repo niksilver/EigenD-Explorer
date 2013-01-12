@@ -422,7 +422,7 @@ class SnapshotCommand extends Command {
 }
 
 /**
- * Go up a loevel
+ * Go up a level
  */
 class UpCommand extends Command {
 
