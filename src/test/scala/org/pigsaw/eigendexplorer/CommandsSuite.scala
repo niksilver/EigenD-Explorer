@@ -659,6 +659,25 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
   //
   // -------------------------------------------------------------------------------
 
+  test("Snapshot - Rejects too many arguments") {
+
+    val command = new SnapshotCommand {
+      override def bls(index: String): BLs = new BLs(index) {
+        override def text: Stream[String] = Stream("something bls-ish")
+      }
+      override def bcat(agent: Agent): BCat = new BCat(agent) {
+        override def text: Stream[String] = Stream("something bcatty")
+      }
+    }
+
+    val catcher = new PrintCatcher
+
+    val setup = Setup()
+    val setupV2 = command.action(List("myarg"))(setup, catcher.println)
+
+    catcher.output should include ("snapshot: Does not take arguments")
+  }
+
   test("Snapshot - Correct bls index for top level") {
 
     val command = new SnapshotCommand {

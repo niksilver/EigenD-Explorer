@@ -271,13 +271,17 @@ class InspectCommand extends Command {
 
     val linksFrom: Set[(String, String, String)] =
       setup.allConns filter {
-        c => c.master.agent == agentQual } map {
-        c => ("", c.master.toString, c.slave.toString) }
+        c => c.master.agent == agentQual
+      } map {
+        c => ("", c.master.toString, c.slave.toString)
+      }
 
     val linksTo: Set[(String, String, String)] =
       setup.allConns filter {
-        c => c.slave.agent == agentQual } map {
-        c => (c.master.toString, c.slave.toString, "") }
+        c => c.slave.agent == agentQual
+      } map {
+        c => (c.master.toString, c.slave.toString, "")
+      }
 
     val linksAll = linksFrom ++ linksTo
 
@@ -296,7 +300,7 @@ class InspectCommand extends Command {
       }
       tidy1
     }
-    
+
     val settings: Set[(String, String, String)] = {
       for {
         (port, v) <- setup.allSettings.toSet
@@ -372,9 +376,11 @@ class SnapshotCommand extends Command {
 
   val command = "snapshot"
 
-  def action(args: List[String])(setup: Setup, prln: PrintlnFn): Setup = {
-    doSnapshot(setup, prln)
-  }
+  def action(args: List[String])(setup: Setup, prln: PrintlnFn): Setup =
+    args.length match {
+      case 0 => doSnapshot(setup, prln)
+      case _ => prln("snapshot: Does not take arguments"); setup
+    }
 
   def doSnapshot(setup: Setup, prln: PrintlnFn): Setup = {
     prln("Starting snapshot...")
@@ -388,11 +394,12 @@ class SnapshotCommand extends Command {
       val agQual = ag.qualified(pos)
       val bcat = this.bcat(agQual) returnedAfter { bc => prln("Examining " + bc.agent) }
       val portNames = bcat.nodeIDNames filter {
-          nn => nn._2 != ""
-        } map { pn =>
-          val pnFrom = PortID(agQual + "#" + pn._1)
-          val pnTo = PortID(agQual + " " + pn._2)
-          (pnFrom, pnTo) }
+        nn => nn._2 != ""
+      } map { pn =>
+        val pnFrom = PortID(agQual + "#" + pn._1)
+        val pnTo = PortID(agQual + " " + pn._2)
+        (pnFrom, pnTo)
+      }
       s.withPortNames(portNames).
         withSettings(bcat.settings).
         withConns(bcat.connections)
