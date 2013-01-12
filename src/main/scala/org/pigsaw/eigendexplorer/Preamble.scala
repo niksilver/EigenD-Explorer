@@ -41,12 +41,10 @@ object Preamble {
 
   /**
    * Methods appropriate to both agents and port IDs.
+   * `T` is the actual type to be implemented
    */
-  trait AgentOrPortID {
-    /**
-     * The type of this: either an agent or port ID.
-     */
-    type T
+  trait AgentOrPortID[T] {
+    this: T =>
     
     /**
      * The string representation, such as `<summer1>` or `<gain2>#15.4`.
@@ -57,11 +55,6 @@ object Preamble {
      * Make one of these from a string
      */
     def make(s: String): T
-    
-    /**
-     * Return this, but of the right type.
-     */
-    def same: T
 
     // Groups are:
     //   full agent name with angle brackets,
@@ -99,14 +92,14 @@ object Preamble {
       if (qualifier == "")
         make("<" + pos.qualifier + baseName + ">" + nodePart)
       else
-        same
+        this
 
     /**
      * Get the agent or port ID with an unqualified version of the agent name, which means
      * without all the rig position information.
      */
     def unqualified: T =
-      if (qualifier == "") same
+      if (qualifier == "") this
       else make("<" + baseName + ">" + nodePart)
 
     /**
@@ -115,7 +108,7 @@ object Preamble {
      */
     def unqualifiedForPos(p: Pos): T =
       if (hasPos(p)) unqualified
-      else same
+      else this
 
     /**
      * If this agent or port ID is at the given pos.
@@ -144,12 +137,11 @@ object Preamble {
   /**
    * The name of an agent, including the angle brackets.
    */
-  case class Agent(name: String) extends AgentOrPortID {
+  case class Agent(name: String) extends AgentOrPortID[Agent] {
     
+    // Required for the trait
     val str = name
-    type T = Agent
     def make(s: String) = new Agent(s)
-    def same = this
     
     /**
      * Get the name without the angle brackets (if any).
@@ -191,13 +183,11 @@ object Preamble {
    * `<name1>#12.34.45` or `<name1> beat bar input`.
    * @throws IllegalArgumentException  If the agent and/or label cannot be extracted.
    */
-  case class PortID(id: String) extends AgentOrPortID {
-    import PortID._
-
+  case class PortID(id: String) extends AgentOrPortID[PortID] {
+    
+    // Required for the trait
     val str = id
-    type T = PortID
     def make(s: String) = new PortID(s)
-    def same = this
 
     private val PortIDRE = """(<[^>]*>)([# ])(.+)""".r
 

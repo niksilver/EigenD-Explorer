@@ -244,8 +244,9 @@ class InspectCommand extends Command {
   def action(args: List[String])(setup: Setup, prln: PrintlnFn): Setup = {
     args.length match {
       case 0 => prln("inspect: No agent name given")
-      case 1 => if (args(0).matchesAgent) doInspect(Agent(args(0)), setup, prln)
-      else prln("Bad agent name. Names should be similar to <clicker1>.")
+      case 1 =>
+        if (args(0).matchesAgent) doInspect(Agent(args(0)), setup, prln)
+        else prln("Bad agent name. Names should be similar to <clicker1>.")
       case _ => prln("inspect: Too many arguments, only one required")
     }
 
@@ -301,13 +302,12 @@ class InspectCommand extends Command {
       tidy1
     }
 
-    val settings: Set[(String, String, String)] = {
+    val settings: Set[(String, String, String)] =
       for {
         (port, v) <- setup.allSettings.toSet
         if port.agent == agentQual
         if !isLinked(port) && !omitValue(v)
       } yield ("", port.toString, "")
-    }
 
     def formatAgent(portID: String): String = {
       val optSetting = setup.allSettings.get(portID)

@@ -31,7 +31,7 @@ object Graphable {
   implicit def string2GString(s: String) = new GString(s)
   implicit def agent2GString(a: Agent) = new GString(a.toString)
   implicit def portID2GString(p: PortID) = new GString(p.toString)
-  implicit def agentOrPortID2Graphable(ap: AgentOrPortID) = new Graphable(ap)
+  implicit def PortID2GPort(p: PortID) = new GPort(p)
   implicit def connection2GPortPort(c: Connection) = new GPortPort(c)
 
   def GPortPort(c: Connection) = new GPortPort(c)
@@ -57,13 +57,13 @@ object Graphable {
       """<node id="%s" label="%s" />""".format(s.stringXmlId, s.xmlEscaped)
   }
 
-  class Graphable(ap: AgentOrPortID) {
-    private def s = ap.toString
+  class GPort(p: PortID) {
+    private def s = p.toString
 
     lazy val portXmlId: String = s.stringXmlId
 
     lazy val portNodeXML: String =
-      """<node id="%s" label="%s" />""".format(ap.portXmlId, PortID(s).nodeLabelWithHash.xmlEscaped)
+      """<node id="%s" label="%s" />""".format(p.portXmlId, PortID(s).nodeLabelWithHash.xmlEscaped)
 
   }
 
