@@ -34,10 +34,10 @@ object Preamble {
   /**
    * Calculate and return a value after printing a message
    */
-  class ButFirstPrintable[A](a: =>A) {
+  class ButFirstPrintable[A](a: => A) {
     def butFirstPrint(s: String): A = { println(s); a }
   }
-  implicit def Any2ButFirstPrintable[A](a: =>A) = new ButFirstPrintable(a)
+  implicit def Any2ButFirstPrintable[A](a: => A) = new ButFirstPrintable(a)
 
   /**
    * Methods appropriate to both agents and port IDs.
@@ -45,12 +45,12 @@ object Preamble {
    */
   trait AgentOrPortID[T] {
     this: T =>
-    
+
     /**
      * The string representation, such as `<summer1>` or `<gain2>#15.4`.
      */
     val str: String
-    
+
     /**
      * Make one of these from a string
      */
@@ -62,7 +62,7 @@ object Preamble {
     //   base name
     //   node part including separator (or empty), e.g. "#34.2" or " beat input" 
     private val AgentOrPortIDRE = """(<([^>]*:)?([^>]*)>)(.*)""".r
-    
+
     lazy private val AgentOrPortIDRE(agent, qualOrNull, baseName, nodePart) = str
 
     /**
@@ -127,7 +127,7 @@ object Preamble {
         case "main:" => List()
         case q => q split ":" map { e => Agent("<" + e.drop(5) + ">") } toList
       }
-    
+
     /**
      * The underlying string, no decoration
      */
@@ -138,11 +138,11 @@ object Preamble {
    * The name of an agent, including the angle brackets.
    */
   case class Agent(name: String) extends AgentOrPortID[Agent] {
-    
+
     // Required for the trait
     val str = name
     def make(s: String) = new Agent(s)
-    
+
     /**
      * Get the name without the angle brackets (if any).
      */
@@ -154,28 +154,10 @@ object Preamble {
     /**
      * True if this agent is a rig
      */
-    def isRig: Boolean = AgentString(name).matchesRig
+    def isRig: Boolean = StringTestable(name).matchesRig
   }
 
   implicit def String2Agent(s: String): Agent = new Agent(s)
-  
-  /**
-   * Methods for testing strings for agent properties
-   */
-  case class AgentString(name: String) {
-    /**
-     * True if the name is a well-formed agent name,
-     * including the angle brackets.
-     */
-    def matchesAgent: Boolean = Pattern.matches("<([^>]*:)?([^>]*)>", name)
-
-    /**
-     * True if this string is an agent that's a rig
-     */
-    def matchesRig: Boolean = Pattern.matches("<([^>]*:)?rig\\d+>", name)
-  }
-
-  implicit def String2AgentString(s: String): AgentString = new AgentString(s)
 
   /**
    * A port ID, which consists of the agent name and either the
@@ -184,7 +166,7 @@ object Preamble {
    * @throws IllegalArgumentException  If the agent and/or label cannot be extracted.
    */
   case class PortID(id: String) extends AgentOrPortID[PortID] {
-    
+
     // Required for the trait
     val str = id
     def make(s: String) = new PortID(s)
@@ -218,6 +200,41 @@ object Preamble {
   implicit def string2PortID(id: String) = new PortID(id)
 
   /**
+   * Methods for testing strings for agent properties
+   * and more.
+   */
+  case class StringTestable(str: String) {
+    /**
+     * True if the name is a well-formed agent name,
+     * including the angle brackets.
+     */
+    def matchesAgent: Boolean = Pattern.matches("<([^>]*:)?([^>]*)>", str)
+
+    /**
+     * True if this string is an agent that's a rig
+     */
+    def matchesRig: Boolean = Pattern.matches("<([^>]*:)?rig\\d+>", str)
+
+    /**
+     * See how many times a string occurs inside this.
+     */
+    def occurrencesOf(target: String): Int = {
+
+      def occurrencesOf0(start: Int, accum: Int): Int = {
+        val i = str.indexOf(target, start)
+        if (i == -1) accum
+        else occurrencesOf0(i + 1, accum + 1)
+      }
+
+      if (target == "") 0
+      else occurrencesOf0(0, 0)
+    }
+    
+  }
+
+  implicit def String2StringTestable(s: String): StringTestable = new StringTestable(s)
+
+  /**
    * A position in a rig hierarchy in which we're currently
    * interested. An empty sequence means the top level; `("<rig3>")`
    * means rig3 within the top level, and so on.
@@ -235,7 +252,7 @@ object Preamble {
       def insertMains(s: Agent) = "." + s.withoutBrackets + ":main"
       "<main" + (p map insertMains).mkString + ">"
     }
-    
+
     /**
      * Append another rig to this pos, to make a new pos one level deeper
      */
@@ -262,7 +279,7 @@ object Preamble {
      * Will throw an exception if this is the top level pos.
      */
     def last: Agent = p.last
-    
+
     /**
      * The qualifier needed in an agent for this pos.
      * E.g. `List("<rig1>")` yields `"main.rig1:"`
@@ -302,14 +319,14 @@ object Preamble {
    * Thus `"agent1" < "agent2" < "agent10" < "agentA"`.
    */
   def lessThanAlphaInts(a: String, b: String): Boolean = {
-    
+
     val IntTail = """(\d{1,9})(.*)""".r
-    def split(s: String): (Either[Int,Char], String) =
+    def split(s: String): (Either[Int, Char], String) =
       s match {
         case IntTail(s1, st) => (Left(s1.toInt), st)
         case _ => (Right(s.head), s.tail)
       }
-    
+
     if (a == "")
       (b != "")
     else if (b == "")

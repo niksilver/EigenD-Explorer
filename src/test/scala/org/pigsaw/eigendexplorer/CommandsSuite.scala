@@ -558,6 +558,23 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
     catcher.output should not include ("#5.5")
   }
 
+  test("Inspect - Doesn't repeat port with setting if it's linked") {
+    val conn1 = Connection("<prev>#3.3", "<curr>#1.1")
+
+    val settings = Map(
+      "<curr>#1.1" -> "some value")
+
+    val setup = Setup(Set(conn1)).
+      withSettings(settings)
+
+    val catcher = new PrintCatcher
+
+    (new InspectCommand).action(List("<curr>"))(setup, catcher.println)
+
+    catcher.output should include("--> #1.1 = some value")
+    catcher.output.occurrencesOf("#1.1 = some value") should equal (1)
+  }
+
   // -------------------------------------------------------------------------------
   //
   // Into

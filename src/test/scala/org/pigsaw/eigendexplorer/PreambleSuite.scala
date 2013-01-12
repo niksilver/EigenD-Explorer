@@ -96,7 +96,7 @@ class PreambleSuite extends FunSuite with ShouldMatchers {
     Agent("<main:rig1>").toString should equal ("<main:rig1>")
   }
 
-  test("AgentString.matchesRig") {
+  test("StringTestable.matchesRig") {
     "<rig1>".matchesRig should equal(true)
     "<main:rig1>".matchesRig should equal(true)
     "<main.rig3:rig3>".matchesRig should equal(true)
@@ -112,7 +112,7 @@ class PreambleSuite extends FunSuite with ShouldMatchers {
     "main.rig3:rig1>".matchesRig should equal(false)
   }
 
-  test("AgentString.matchesAgent") {
+  test("StringTestable.matchesAgent") {
     "<summer1>".matchesAgent should equal (true)
     "<main:summer1>".matchesAgent should equal (true)
     "<main.rig3:summer1>".matchesAgent should equal (true)
@@ -124,6 +124,18 @@ class PreambleSuite extends FunSuite with ShouldMatchers {
     
     "<main:summer1".matchesAgent should equal (false)
     "main.rig3:summer1>".matchesAgent should equal (false)
+  }
+  
+  test("StringTestable.occurrencesOf") {
+    "hello fellow".occurrencesOf("lo") should equal (2)
+    "".occurrencesOf("hello") should equal (0)
+    "".occurrencesOf("") should equal (0)
+    "xx".occurrencesOf("") should equal (0)
+    "xx".occurrencesOf("x") should equal (2)
+    "xx".occurrencesOf("xx") should equal (1)
+    "xx".occurrencesOf("xxx") should equal (0)
+    """There was a young lady called Bella
+      |Who fancied a terrible fella""".stripMargin.occurrencesOf("ell") should equal (2)
   }
 
   test("Pos.index") {

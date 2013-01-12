@@ -287,7 +287,7 @@ class InspectCommand extends Command {
     val linksAll = linksFrom ++ linksTo
 
     def isLinked(portID: PortID) =
-      linksAll exists { _._2 == portID }
+      linksAll exists { _._2 == portID.toString }
 
     def omitValue(v: String): Boolean =
       (v == "" || (v.startsWith("<") && v.contains(">")))
