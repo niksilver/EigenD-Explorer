@@ -821,14 +821,13 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
           |2 {comment:next_line_ends_with_one_space}
           |2.254 
           |2.2.254 two words""".stripMargin
-        override def text: Stream[String] = { println("****----- agent is " + agent)
-          (if (agent == Agent("<main:ag1>")) ag1Text else ag2Text).lines.toStream }
+        override def text: Stream[String] =
+          (if (agent == Agent("<main:ag1>")) ag1Text else ag2Text).lines.toStream
       }
     }
 
     val catcher = new PrintCatcher
 
-    println("************** In captures settings test....")
     val setup = command.action(List())(Setup(), catcher.println)
 
     val expectedSettings = mapStringString2MapPortIDString(Map(
