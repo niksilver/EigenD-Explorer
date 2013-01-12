@@ -667,7 +667,7 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
         capturedIndex = index
         override def text: Stream[String] = Stream("something bls-ish")
       }
-      override def bcat(agent: String): BCat = new BCat(agent) {
+      override def bcat(agent: Agent): BCat = new BCat(agent) {
         override def text: Stream[String] = Stream("something bcatty")
       }
     }
@@ -689,7 +689,7 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
         capturedIndex = index
         override def text: Stream[String] = Stream("<too>", "<mid>")
       }
-      override def bcat(agent: String): BCat = new BCat(agent) {
+      override def bcat(agent: Agent): BCat = new BCat(agent) {
         capturedAgents = capturedAgents + agent
         override def text: Stream[String] = Stream("something bcatty")
       }
@@ -719,9 +719,9 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
 
     val command = new SnapshotCommand {
       override def bls(index: String): BLs = new BLs(index) {
-        override def agents: List[String] = List("<rig1>")
+        override def agents: List[Agent] = List(Agent("<rig1>"))
       }
-      override def bcat(agent: String): BCat = new BCat(agent) {
+      override def bcat(agent: Agent): BCat = new BCat(agent) {
         override lazy val connections: Set[Connection] = Set(connsRigV2)
         override def text: Stream[String] = Stream("nothing here")
       }
@@ -755,7 +755,7 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
       // <ag1>#1.1 = one one
       // <ag2>#2.2 = two two
       // <ag2>#2.3 = two three
-      override def bcat(agent: String): BCat = new BCat(agent) {
+      override def bcat(agent: Agent): BCat = new BCat(agent) {
         capturedAgents = capturedAgents + agent
         val ag1Text = """. {cname:ag1,slave:}
           |1.1 {cname:one one,protocols:input,slave:'<ag2>#2.1'}
@@ -769,7 +769,7 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
           |2.3 {cname:two three,master:conn(None,None,'<ag1>#1.3',None,ctl)}
           |2.4 {master:conn(None,None,'<ag1>#1.4',None,ctl)}""".stripMargin
         override def text: Stream[String] =
-          (if (agent == "<main:ag1>") ag1Text else ag2Text).lines.toStream
+          (if (agent == Agent("<main:ag1>")) ag1Text else ag2Text).lines.toStream
       }
     }
 
@@ -811,7 +811,7 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
         capturedIndex = index
         override def text: Stream[String] = Stream("<ag1>", "<ag2>")
       }
-      override def bcat(agent: String): BCat = new BCat(agent) {
+      override def bcat(agent: Agent): BCat = new BCat(agent) {
         capturedAgents = capturedAgents + agent
         val ag1Text = """. {cname:ag1,slave:}
           |1.254 n""".stripMargin
@@ -822,7 +822,7 @@ class CommandsSuite extends FunSuite with ShouldMatchers {
           |2.254 
           |2.2.254 two words""".stripMargin
         override def text: Stream[String] = { println("****----- agent is " + agent)
-          (if (agent == "<main:ag1>") ag1Text else ag2Text).lines.toStream }
+          (if (agent == Agent("<main:ag1>")) ag1Text else ag2Text).lines.toStream }
       }
     }
 

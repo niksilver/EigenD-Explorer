@@ -50,7 +50,7 @@ trait Command {
   /**
    * Create a new bcat command
    */
-  def bcat(agent: String): BCat = new BCat(agent)
+  def bcat(agent: Agent): BCat = new BCat(agent)
 }
 
 /**
@@ -296,7 +296,7 @@ class InspectCommand extends Command {
       }
       tidy1
     }
-
+    
     val settings: Set[(String, String, String)] = {
       for {
         (port, v) <- setup.allSettings.toSet
@@ -315,7 +315,7 @@ class InspectCommand extends Command {
       }
     }
 
-    def formatOther(str: PortID): String =
+    def formatOther(str: String): String =
       if (str == "") ""
       else bestForm(str).unqualifiedForPos(pos).toString
 
@@ -384,9 +384,9 @@ class SnapshotCommand extends Command {
     val agents = bls.agents
 
     // Update a setup with the results of bcat on a single agent
-    def updateWithBCat(ag: String, s: Setup): Setup = {
+    def updateWithBCat(ag: Agent, s: Setup): Setup = {
       println("************** Agent is " + ag)
-      val agQual = Agent(ag).qualified(pos).toString
+      val agQual = ag.qualified(pos)
       val bcat = this.bcat(agQual) returnedAfter { bc => prln("Examining " + bc.agent) }
       val portNames = bcat.nodeIDNames filter {
         nn => nn._2 != ""
@@ -401,7 +401,7 @@ class SnapshotCommand extends Command {
     }
 
     // Update a setup for a bcat on all agents
-    def updateForAgents(ags: List[String], s: Setup): Setup = ags match {
+    def updateForAgents(ags: List[Agent], s: Setup): Setup = ags match {
       case Nil => s
       case ag :: tail => updateForAgents(tail, updateWithBCat(ag, s))
     }

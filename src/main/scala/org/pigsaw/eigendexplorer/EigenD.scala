@@ -64,15 +64,15 @@ class BLs(index: String) {
   /**
    * Get the agents from a stream, which is expected to be the output
    * of the bls.exe command. Agents come out of that command as:
-   * <pre>
-   *   &lt;agent 1 name&gt;
-   *   &lt;agent 2 name&gt;
+   * {{{
+   *   <agent 1 name>
+   *   <&lt;agent 2 name>
    *   etc
-   * </pre>
+   * }}}}
    * and this will return a list of the agent names, including the angle brackets.
    */
-  def agents: List[String] =
-    (text flatMap ("(<.*>)".r unapplySeq (_)) flatten).toList
+  def agents: List[Agent] =
+    (text flatMap ("(<.*>)".r unapplySeq (_)) flatten) map { a => Agent(a) } toList
 
 }
 

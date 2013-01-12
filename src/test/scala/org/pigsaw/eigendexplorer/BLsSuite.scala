@@ -23,6 +23,8 @@ import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
 
+import Preamble._
+
 @RunWith(classOf[JUnitRunner])
 class MapperSuite extends FunSuite {
   
@@ -32,10 +34,8 @@ class MapperSuite extends FunSuite {
     }
     val output = bls.agents
     assert(output.length === 2)
-    assert(!(output contains "one"))
-    assert(output contains "<two>")
-    assert(output contains "<three>")
-    assert(!(output contains "four"))
+    assert(output contains Agent("<two>"))
+    assert(output contains Agent("<three>"))
   }
 
   test("Filter bls stream - empty case 1") {
