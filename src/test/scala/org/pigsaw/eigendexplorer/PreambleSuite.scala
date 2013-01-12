@@ -96,34 +96,34 @@ class PreambleSuite extends FunSuite with ShouldMatchers {
     Agent("<main:rig1>").toString should equal ("<main:rig1>")
   }
 
-  test("Agent.isAgent") {
-    Agent.isAgent("<summer1>") should equal (true)
-    Agent.isAgent("<main:summer1>") should equal (true)
-    Agent.isAgent("<main.rig3:summer1>") should equal (true)
+  test("AgentString.matchesRig") {
+    "<rig1>".matchesRig should equal(true)
+    "<main:rig1>".matchesRig should equal(true)
+    "<main.rig3:rig3>".matchesRig should equal(true)
 
-    Agent.isAgent("summer1") should equal (false)
-    Agent.isAgent("<summer1") should equal (false)
-    Agent.isAgent("summer1>") should equal (false)
-    Agent.isAgent("<summer>1") should equal (false)
+    "<main.rig3:summer1>".matchesRig should equal(false)
+
+    "rig1".matchesRig should equal(false)
+    "<rig1".matchesRig should equal(false)
+    "rig1>".matchesRig should equal(false)
+    "<rig>1".matchesRig should equal(false)
     
-    Agent.isAgent("<main:summer1") should equal (false)
-    Agent.isAgent("main.rig3:summer1>") should equal (false)
+    "<main:rig1".matchesRig should equal(false)
+    "main.rig3:rig1>".matchesRig should equal(false)
   }
 
-  test("Agent.isRig") {
-    "<rig1>".isRig should equal(true)
-    "<main:rig1>".isRig should equal(true)
-    "<main.rig3:rig3>".isRig should equal(true)
+  test("AgentString.matchesAgent") {
+    "<summer1>".matchesAgent should equal (true)
+    "<main:summer1>".matchesAgent should equal (true)
+    "<main.rig3:summer1>".matchesAgent should equal (true)
 
-    "<main.rig3:summer1>".isRig should equal(false)
-
-    "rig1".isRig should equal(false)
-    "<rig1".isRig should equal(false)
-    "rig1>".isRig should equal(false)
-    "<rig>1".isRig should equal(false)
+    "summer1".matchesAgent should equal (false)
+    "<summer1".matchesAgent should equal (false)
+    "summer1>".matchesAgent should equal (false)
+    "<summer>1".matchesAgent should equal (false)
     
-    "<main:rig1".isRig should equal(false)
-    "main.rig3:rig1>".isRig should equal(false)
+    "<main:summer1".matchesAgent should equal (false)
+    "main.rig3:summer1>".matchesAgent should equal (false)
   }
 
   test("Pos.index") {

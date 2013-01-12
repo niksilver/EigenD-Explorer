@@ -141,8 +141,6 @@ object Preamble {
     override def toString = str
   }
 
-  //implicit def String2AgentOrPortID(s: String): AgentOrPortID = new AgentOrPortID(s)
-
   /**
    * The name of an agent, including the angle brackets.
    */
@@ -162,37 +160,30 @@ object Preamble {
     }
 
     /**
-     * Get the agent with an unqualified version of the agent name, which means
-     * without all the rig position information.
-     
-    def unqualified: Agent =
-      if (qualifier == "") this
-      else Agent("<" + baseName + ">")
-     */
-
-    /**
      * True if this agent is a rig
      */
-    def isRig: Boolean = Agent.isRig(name)
+    def isRig: Boolean = AgentString(name).matchesRig
   }
+
+  implicit def String2Agent(s: String): Agent = new Agent(s)
   
   /**
    * Methods for testing strings for agent properties
    */
-  object Agent {
+  case class AgentString(name: String) {
     /**
      * True if the name is a well-formed agent name,
      * including the angle brackets.
      */
-    def isAgent(name: String) = Pattern.matches("<([^>]*:)?([^>]*)>", name)
+    def matchesAgent: Boolean = Pattern.matches("<([^>]*:)?([^>]*)>", name)
 
     /**
      * True if this string is an agent that's a rig
      */
-    def isRig(name: String): Boolean = Pattern.matches("<([^>]*:)?rig\\d+>", name)
+    def matchesRig: Boolean = Pattern.matches("<([^>]*:)?rig\\d+>", name)
   }
 
-  implicit def String2AgentName(s: String): Agent = new Agent(s)
+  implicit def String2AgentString(s: String): AgentString = new AgentString(s)
 
   /**
    * A port ID, which consists of the agent name and either the
@@ -232,26 +223,6 @@ object Preamble {
      */
     def nodeLabelWithHash: String =
       (if (sep0 == "#") "#" else "") + label0
-
-    /**
-     * Get the port ID with an unqualified version of the agent name, which means
-     * without all the rig position information.
-     
-    def unqualified: PortID =
-      if (qualifier == "") this
-      else PortID("<" + baseName + ">" + nodePart)
-     */
-      
-    /**
-     * If this port ID has no explicit qualifier then default it
-     * to the one given.
-    def defaultQualifier(pos: Pos): PortID =
-      if (qualifier == "")
-        PortID("<" + pos.qualifier + baseName + ">" + nodePart)
-      else
-        this
-     */
-
   }
 
   implicit def string2PortID(id: String) = new PortID(id)
@@ -265,9 +236,9 @@ object Preamble {
     /**
      * Convert a pos to an index specification for the bls command:
      * {{{
-     * ()                   => <main>
-     * ("<rig1>")           => <main.rig1:main>
-     * ("<rig1>", "<rig2>") => <main.rig1:main.rig2:main>
+     * Pos()                   => <main>
+     * Pos("<rig1>")           => <main.rig1:main>
+     * Pos("<rig1>", "<rig2>") => <main.rig1:main.rig2:main>
      * }}}
      */
     def index: String = {

@@ -244,7 +244,7 @@ class InspectCommand extends Command {
   def action(args: List[String])(setup: Setup, prln: PrintlnFn): Setup = {
     args.length match {
       case 0 => prln("inspect: No agent name given")
-      case 1 => if (Agent.isAgent(args(0))) doInspect(Agent(args(0)), setup, prln)
+      case 1 => if (args(0).matchesAgent) doInspect(Agent(args(0)), setup, prln)
       else prln("Bad agent name. Names should be similar to <clicker1>.")
       case _ => prln("inspect: Too many arguments, only one required")
     }
@@ -344,8 +344,8 @@ class IntoCommand extends Command {
       case 0 => prln("into: Too few arguments"); setup
       case 1 => {
         val arg = args(0)
-        if (arg.isRig) doInto(Agent(args(0)), setup, prln)
-        else if (Agent.isAgent(arg)) { prln("into: " + arg + " is not a rig"); setup }
+        if (arg.matchesAgent && arg.matchesRig) doInto(Agent(args(0)), setup, prln)
+        else if (arg.matchesAgent) { prln("into: " + arg + " is not a rig"); setup }
         else { prln("into: Bad rig name. Should be of the form <rig3>"); setup }
       }
       case _ => prln("into: Too many arguments"); setup
