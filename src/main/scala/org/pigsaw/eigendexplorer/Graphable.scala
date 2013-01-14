@@ -1,5 +1,5 @@
 /*
- *  Copyright 2012 Nik Silver.
+ *  Copyright 2012, 2013 Nik Silver.
  *  
  *  This file is part of EigenD Explorer.
  *

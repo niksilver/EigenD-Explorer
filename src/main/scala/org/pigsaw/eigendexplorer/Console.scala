@@ -1,5 +1,5 @@
 /*
- *  Copyright 2012 Nik Silver.
+ *  Copyright 2012, 2013 Nik Silver.
  *  
  *  This file is part of EigenD Explorer.
  *
@@ -33,8 +33,7 @@ object Console {
     if (EigenD.bin.nonEmpty && Config.consoleCols.nonEmpty) {
       println("There is a help command")
       actLoop(Setup())
-    }
-    else
+    } else
       println("Exiting. Please make corrections in application.conf")
 
     def actLoop(setup: Setup): Unit = {
@@ -109,7 +108,8 @@ class ConsoleParser extends RegexParsers {
   // In case the user didn't enter anything
   def noCommand = "" ^^ { _ => ((s: Setup) => s) }
 
-  // A parser for any possible command
+  // A parser for any possible command. We write it like this, as a function,
+  // rather than writing one production for every command.
   def someCommand = commandsParser(commands)
 
   // A parser of any number of commands, but at least one. The final parser (if all known
@@ -132,16 +132,19 @@ class ConsoleParser extends RegexParsers {
       case Success(out, _) => Some(out)
       case Failure(msg, _) => None
     }
-  
+
   /**
    * Execute a given command's action, but redirecting the output
    * to a named file.
    */
   def actionToFilePrinter(cmd: Command, args: List[String], s: Setup, filename: String): Setup = {
     val fp = filePrinter(filename)
-    val setup2 = cmd.action(args)(s, fp.println)
-    fp.close
-    setup2
+    try {
+      // This is the returned value
+      cmd.action(args)(s, fp.println)
+    } finally {
+      fp.close
+    }
   }
 }
 

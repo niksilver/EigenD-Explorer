@@ -1,5 +1,5 @@
 /*
- *  Copyright 2012 Nik Silver.
+ *  Copyright 2012, 2013 Nik Silver.
  *  
  *  This file is part of EigenD Explorer.
  *
@@ -138,58 +138,6 @@ class PreambleSuite extends FunSuite with ShouldMatchers {
       |Who fancied a terrible fella""".stripMargin.occurrencesOf("ell") should equal (2)
   }
 
-  test("Pos.index") {
-    Pos().index should equal("<main>")
-    Pos("<rig1>").index should equal("<main.rig1:main>")
-    Pos("<rig1>", "<rig2>").index should equal("<main.rig1:main.rig2:main>")
-  }
-
-  test("Pos.:+") {
-    Pos() :+ "<rig1>" should equal (Pos("<rig1>"))
-    Pos("<rig1>") :+ "<rig2>" should equal (Pos("<rig1>", "<rig2>"))
-    Pos("<rig1>", "<rig2>") :+ "<rig3>" should equal (Pos("<rig1>", "<rig2>", "<rig3>"))
-  }
-
-  test("Pos.parent") {
-    evaluating {
-    	Pos().parent
-    } should produce [Exception]
-    Pos("<rig1>").parent should equal (Pos())
-    Pos("<rig1>", "<rig2>").parent should equal (Pos("<rig1>"))
-  }
-
-  test("Pos.last") {
-    evaluating {
-    	Pos().last
-    } should produce [Exception]
-    Pos("<rig1>").last should equal (Agent("<rig1>"))
-    Pos("<rig1>", "<rig2>").last should equal (Agent("<rig2>"))
-  }
-
-  test("Pos.topLevel") {
-    Pos().topLevel should equal (true)
-    Pos("<rig1>").topLevel should equal (false)
-    Pos("<rig1>", "<rig2>").topLevel should equal (false)
-  }
-
-  test("Pos.notTopLevel") {
-    Pos().notTopLevel should equal (false)
-    Pos("<rig1>").notTopLevel should equal (true)
-    Pos("<rig1>", "<rig2>").notTopLevel should equal (true)
-  }
-
-  test("Pos.displayString") {
-    Pos().displayString should equal("Top level")
-    Pos("<rig1>").displayString should equal("<rig1>")
-    Pos("<rig1>", "<rig2>").displayString should equal("<rig1> - <rig2>")
-  }
-
-  test("Pos.length") {
-    Pos().length should equal (0)
-    Pos("<rig1>").length should equal (1)
-    Pos("<rig1>", "<rig2>").length should equal (2)
-  }
-
   test("PortID.constructor") {
     // These should simply not throw MatchErrors
     PortID("<rig1>#1.1").unqualified
@@ -292,6 +240,58 @@ class PreambleSuite extends FunSuite with ShouldMatchers {
   test("PortID.toString") {
     PortID("<main:rig3>#4.5").toString should equal ("<main:rig3>#4.5")
     PortID("<main:rig3> beat output").toString should equal ("<main:rig3> beat output")
+  }
+
+  test("Pos.index") {
+    Pos().index should equal("<main>")
+    Pos("<rig1>").index should equal("<main.rig1:main>")
+    Pos("<rig1>", "<rig2>").index should equal("<main.rig1:main.rig2:main>")
+  }
+
+  test("Pos.:+") {
+    Pos() :+ "<rig1>" should equal (Pos("<rig1>"))
+    Pos("<rig1>") :+ "<rig2>" should equal (Pos("<rig1>", "<rig2>"))
+    Pos("<rig1>", "<rig2>") :+ "<rig3>" should equal (Pos("<rig1>", "<rig2>", "<rig3>"))
+  }
+
+  test("Pos.parent") {
+    evaluating {
+    	Pos().parent
+    } should produce [Exception]
+    Pos("<rig1>").parent should equal (Pos())
+    Pos("<rig1>", "<rig2>").parent should equal (Pos("<rig1>"))
+  }
+
+  test("Pos.last") {
+    evaluating {
+    	Pos().last
+    } should produce [Exception]
+    Pos("<rig1>").last should equal (Agent("<rig1>"))
+    Pos("<rig1>", "<rig2>").last should equal (Agent("<rig2>"))
+  }
+
+  test("Pos.topLevel") {
+    Pos().topLevel should equal (true)
+    Pos("<rig1>").topLevel should equal (false)
+    Pos("<rig1>", "<rig2>").topLevel should equal (false)
+  }
+
+  test("Pos.notTopLevel") {
+    Pos().notTopLevel should equal (false)
+    Pos("<rig1>").notTopLevel should equal (true)
+    Pos("<rig1>", "<rig2>").notTopLevel should equal (true)
+  }
+
+  test("Pos.displayString") {
+    Pos().displayString should equal("Top level")
+    Pos("<rig1>").displayString should equal("<rig1>")
+    Pos("<rig1>", "<rig2>").displayString should equal("<rig1> - <rig2>")
+  }
+
+  test("Pos.length") {
+    Pos().length should equal (0)
+    Pos("<rig1>").length should equal (1)
+    Pos("<rig1>", "<rig2>").length should equal (2)
   }
 
   test("Pos.qualifier") {
